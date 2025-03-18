@@ -1,8 +1,8 @@
-from .Templates import SocketControllerTemplate as SCT
-from . import( ElephantRobotics, MyCobotPro600,
-                                        Fanuc, 
-                                        UniversalRobotics, 
-                                        DobotRobotics)
+from Templates import SocketControllerTemplate as SCT
+from DobotRobotics import DobotRobotics
+from ElephantRobotics import ElephantRobotics, MyCobotPro600
+from UniversalRobotics import UniversalRobotics
+from Fanuc import Fanuc
 
 import asyncio 
 
@@ -37,18 +37,19 @@ class AgnosticController:
 
 
 async def main():
-    async with AgnosticController(ElephantRobotics,"192.168.1.159", 5001) as robot:
+    # (ElephantRobotics,"192.168.1.159", 5001)
+    async with AgnosticController(UniversalRobotics,"192.168.1.111", 30_002) as robot:
         # await robot.home()
-        await robot.get_cartesian_position()
+        await robot.move_cartesian([-132,-500,-70 ,0,0,0])
 
 
 if __name__ == "__main__":
-    # try:
-    #     asyncio.run(main())
-    # except KeyboardInterrupt:
-    #     print("Program terminated by user")
-    # except Exception as e:
-    #     print(e)
-    #     print("An error occurred")
+    try:
+        asyncio.run(main())
+    except KeyboardInterrupt:
+        print("Program terminated by user")
+    except Exception as e:
+        print(e)
+        print("An error occurred")
 
-    print(AgnosticController.supported_manufacturers())
+    # print(AgnosticController.supported_manufacturers())

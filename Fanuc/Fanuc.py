@@ -1,4 +1,4 @@
-from Controller import SocketControllerTemplate as SCT
+from Templates import SocketControllerTemplate as SCT
 
 # Non-Operational (1/31/2025)
 class Fanuc(SCT):

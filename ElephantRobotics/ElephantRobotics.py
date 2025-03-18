@@ -1,4 +1,4 @@
-from Controller import SocketControllerTemplate as SCT
+from Templates import SocketControllerTemplate as SCT
 import asyncio
 import numpy as np
 

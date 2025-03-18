@@ -1,4 +1,4 @@
-from Controller import SocketControllerTemplate as SCT
+from Templates import SocketControllerTemplate as SCT
 
 class DobotRobotics(SCT):
     def __init__(self, ip:str, port:int):

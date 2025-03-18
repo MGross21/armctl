@@ -1,4 +1,4 @@
-from Controller import SocketControllerTemplate as SCT
+from Templates import SocketControllerTemplate as SCT
 import math
 
 class UniversalRobotics(SCT):
@@ -7,6 +7,8 @@ class UniversalRobotics(SCT):
 
     async def sleep(self, seconds):
         await self.send_command(f"sleep({seconds})")
+
+    async def home(self): pass
 
     async def move_joints(self, joint_positions, *args, **kwargs)->str:
         """
@@ -52,7 +54,7 @@ class UniversalRobotics(SCT):
     async def move_cartesian(self, robot_pose, *args, **kwargs)->str:
         """
         Move the robot to the specified cartesian position.
-        Robot Pose: [x, y, z, rx, ry, rz] in meters and radians
+        Robot Pose: [x, y, z, rx, ry, rz] in m and radians
         moveType: movel (linear cartesian pathing) or movep (circular cartesian pathing) (default: movel)
         v: velocity (Rad/s)
         a: acceleration (rad/s^2)
@@ -76,7 +78,7 @@ class UniversalRobotics(SCT):
             if not (0 <= pos <= math.pi*2):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
-        if self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose))) == "False"):
+        if await self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose)))) == "False":
             raise ValueError("Cartesian position out of safety limits")
 
         command = f"{moveType}(p[{','.join(map(str, robot_pose))}], a={a}, v={v}, t={t}, r={r})\n"
