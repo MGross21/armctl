@@ -16,7 +16,8 @@ SocketController:
 import asyncio
 import socket
 import json
-from .templates import Communication, logger
+from .communication import Communication
+from .logger import logger
 
 class SocketController(Communication):
     # __doc__ = Communication.__doc__
