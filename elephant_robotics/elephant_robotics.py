@@ -1,9 +1,8 @@
-from Templates import SocketControllerTemplate as SCT
+from templates import SocketController as SCT, Commands
 import asyncio
 import numpy as np
 
-
-class ElephantRobotics(SCT):
+class ElephantRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
         self.isConnected = False

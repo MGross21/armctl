@@ -1,10 +1,4 @@
-from Templates import SocketControllerTemplate as SCT
-from DobotRobotics import DobotRobotics
-from ElephantRobotics import ElephantRobotics, MyCobotPro600
-from UniversalRobotics import UniversalRobotics
-from Fanuc import Fanuc
-
-import asyncio 
+from templates import SocketController as SCT
 
 class AgnosticController:
     controllers = {}
@@ -34,22 +28,3 @@ class AgnosticController:
 
     async def __aexit__(self, exc_type, exc_value, traceback):
         await self.controller.disconnect()
-
-
-async def main():
-    # (ElephantRobotics,"192.168.1.159", 5001)
-    async with AgnosticController(UniversalRobotics,"192.168.1.111", 30_002) as robot:
-        # await robot.home()
-        await robot.move_cartesian([-132,-500,-70 ,0,0,0])
-
-
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except KeyboardInterrupt:
-        print("Program terminated by user")
-    except Exception as e:
-        print(e)
-        print("An error occurred")
-
-    # print(AgnosticController.supported_manufacturers())

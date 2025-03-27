@@ -1,1 +1,1 @@
-from .Fanuc import Fanuc
+from .fanuc import Fanuc

@@ -1,4 +1,4 @@
-from Templates import SocketControllerTemplate as SCT
+from templates import SocketController as SCT
 import math
 
 class UniversalRobotics(SCT):
@@ -84,11 +84,13 @@ class UniversalRobotics(SCT):
         command = f"{moveType}(p[{','.join(map(str, robot_pose))}], a={a}, v={v}, t={t}, r={r})\n"
         return await self.send_command(command)
 
-    async def get_joint_positions(self): pass
+    async def get_joint_positions(self):
+        return await self.send_command("get_actual_joint_positions()\n")
 
     async def get_cartesian_position(self): pass
 
     async def stop_motion(self):
         return await self.send_command("stopj(2)") # deceleration: 2 rad/s^2
 
-    async def get_robot_state(self): pass
+    async def get_robot_state(self):
+        return await self.send_command("get_robot_status()\n")

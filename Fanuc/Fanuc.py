@@ -1,7 +1,7 @@
-from Templates import SocketControllerTemplate as SCT
+from templates import SocketController as SCT, Commands
 
 # Non-Operational (1/31/2025)
-class Fanuc(SCT):
+class Fanuc(SCT, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
 

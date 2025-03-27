@@ -1,6 +1,7 @@
-from .ElephantRobotics import ElephantRobotics
+from .elephant_robotics import ElephantRobotics
 
-class MyCobotPro600(ElephantRobotics):
+# My Cobot Pro 600
+class Pro600(ElephantRobotics):
         def __init__(self, ip:str, port:int):
             super().__init__(ip, port)
             super().HOME_POSITION = [0,-90, 90,-90,-90,0]

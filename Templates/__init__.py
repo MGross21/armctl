@@ -1,1 +1,2 @@
-from .SocketController import SocketControllerTemplate
+from .socketcontroller import SocketController
+from .templates import Commands

@@ -1,7 +1,7 @@
-from .Templates import SocketControllerTemplate
-from .AgnosticController import AgnosticController
+# from .templates import SocketController,Commands
+# from .AgnosticController import AgnosticController
 
-from .ElephantRobotics import ElephantRobotics, MyCobotPro600
-from .Fanuc import Fanuc
-from .UniversalRobotics import UniversalRobotics
-from .DobotRobotics import DobotRobotics
+from .elephant_robotics import ElephantRobotics, Pro600
+from .fanuc import Fanuc
+from .universal_robotics import UniversalRobotics, UR5
+from .dobot import Dobot
