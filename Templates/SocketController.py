@@ -67,7 +67,29 @@ class SocketController(Communication):
             logger.info("Disconnected from robot")
         self.isConnected = False
 
-    async def send_command(self, command, timeout=5.0, wait_for_reponse_str:str=None):
+    async def send_command(self, command, timeout=5.0):
+        """
+        Asynchronously send a command to the robot and wait for a response.
+        
+        Parameters
+        ----------
+        command : str, dict, or bytes
+            The command to send to the robot
+        timeout : float, optional
+            Maximum time to wait for a response, by default 5.0
+            
+        Returns
+        -------
+        Any
+            The decoded response from the robot
+        
+        Raises
+        ------
+        ConnectionError
+            If not connected to the robot or command sending fails
+        TimeoutError
+            If the command times out
+        """
         if not self.socket:
             raise ConnectionError(f"Not connected to {self:f}")
         
@@ -80,8 +102,8 @@ class SocketController(Communication):
             # Send the command
             await asyncio.wait_for(self._send(command), timeout=timeout)
             
-            # Receive and process response
-            response = await self._get_response(timeout, wait_for_reponse_str, response_format)
+            # Receive response
+            response = await asyncio.wait_for(self._receive(), timeout=timeout)
             
             # Decode the response
             decoded_response = self._decode_response(response, response_format)
@@ -110,6 +132,7 @@ class SocketController(Communication):
             raise TypeError("Unsupported command type")
 
     async def _get_response(self, timeout, wait_for_reponse_str, response_format):
+        raise DeprecationWarning("Not Used")
         """Get response from socket, optionally waiting for specific string."""
         if not wait_for_reponse_str:
             return await asyncio.wait_for(self._receive(), timeout=timeout)
