@@ -4,11 +4,18 @@ import math
 class UniversalRobotics(SCT):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
+        self.JOINT_RANGES = [ 
+            (-math.pi, math.pi),
+            (-math.pi, math.pi),
+            (-math.pi, math.pi),
+            (-math.pi, math.pi),
+            (-math.pi, math.pi),
+            (-math.pi, math.pi)
+        ]
+        self.DOF = len(self.JOINT_RANGES)
 
     async def sleep(self, seconds):
         await self.send_command(f"sleep({seconds})")
-
-    async def home(self): pass
 
     async def move_joints(self, joint_positions, *args, **kwargs)->str:
         """
@@ -53,13 +60,22 @@ class UniversalRobotics(SCT):
 
     async def move_cartesian(self, robot_pose, *args, **kwargs)->str:
         """
-        Move the robot to the specified cartesian position.
-        Robot Pose: [x, y, z, rx, ry, rz] in m and radians
-        moveType: movel (linear cartesian pathing) or movep (circular cartesian pathing) (default: movel)
-        v: velocity (Rad/s)
-        a: acceleration (rad/s^2)
-        t: The time (seconds) to make move is not specified. If it were specified the command would ignore the a and v values.
-        r: Blend radius (m)
+        Move the robot to the specified cartesian position. (`movel` or `movep`)
+
+        Parameters
+        ----------
+        robot_pose : list of float
+            Cartesian position and orientation [x, y, z, rx, ry, rz] in meters and radians.
+        moveType : str, optional
+            Type of movement: "movel" for linear cartesian pathing or "movep" for circular cartesian pathing (default: "movel").
+        speed : float, optional
+            Velocity of the movement in m/s (default: 0.1).
+        acceleration : float, optional
+            Acceleration of the movement in m/s^2 (default: 0.0).
+        time : float, optional
+            The time in seconds to make the move. If specified, the command will ignore the speed and acceleration values (default: 0.0).
+        r : float, optional
+            Blend radius in meters (default: 0.0).
         """
         moveType = kwargs.get("moveType", "movel")
         assert moveType in ["movel", "movep"], "Unsupported move type: movel or movep"
@@ -84,10 +100,11 @@ class UniversalRobotics(SCT):
         command = f"{moveType}(p[{','.join(map(str, robot_pose))}], a={a}, v={v}, t={t}, r={r})\n"
         return await self.send_command(command)
 
-    async def get_joint_positions(self):
+    async def get_joint_positions(self, *args, **kwargs):
         return await self.send_command("get_actual_joint_positions()\n")
 
-    async def get_cartesian_position(self): pass
+    async def get_cartesian_position(self, *args, **kwargs):
+        return await self.send_command("get_actual_tcp_pose()\n")
 
     async def stop_motion(self):
         return await self.send_command("stopj(2)") # deceleration: 2 rad/s^2

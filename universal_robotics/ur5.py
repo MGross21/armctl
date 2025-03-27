@@ -1,18 +1,12 @@
 from .universal_robotics import UniversalRobotics as UR
 
 class UR5(UR):
-        def __init__(self, ip:str, port:int):
+        def __init__(self, ip:str="192.168.1.111", port:int=30_002):
             super().__init__(ip, port)
-            super().HOME_POSITION = [0,-90, 90,-90,-90,0]
-            super().JOINT_RANGES = [
-                (-180.00, 180.00),
-                (-270.00, 90.00),
-                (-150.00, 150.00),
-                (-260.00, 80.00),
-                (-168.00, 168.00),
-                (-174.00, 174.00)
-            ]
-            super().DOF = len(super().JOINT_RANGES)
+            self.HOME_POSITION = [0, -90, 90, -90, -90, 0]
 
         async def home(self):
-            await super().move_joints(super().HOME_POSITION, speed=750)
+            await self.move_joints(self.HOME_POSITION, speed=0.1)
+
+# Mirror the UR5e class to UR5
+UR5e = UR5

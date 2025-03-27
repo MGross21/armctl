@@ -59,19 +59,16 @@ class Commands(ABC):
     async def sleep(self, seconds): pass
 
     @abstractmethod
-    async def home(self): pass
-
-    @abstractmethod
     async def move_joints(self, joint_positions,*args, **kwargs): pass
 
     @abstractmethod
-    async def get_joint_positions(self): pass
+    async def get_joint_positions(self, *args, **kwargs): pass
 
     @abstractmethod
     async def move_cartesian(self, robot_pose, *args, **kwargs): pass
 
     @abstractmethod
-    async def get_cartesian_position(self): pass
+    async def get_cartesian_position(self, *args, **kwargs): pass
 
     @abstractmethod
     async def stop_motion(self): pass

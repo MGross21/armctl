@@ -11,10 +11,10 @@ class Fanuc(SCT, Commands):
     async def move_cartesian(self, x, y, z, rx, ry, rz, speed=1.0):
         return await self.send_command({"type": "move_cartesian", "position": [x, y, z, rx, ry, rz], "speed": speed})
 
-    async def get_joint_positions(self):
+    async def get_joint_positions(self, *args, **kwargs):
         return await self.send_command({"type": "get_joint_positions"})
 
-    async def get_cartesian_position(self):
+    async def get_cartesian_position(self, *args, **kwargs):
         return await self.send_command({"type": "get_cartesian_position"})
 
     async def stop_motion(self):

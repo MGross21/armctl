@@ -5,9 +5,6 @@ import numpy as np
 class ElephantRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
-        self.isConnected = False
-    
-        self.HOME_POSITION = [0,-90, 90,-90,-90,0]
         self.JOINT_RANGES = [
             (-180.00, 180.00),
             (-270.00, 90.00),
@@ -23,14 +20,12 @@ class ElephantRobotics(SCT, Commands):
 
         assert await self.send_command("power_on()") == "power_on:[ok]" # Power on the robot
         assert await self.send_command("state_on()") == "state_on:[ok]" # enable the system
-        self.isConnected = True
     
     async def disconnect(self):
         await self.stop_motion() # Stop any ongoing motion
         # assert await self.send_command("state_off()") == "state_off:[ok]" # Shut down the system, but the robot is still powered on
         # assert await self.send_command("power_off()") == "power_off:[ok]" # Power off the robot
         await super().disconnect() # Socket disconnection
-        self.isConnected = False
 
     async def _waitforfinish(self):
         while True:
@@ -41,9 +36,6 @@ class ElephantRobotics(SCT, Commands):
     async def sleep(self, seconds):
         await self.send_command(f"wait({seconds})")
         asyncio.sleep(seconds)
-
-    async def home(self):
-        await self.move_joints(ElephantRobotics.HOME_POSITION, speed=500)
     
     async def move_joints(self, joint_positions, *args, **kwargs):
         """
@@ -98,14 +90,14 @@ class ElephantRobotics(SCT, Commands):
         while not np.allclose(await self.get_cartesian_position(), robot_pose, atol=0.1):
             await asyncio.sleep(0.25)
 
-    async def get_joint_positions(self):
+    async def get_joint_positions(self, *args, **kwargs):
         response = await self.send_command("get_angles()")
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid joint positions response from robot")
         joint_positions = list(map(float, response[response.index("[")+1:response.index("]")].split(","))) # From string list to float list
         return np.array(joint_positions).round(1)
 
-    async def get_cartesian_position(self):
+    async def get_cartesian_position(self, *args, **kwargs):
         response = await self.send_command("get_coords()") # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid cartesian position response from robot")
