@@ -67,47 +67,84 @@ class SocketController(Communication):
             logger.info("Disconnected from robot")
         self.isConnected = False
 
-    async def send_command(self, command, timeout=5.0):
+    async def send_command(self, command, timeout=5.0, wait_for_reponse_str:str=None):
         if not self.socket:
             raise ConnectionError(f"Not connected to {self:f}")
         
         try:
             logger.send(f"{self:f}: \t{command}")
             
-            if isinstance(command, dict):
-                command = json.dumps(command).encode('utf-8')
-                response_format = 'dict'
-            elif isinstance(command, str):
-                command = command.encode('utf-8')
-                response_format = 'str'
-            elif isinstance(command, bytes):
-                response_format = 'bytes'
-            else:
-                raise TypeError("Unsupported command type")
+            # Process and encode command based on type
+            command, response_format = self._format_command(command)
             
+            # Send the command
             await asyncio.wait_for(self._send(command), timeout=timeout)
-            response = await asyncio.wait_for(self._receive(), timeout=timeout)
             
-            if response_format == 'dict':
-                decoded_response = json.loads(response.decode('utf-8'))
-            elif response_format == 'str':
-                decoded_response = response.decode('utf-8')
-            elif response_format == 'bytes':
-                decoded_response = response
-            else:
-                raise ValueError("Unsupported response format")
+            # Receive and process response
+            response = await self._get_response(timeout, wait_for_reponse_str, response_format)
+            
+            # Decode the response
+            decoded_response = self._decode_response(response, response_format)
             
             logger.receive(f"{self:f}: \t{decoded_response}")
             return decoded_response
-    
+        
         except asyncio.TimeoutError:
             logger.error("Command timed out")
             raise TimeoutError("Command timed out")
         except Exception as e:
             logger.error(f"Error sending command: {e}")
-            raise ConnectionError("Failed to send command to the robot")
+            raise ConnectionError(f"Failed to send command to the robot: {str(e)}")
         finally:
             print()
+
+    def _format_command(self, command):
+        """Format and encode command based on its type."""
+        if isinstance(command, dict):
+            return json.dumps(command).encode('utf-8'), 'dict'
+        elif isinstance(command, str):
+            return command.encode('utf-8'), 'str'
+        elif isinstance(command, bytes):
+            return command, 'bytes'
+        else:
+            raise TypeError("Unsupported command type")
+
+    async def _get_response(self, timeout, wait_for_reponse_str, response_format):
+        """Get response from socket, optionally waiting for specific string."""
+        if not wait_for_reponse_str:
+            return await asyncio.wait_for(self._receive(), timeout=timeout)
+        
+        # Wait for specific string in response
+        start_time = asyncio.get_event_loop().time()
+        while (asyncio.get_event_loop().time() - start_time) < timeout:
+            remaining = timeout - (asyncio.get_event_loop().time() - start_time)
+            response = await asyncio.wait_for(self._receive(), timeout=remaining)
+            
+            # Check if the expected string is in the response
+            if self._response_contains_string(response, wait_for_reponse_str, response_format):
+                return response
+        
+        # If we exit the loop without breaking, we timed out
+        raise TimeoutError(f"Timed out waiting for '{wait_for_reponse_str}' in response")
+
+    def _response_contains_string(self, response, search_string, response_format):
+        """Check if response contains the specified string based on format."""
+        if response_format in ['dict', 'str']:
+            return search_string in response.decode('utf-8')
+        elif response_format == 'bytes':
+            return search_string.encode('utf-8') in response
+        return False
+
+    def _decode_response(self, response, response_format):
+        """Decode response based on format."""
+        if response_format == 'dict':
+            return json.loads(response.decode('utf-8'))
+        elif response_format == 'str':
+            return response.decode('utf-8')
+        elif response_format == 'bytes':
+            return response
+        else:
+            raise ValueError("Unsupported response format")
 
     async def _send(self, data):
         await asyncio.get_event_loop().sock_sendall(self.socket, data)

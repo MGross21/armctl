@@ -8,50 +8,46 @@ class Vention(SCT):
     async def connect(self):
         await super().connect()
         assert await self.send_command("isReady") == "MachineMotion is Ready = true"
+        assert await self.send_command("estop/release/request") == "Ack estop/release/request", "Failed to release E-Stop"
         return 
     
     async def sleep(self, seconds): 
         await asyncio.sleep(seconds)
 
     async def home(self): 
-        command = ""
-        return await self.send_command(command)
+        await self.send_command("im_home_axis_all", timeout=10, wait_for_reponse_str="MachineMotion im_home_axis_all = completed")
 
-    async def move_joints(self, joint_positions:list[float],*args, **kwargs):
+    async def move_joints(self, joint_positions:list[float],*args, **kwargs) -> None:
         """Sets the current position of an axis to a new value (mm)."""
-        match(len(joint_positions)):
-            case 1:
-                joint_positions.extend([0,0])
-            case 2:
-                joint_positions.append(0)
-            case 3:
-                pass
-            case _:
-                raise ValueError("Joint positions be [1,2,3] in size")
+        if isinstance(joint_positions, (int, float)):
+            joint_positions = [joint_positions]
+        
+        if len(joint_positions) not in [1, 2, 3]:
+            raise ValueError("Joint positions must be a list of 1-3 floats")
         
         # lambda functions
-        command = (lambda a: "SET im_set_controller_pos_axis_{}/0/".format(a))
-        if axis:
-            return await self.send_command(command(axis))
-        else:
-            # set all axis
-            return [clean_response(await self.send_command(command(i))) for i in valid_axis]  
+        command = (lambda ax,val: "SET im_set_controller_pos_axis_{}/{}/".format(ax, val))
+
+        response = [await self.send_command(command(i, joint_positions[i])) for i in range(len(joint_positions))]
+
+        assert all([r == "Ack" for r in response]), "Failed to move joints"
+
+        while True:
+            if await self.send_command("isMotionCompleted") == "MachineMotion isMotionCompleted = true":
+                break
+            await asyncio.sleep(0.1)
         
 
-    async def get_joint_positions(self, *args, **kwargs):
-        axis = kwargs.get("axis")
-        valid_axis = [1,2,3]
-        if axis not in valid_axis and axis is not None:
-            raise ValueError("Axis must be [1,2,3,None]")
-        
-        # lambda functions
-        clean_response = (lambda r: float(r.strip("(<>)")))
-        command = (lambda a: "GET im_get_controller_pos_axis_{}".format(a))
-        if axis:
-            return clean_response(await self.send_command(command(axis)))
-        else:
-            # set all axis
-            return [clean_response(await self.send_command(command(i))) for i in valid_axis] 
+    async def get_joint_positions(self, axis=None)->list[float] | float:
+        """Gets the current position of an axis or all axis."""
+        valid_axes = [1, 2, 3]
+        if axis and axis not in valid_axes:
+            raise ValueError("Axis must be 1, 2, 3, or None for all axes")
+
+        async def response(ax):
+            return float((await self.send_command(f"GET im_get_controller_pos_axis_{ax}")).strip("(<>)"))
+
+        return await response(axis) if axis else [await response(ax) for ax in valid_axes]
 
     async def move_cartesian(self, robot_pose, *args, **kwargs): 
         return ImportWarning("Not implemented")
@@ -59,6 +55,7 @@ class Vention(SCT):
     async def get_cartesian_position(self):
         return ImportWarning("Not implemented")
 
-    async def stop_motion(self): pass
+    async def stop_motion(self):
+        assert await self.send_command("estop/trigger/request") == "Ack estop/trigger/request", "Failed to stop motion"
 
     async def get_robot_state(self): pass
