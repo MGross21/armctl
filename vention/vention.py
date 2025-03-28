@@ -15,7 +15,7 @@ class Vention(SCT):
         await asyncio.sleep(seconds)
 
     async def home(self): 
-        await self.send_command("im_home_axis_all", timeout=10, wait_for_reponse_str="MachineMotion im_home_axis_all = completed")
+        assert await self.send_command("im_home_axis_all", timeout=10) == "MachineMotion im_home_axis_all = completed", "Failed to home robot"
 
     async def move_joints(self, joint_positions:list[float],*args, **kwargs) -> None:
         """Sets the current position of an axis to a new value (mm)."""
@@ -45,7 +45,7 @@ class Vention(SCT):
             raise ValueError("Axis must be 1, 2, 3, or None for all axes")
 
         async def response(ax):
-            return float((await self.send_command(f"GET im_get_controller_pos_axis_{ax}")).strip("(<>)"))
+            return float((await self.send_command(f"GET im_get_controller_pos_axis_{ax}",timeout=10)).strip("(<>)"))
 
         return await response(axis) if axis else [await response(ax) for ax in valid_axes]
 
