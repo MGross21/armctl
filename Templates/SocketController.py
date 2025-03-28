@@ -35,7 +35,6 @@ class SocketController(Communication):
     """
     def __init__(self, ip, port):
         self.ip, self.port, self.socket = ip, port, None
-        self.isConnected = False
     
     async def __aenter__(self):
         await self.connect()
@@ -58,14 +57,12 @@ class SocketController(Communication):
         except Exception as e:
             logger.error(f"Connection failed: {e}")
             raise ConnectionError(f"Failed to connect to {self:f}")
-        self.isConnected = True
 
     async def disconnect(self):
         if self.socket:
             self.socket.close()
             self.socket = None
             logger.info("Disconnected from robot")
-        self.isConnected = False
 
     async def send_command(self, command, timeout=5.0):
         """
@@ -130,33 +127,6 @@ class SocketController(Communication):
             return command, 'bytes'
         else:
             raise TypeError("Unsupported command type")
-
-    async def _get_response(self, timeout, wait_for_reponse_str, response_format):
-        raise DeprecationWarning("Not Used")
-        """Get response from socket, optionally waiting for specific string."""
-        if not wait_for_reponse_str:
-            return await asyncio.wait_for(self._receive(), timeout=timeout)
-        
-        # Wait for specific string in response
-        start_time = asyncio.get_event_loop().time()
-        while (asyncio.get_event_loop().time() - start_time) < timeout:
-            remaining = timeout - (asyncio.get_event_loop().time() - start_time)
-            response = await asyncio.wait_for(self._receive(), timeout=remaining)
-            
-            # Check if the expected string is in the response
-            if self._response_contains_string(response, wait_for_reponse_str, response_format):
-                return response
-        
-        # If we exit the loop without breaking, we timed out
-        raise TimeoutError(f"Timed out waiting for '{wait_for_reponse_str}' in response")
-
-    def _response_contains_string(self, response, search_string, response_format):
-        """Check if response contains the specified string based on format."""
-        if response_format in ['dict', 'str']:
-            return search_string in response.decode('utf-8')
-        elif response_format == 'bytes':
-            return search_string.encode('utf-8') in response
-        return False
 
     def _decode_response(self, response, response_format):
         """Decode response based on format."""
