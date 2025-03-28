@@ -33,12 +33,3 @@ if __name__ == "__main__":
         print("Program terminated by user")
     except Exception as e:
         print(e)
-
-    # print(AgnosticController.supported_manufacturers())
-
-
-    # (ElephantRobotics,"192.168.1.159", 5001)
-    # async with AgnosticController(UR5,"192.168.1.111", 30_002) as robot:
-    # async with UR5("192.168.1.111", 30_002) as robot:
-    #     # await robot.home()
-    #     await robot.move_cartesian([-132,-500,-70 ,0,0,0])
