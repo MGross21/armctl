@@ -1,4 +1,4 @@
-from templates import SocketController as SCT
+from agnostic_controller.templates import SocketController as SCT
 
 class Dobot(SCT):
     def __init__(self, ip:str, port:int):

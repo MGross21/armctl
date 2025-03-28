@@ -1,4 +1,4 @@
-from templates import SocketController as SCT
+from agnostic_controller.templates import SocketController as SCT
 import math
 
 class UniversalRobotics(SCT):

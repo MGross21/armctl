@@ -1,5 +1,5 @@
 import asyncio
-from . import (
+from agnostic_controller import (
     Dobot, 
     ElephantRobotics, Pro600, 
     UniversalRobotics, UR5, 

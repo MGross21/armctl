@@ -1,4 +1,4 @@
-from templates import SocketController as SCT, Commands
+from agnostic_controller.templates import SocketController as SCT, Commands
 import asyncio
 import numpy as np
 
