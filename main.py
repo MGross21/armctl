@@ -1,21 +1,34 @@
 import asyncio
-from dobot import Dobot
-from elephant_robotics import ElephantRobotics, Pro600
-from universal_robotics import UniversalRobotics, UR5
-from fanuc import Fanuc
-from AgnosticController import AgnosticController
-from vention import Vention
+from . import (
+    Dobot, 
+    ElephantRobotics, Pro600, 
+    UniversalRobotics, UR5, 
+    Fanuc, 
+    Vention
+)
 
-async def main():
+async def vention_ur5():
 
-    async with Vention() as vention:
+    async with Vention() as vention, UR5() as ur5:
         await vention.get_robot_state()
-        # await vention.move_joints(100)
-        # await vention.home()
+        await ur5.get_robot_state()
+        
+        await vention.home()
+        await ur5.home()
+
+        await vention.move_joints(100)
+        await vention.home()
+
+async def mycobot():
+    async with Pro600() as pro600:
+        await pro600.get_robot_state()
+        await pro600.home()
+        await pro600.move_cartesian([-132,-500,-70 ,0,0,0])
+        
 
 if __name__ == "__main__":
     try:
-        asyncio.run(main())
+        asyncio.run(vention_ur5())
     except KeyboardInterrupt:
         print("Program terminated by user")
     except Exception as e:
