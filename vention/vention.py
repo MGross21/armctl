@@ -8,8 +8,9 @@ class Vention(SCT):
     async def connect(self):
         await super().connect()
         assert await self.send_command("isReady") == "MachineMotion is Ready = true"
-        assert await self.send_command("estop/release/request") == "Ack estop/release/request", "Failed to release E-Stop"
-        return 
+        # Check E-Stop status
+        if await self.send_command("estop/status") == "true":
+            assert await self.send_command("estop/release/request") == "Ack estop/release/request", "Failed to release E-Stop"
     
     async def sleep(self, seconds): 
         await asyncio.sleep(seconds)
@@ -50,12 +51,14 @@ class Vention(SCT):
         return await response(axis) if axis else [await response(ax) for ax in valid_axes]
 
     async def move_cartesian(self, robot_pose, *args, **kwargs): 
-        return ImportWarning("Not implemented")
+        raise NotImplementedError()
 
     async def get_cartesian_position(self):
-        return ImportWarning("Not implemented")
+        raise NotImplementedError()
 
     async def stop_motion(self):
         assert await self.send_command("estop/trigger/request") == "Ack estop/trigger/request", "Failed to stop motion"
+        assert await self.send_command("estop/systemreset/request") == "Ack estop/systemreset/request", "Failed to reset system"
 
-    async def get_robot_state(self): pass
+    async def get_robot_state(self):
+        raise NotImplementedError()
