@@ -9,5 +9,8 @@ description = "Agnostic Robotic Controller Project"
 readme = "README.md"
 requires-python = ">=3.6"
 dependencies = ["numpy", "scipy"]
-packages = [{ include = "agnostic_controller" }]
 license = { file = "LICENSE" }
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agnostic_controller"]
