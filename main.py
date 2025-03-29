@@ -22,8 +22,8 @@ async def vention_ur5():
 async def mycobot():
     async with Pro600() as pro600:
         await pro600.get_cartesian_position()
-        # await pro600.home()
-        # await pro600.move_cartesian([-132,-500,-70 ,0,0,0],speed=750)
+        await pro600.home()
+        await pro600.move_cartesian([-132,-500,-70 ,0,0,0],speed=750)
         
 
 if __name__ == "__main__":

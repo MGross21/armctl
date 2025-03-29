@@ -70,7 +70,7 @@ class ElephantRobotics(SCT, Commands):
         assert response == f"{command}:[ok]", f"Failed to move joints: {response}"
 
 
-        while not np.allclose(await self.get_joint_positions(), joint_positions, atol=1):
+        while not np.allclose(await self.get_joint_positions(), joint_positions, atol=3):
             await asyncio.sleep(1)
 
     async def move_cartesian(self, robot_pose, *args, **kwargs)->None:
@@ -87,7 +87,7 @@ class ElephantRobotics(SCT, Commands):
         
         assert await self.send_command(command) == "set_coords:[ok]"
 
-        while not np.allclose(await self.get_cartesian_position(), robot_pose, atol=0.5):
+        while not np.allclose(await self.get_cartesian_position(), robot_pose, atol=1):
             await asyncio.sleep(1)
 
     async def get_joint_positions(self, *args, **kwargs):
