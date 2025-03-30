@@ -1,20 +1,21 @@
 [build-system]
-# Specify the build dependencies and backend
-requires = ["setuptools>=42", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "agnostic-controller"
 version = "0.2.0"
 description = "Agnostic Robotic Controller Project"
+packages = [{ include = "agnostic_controller" }]
+authors = [ { name = "Michael Gross", email = "MGross21@TODO.com" } ]
 readme = "README.md"
-requires-python = ">=3.6"
+license = { file = "LICENSE" }
+requires-python = ">=3.6,<4.0"
 dependencies = [
     "numpy",
-    "scipy"
+    "scipy",
+    "matplotlib"
 ]
-license = { file = "LICENSE" }
-
 keywords = ["robotics", "socket", "control", "automation"]
 classifiers = [
     "Programming Language :: Python :: 3",
