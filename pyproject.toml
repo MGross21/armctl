@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools", "wheel"]
+# Specify the build dependencies and backend
+requires = ["setuptools>=42", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -8,9 +9,24 @@ version = "0.2.0"
 description = "Agnostic Robotic Controller Project"
 readme = "README.md"
 requires-python = ">=3.6"
-dependencies = ["numpy", "scipy"]
+dependencies = [
+    "numpy",
+    "scipy"
+]
 license = { file = "LICENSE" }
 
+keywords = ["robotics", "socket", "control", "automation"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
 [tool.setuptools.packages.find]
-where = ["."]
-include = ["agnostic_controller*"]  # This ensures all robot submodules are included
+where = ["."] 
+include = ["agnostic_controller*"] 
+exclude = ["tests*"]
+
+[project.urls]
+Homepage = "https://github.com/MGross21/agnostic-controller"
+Tracker = "https://github.com/MGross21/agnostic-controller/issues"
