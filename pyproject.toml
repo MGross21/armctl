@@ -4,12 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "agnostic-controller"
-version = "0.1.0"
+version = "0.2.0"
 description = "Agnostic Robotic Controller Project"
 readme = "README.md"
 requires-python = ">=3.6"
 dependencies = ["numpy", "scipy"]
 license = { file = "LICENSE" }
 
-[tool.setuptools]
-packages = ["agnostic_controller"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agnostic_controller*"]  # This ensures all robot submodules are included
