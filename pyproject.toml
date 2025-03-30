@@ -11,6 +11,5 @@ requires-python = ">=3.6"
 dependencies = ["numpy", "scipy"]
 license = { file = "LICENSE" }
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["agnostic_controller"]
+[tool.setuptools]
+packages = ["agnostic_controller"]
