@@ -1,7 +1,7 @@
-from agnostic_controller.templates import SocketController as SCT
+from agnostic_controller.templates import SocketController as SCT, Commands
 import math
 
-class UniversalRobotics(SCT):
+class UniversalRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [ 
@@ -14,10 +14,10 @@ class UniversalRobotics(SCT):
         ]
         self.DOF = len(self.JOINT_RANGES)
 
-    async def sleep(self, seconds):
-        await self.send_command(f"sleep({seconds})")
+    def sleep(self, seconds):
+        self.send_command(f"sleep({seconds})")
 
-    async def move_joints(self, joint_positions, *args, **kwargs)->str:
+    def move_joints(self, joint_positions, *args, **kwargs)->str:
         """
         MoveJ
         --------
@@ -56,9 +56,9 @@ class UniversalRobotics(SCT):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
         command = f"movej(p[{','.join(map(str, joint_positions))}], a={a}, v={v}, t={t}, r={r})\n"
-        return await self.send_command(command)
+        return self.send_command(command)
 
-    async def move_cartesian(self, robot_pose, *args, **kwargs)->str:
+    def move_cartesian(self, robot_pose, *args, **kwargs)->str:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
@@ -94,20 +94,20 @@ class UniversalRobotics(SCT):
             if not (0 <= pos <= math.pi*2):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
-        if await self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose)))) == "False":
+        if self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose)))) == "False":
             raise ValueError("Cartesian position out of safety limits")
 
         command = f"{moveType}(p[{','.join(map(str, robot_pose))}], a={a}, v={v}, t={t}, r={r})\n"
-        return await self.send_command(command)
+        return self.send_command(command)
 
-    async def get_joint_positions(self, *args, **kwargs):
-        return await self.send_command("get_actual_joint_positions()\n")
+    def get_joint_positions(self, *args, **kwargs):
+        return self.send_command("get_actual_joint_positions()\n")
 
-    async def get_cartesian_position(self, *args, **kwargs):
-        return await self.send_command("get_actual_tcp_pose()\n")
+    def get_cartesian_position(self, *args, **kwargs):
+        return self.send_command("get_actual_tcp_pose()\n")
 
-    async def stop_motion(self):
-        return await self.send_command("stopj(2)") # deceleration: 2 rad/s^2
+    def stop_motion(self):
+        return self.send_command("stopj(2)") # deceleration: 2 rad/s^2
 
-    async def get_robot_state(self):
-        return await self.send_command("get_robot_status()\n")
+    def get_robot_state(self):
+        return self.send_command("get_robot_status()\n")
