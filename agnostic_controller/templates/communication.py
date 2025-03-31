@@ -14,8 +14,8 @@ class Communication(ABC):
         Send a command to the robot with an optional timeout.
     """
     @abstractmethod
-    async def connect(self): pass
+    def connect(self): pass
     @abstractmethod
-    async def disconnect(self): pass
+    def disconnect(self): pass
     @abstractmethod
-    async def send_command(self, command, timeout=5.0): pass
+    def send_command(self, command, timeout=5.0): pass

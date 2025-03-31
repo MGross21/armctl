@@ -1,64 +1,93 @@
 from agnostic_controller.templates import SocketController as SCT
-import asyncio
+import time
+from typing import Union, List
 
 class Vention(SCT):
-    def __init__(self, ip:str="192.168.7.2", port:int=9999):
+    def __init__(self, ip: str = "192.168.7.2", port: int = 9999):
         super().__init__(ip, port)
 
-    async def connect(self):
-        await super().connect()
-        assert await self.send_command("isReady") == "MachineMotion is Ready = true"
-        # Check E-Stop status
-        if await self.send_command("estop/status") == "true":
-            assert await self.send_command("estop/release/request") == "Ack estop/release/request", "Failed to release E-Stop"
-    
-    async def sleep(self, seconds): 
-        await asyncio.sleep(seconds)
+    def connect(self) -> None:
+        """Establishes connection to the Vention controller and checks readiness."""
+        super().connect()
+        response = self.send_command("isReady;", timeout=1)
+        
+        if "MachineMotion connection established" not in response and "MachineMotion isReady = true" not in response:
+            raise AssertionError(f"Failed to connect to Vention robot. Received response: {response}")
+        
+        # Optional: Check E-Stop status
+        # estop_status = self.send_command("estop/status;", timeout=10)
+        # if "true" in estop_status:
+        #     release_response = self.send_command("estop/release/request;", timeout=10)
+        #     assert "Ack estop/release/request" in release_response, "Failed to release E-Stop"
 
-    async def home(self): 
-        assert await self.send_command("im_home_axis_all", timeout=10) == "MachineMotion im_home_axis_all = completed", "Failed to home robot"
+    def sleep(self, seconds: float) -> None:
+        """Pauses execution for a specified number of seconds."""
+        time.sleep(seconds)
 
-    async def move_joints(self, joint_positions:list[float],*args, **kwargs) -> None:
-        """Sets the current position of an axis to a new value (mm)."""
+    def home(self) -> None:
+        """Homes all axes of the robot."""
+        response = self.send_command("im_home_axis_all;")
+        assert "completed" in response, "Homing failed"
+
+    def move_joints(self, joint_positions: List[float]) -> None:
+        """Moves the axis to specified positions (absolute movement)."""
         if isinstance(joint_positions, (int, float)):
             joint_positions = [joint_positions]
         
-        if len(joint_positions) not in [1, 2, 3]:
-            raise ValueError("Joint positions must be a list of 1-3 floats")
+        if len(joint_positions) != 1:
+            raise ValueError("Single axis slider only accepts one joint position.")
         
-        # lambda functions
-        command = (lambda ax,val: "SET im_set_controller_pos_axis_{}/{}/".format(ax, val))
-
-        response = [await self.send_command(command(i, joint_positions[i])) for i in range(len(joint_positions))]
-
-        assert all([r == "Ack" for r in response]), "Failed to move joints"
-
-        while True:
-            if await self.send_command("isMotionCompleted") == "MachineMotion isMotionCompleted = true":
-                break
-            await asyncio.sleep(0.1)
+        # Send absolute movement command for axis 1
+        position = joint_positions[0]
+        self.send_command(f"SET de_move_abs_1/{position}/;")
         
+        # Execute movement
+        self.send_command("de_move_abs_exec;")
+        
+        # Wait for motion completion
+        timeout = 30  # seconds
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            motion_status = self.send_command("isMotionCompleted;")
+            if "true" in motion_status:
+                return
+            time.sleep(0.1)
+        
+        raise TimeoutError("Movement timed out.")
 
-    async def get_joint_positions(self, axis=None)->list[float] | float:
-        """Gets the current position of an axis or all axis."""
+    def get_joint_positions(self, axis: Union[int, None] = None) -> Union[List[float], float]:
+        """Gets the current position of an axis or all axes."""
         valid_axes = [1, 2, 3]
-        if axis and axis not in valid_axes:
-            raise ValueError("Axis must be 1, 2, 3, or None for all axes")
+        
+        if axis is not None and axis not in valid_axes:
+            raise ValueError("Axis must be 1, 2, 3, or None for all axes.")
+        
+        def fetch_position(ax: int) -> float:
+            response = self.send_command(f"GET im_get_controller_pos_axis_{ax};", timeout=10)
+            return float(response.split('=')[-1].strip('; '))
 
-        async def response(ax):
-            return float((await self.send_command(f"GET im_get_controller_pos_axis_{ax}",timeout=10)).strip("(<>)"))
+        if axis is not None:
+            return fetch_position(axis)
+        
+        positions = [fetch_position(ax) for ax in valid_axes]
+        return positions
 
-        return await response(axis) if axis else [await response(ax) for ax in valid_axes]
+    def stop_motion(self) -> None:
+        """Stops all motion."""
+        stop_response = self.send_command("Stop all motion;")
+        
+        if "Ack Stop all motion" not in stop_response:
+            raise RuntimeError("Failed to stop motion.")
 
-    async def move_cartesian(self, robot_pose, *args, **kwargs): 
-        raise NotImplementedError()
+    def move_cartesian(self, robot_pose: List[float], *args, **kwargs) -> None:
+        """Moves the robot to a specified Cartesian pose (not implemented)."""
+        raise NotImplementedError("This method is not implemented yet.")
 
-    async def get_cartesian_position(self):
-        raise NotImplementedError()
+    def get_cartesian_position(self) -> List[float]:
+        """Gets the current Cartesian position of the robot (not implemented)."""
+        raise NotImplementedError("This method is not implemented yet.")
 
-    async def stop_motion(self):
-        assert await self.send_command("estop/trigger/request") == "Ack estop/trigger/request", "Failed to stop motion"
-        assert await self.send_command("estop/systemreset/request") == "Ack estop/systemreset/request", "Failed to reset system"
-
-    async def get_robot_state(self):
-        raise NotImplementedError()
+    def get_robot_state(self) -> dict:
+        """Gets the current state of the robot (not implemented)."""
+        raise NotImplementedError("This method is not implemented yet.")
