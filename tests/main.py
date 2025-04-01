@@ -30,6 +30,14 @@ def vention_ur5():
         # # # await ur5.home()
 
 
+def ur():
+    with UR5() as ur5:
+        # [36, -45, 47, -93, -91, 22] -? [....,0]
+        angle = ur5.get_joint_positions()
+        print(angle)
+        # ur5.get_cartesian_position()
+
+
 def mycobot():
     with Pro600() as pro600:
         pro600.get_cartesian_position()
@@ -38,4 +46,4 @@ def mycobot():
         
 
 if __name__ == "__main__":
-    vention_ur5()
+    ur()
