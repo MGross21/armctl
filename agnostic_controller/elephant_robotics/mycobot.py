@@ -15,5 +15,5 @@ class Pro600(ElephantRobotics):
             ]
             self.DOF = len(self.JOINT_RANGES)
 
-        async def home(self):
-            await self.move_joints(self.HOME_POSITION, speed=750)
+        def home(self):
+            self.move_joints(self.HOME_POSITION, speed=750)
