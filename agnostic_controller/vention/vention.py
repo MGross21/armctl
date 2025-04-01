@@ -79,7 +79,7 @@ class Vention(SCT, Commands):
     def _wait_for_finish(self, delay=1) -> None:
         """Waits for the robot to finish its current task."""
         while True:
-            if "true" in self.send_command("isMotionCompleted;", timeout=60, supress_output=True):
+            if "true" in self.send_command("isMotionCompleted;", timeout=60, suppress_output=True):
                 break
             time.sleep(delay)
 
