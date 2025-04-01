@@ -27,6 +27,8 @@ class Vention(SCT, Commands):
 
     def sleep(self, seconds: float) -> None:
         """Pauses execution for a specified number of seconds."""
+        assert isinstance(seconds, (int, float)), "Seconds must be a numeric value."
+        assert seconds >= 0, "Seconds must be a non-negative value."
         time.sleep(seconds)
 
     def home(self) -> None:
