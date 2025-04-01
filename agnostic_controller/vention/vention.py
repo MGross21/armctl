@@ -34,6 +34,8 @@ class Vention(SCT, Commands):
         response = self.send_command("im_home_axis_all;", timeout=30)
         if "completed" not in response:
             raise AssertionError(f"Homing failed. {response}")
+        # Wait for the robot to finish moving
+        self._wait_for_finish(delay=1)
 
     def move_joints(self, joint_positions: Union[List[float], float, int], *args, **kwargs) -> None:
         """Moves the axes to specified positions"""
@@ -49,40 +51,38 @@ class Vention(SCT, Commands):
             raise ValueError(f"Too many joint positions. Maximum supported axes are {len(valid_axes)}.")
 
         # Set speed and acceleration
-        self.send_command("SET speed/{}/;".format(kwargs.get('speed', 300)))
-        self.send_command("SET acceleration/{}/;".format(kwargs.get('acceleration', 100)))
+        speed = kwargs.get('speed', 300)
+        if speed < 0 or speed > 3000:
+            raise ValueError("Speed must be between 0 and 3000mm/s.")
+        acceleration = kwargs.get('acceleration', 100)
+        if acceleration < 0 or acceleration > 1000:
+            raise ValueError("Acceleration must be between 0 and 1000mm/s^2.")
+        self.send_command("SET speed/{}/;".format(speed))
+        self.send_command("SET acceleration/{}/;".format(acceleration))
 
         move_type = kwargs.get('move_type', 'abs')
         if move_type not in ['abs', 'rel']:
             raise ValueError("Invalid move type. Must be 'abs' or 'rel'.")
-        # elif move_type == 'rel':
-        #     prefix = "de"
-        # else:
-        #     prefix = "de"
 
         # Send movement commands for each axis
         for axis, position in enumerate(joint_positions, start=1):
             if axis not in valid_axes:
                 raise ValueError(f"Invalid axis: {axis}. Must be one of {valid_axes}.")
             
-            self.send_command(f"SET de_move_{move_type}{axis}/{position}/;")
+            self.send_command(f"SET de_move_{move_type}_{axis}/{position}/;")
         
         # Execute movement
         assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
-        time.sleep(5)  # Optional delay for command processing
-        
-        # Wait for motion completion
-        timeout = 60  # seconds
-        start_time = time.time()
-        
-        while time.time() - start_time < timeout:
-            time.sleep(3)
-            motion_status = self.send_command("isMotionCompleted;").strip()
-            if "true" in motion_status:
-                return
 
-
-        raise TimeoutError("Movement timed out.")
+        # Wait for the robot to finish moving
+        self._wait_for_finish(delay=2)
+        
+    def _wait_for_finish(self, delay=1) -> None:
+        """Waits for the robot to finish its current task."""
+        while True:
+            if "true" in self.send_command("isMotionCompleted;", timeout=60):
+                break
+            time.sleep(delay)
 
     def get_joint_positions(self, axis: Union[int, None] = None, *args, **kwargs) -> Union[List[float], float]:
         """Gets the current position of an axis or all axes."""
@@ -121,9 +121,10 @@ class Vention(SCT, Commands):
         """Gets the current Cartesian position of the robot (not implemented)."""
         raise NotImplementedError("This method is not implemented yet.")
 
-    def get_robot_state(self) -> dict:
-        """Gets the current state of the robot (not implemented)."""
-        raise NotImplementedError("This method is not implemented yet.")
+    def get_robot_state(self) -> None:
+        """Gets the current state of the robot"""
+        self.send_command("estop/status;")
+        self.get_joint_positions()
     
     def reset(self) -> None:
         """Resets the robot to its initial state."""

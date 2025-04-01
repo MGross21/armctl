@@ -17,10 +17,9 @@ def vention_ur5():
 
     with Vention() as vention:
         vention.home()
-        # pos = vention.get_joint_positions()
-        # pos[0] += 500
-        # vention.move_joints(pos[0], speed=500, move_type='rel')
-        # print(pos)
+        # time.sleep()
+        # vention.reset()
+        # vention.move_joints(200, speed=2_500, acceleration=500, move_type='abs') # 2500/500 is decent speed
         # # vention.reset()
 
 
@@ -29,12 +28,6 @@ def vention_ur5():
         
         # # await vention.home()
         # # # await ur5.home()
-
-        # pos[0] += 2500
-        # vention.move_joints(pos)
-        print("Vention moved to position:", vention.get_joint_positions())
-        # time.sleep(5)
-        # del pos
 
 
 def mycobot():

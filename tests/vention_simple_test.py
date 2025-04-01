@@ -23,11 +23,11 @@ def control_vention_slider():
         print(f"Ready check: {response}")
         
         # Configure speed and acceleration
-        s.send("SET speed/300/;".encode())
+        s.send("SET speed/1000/;".encode())
         response = s.recv(1024).decode()
         print(f"Speed setup: {response}")
         
-        s.send("SET acceleration/100/;".encode())
+        s.send("SET acceleration/200/;".encode())
         response = s.recv(1024).decode()
         print(f"Acceleration setup: {response}")
         
@@ -43,28 +43,28 @@ def control_vention_slider():
         # # Wait for motion to complete
         time.sleep(5)  
         
-        # # Move relatively
-        # s.send("SET de_move_rel_1/-50/;".encode())
-        # response = s.recv(1024).decode()
-        # print(f"Relative move setup: {response}")
+        # Move relatively
+        s.send("SET de_move_rel_1/-50/;".encode())
+        response = s.recv(1024).decode()
+        print(f"Relative move setup: {response}")
         
-        # s.send("de_move_rel_exec;".encode())
-        # response = s.recv(1024).decode()
-        # print(f"Relative move execution: {response}")
+        s.send("de_move_rel_exec;".encode())
+        response = s.recv(1024).decode()
+        print(f"Relative move execution: {response}")
         
-        # time.sleep(5)
+        time.sleep(5)
         
-        # # Start continuous movement
-        # s.send("SET im_conv_1 S50 A100;".encode())
-        # response = s.recv(1024).decode()
-        # print(f"Continuous move: {response}")
+        # Start continuous movement
+        s.send("SET im_conv_1 S50 A100;".encode())
+        response = s.recv(1024).decode()
+        print(f"Continuous move: {response}")
         
-        # time.sleep(5)
+        time.sleep(5)
         
-        # # Stop all motion
-        # s.send("Stop all motion;".encode())
-        # response = s.recv(1024).decode()
-        # print(f"Stop motion: {response}")
+        # Stop all motion
+        s.send("Stop all motion;".encode())
+        response = s.recv(1024).decode()
+        print(f"Stop motion: {response}")
         
     finally:
         # Close the connection
