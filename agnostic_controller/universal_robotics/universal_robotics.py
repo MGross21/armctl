@@ -17,7 +17,13 @@ class UniversalRobotics(SCT, Commands):
     def sleep(self, seconds):
         self.send_command(f"sleep({seconds})")
 
-    def move_joints(self, joint_positions, *args, **kwargs)->str:
+    def move_joints(self, 
+                    joint_positions, 
+                    speed: float = 0.1, 
+                    acceleration: float = 0.0, 
+                    time: float = 0.0, 
+                    radius: float = 0.0, 
+                    *args, **kwargs) -> str:
         """
         MoveJ
         --------
@@ -38,27 +44,28 @@ class UniversalRobotics(SCT, Commands):
         DOF : int, optional
             Degrees of freedom (default: 6).
         """
-        if len(joint_positions) != kwargs.get("DOF", 6):
-            raise ValueError("Joint positions must have 6 elements")
+        if len(joint_positions) != self.DOF:
+            raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        v = kwargs.get("speed", 0.1)
-        assert v < 2, "Speed out of range: 0 ~ 2" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+        assert speed < 2, "Speed out of range: 0 ~ 2" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
         
-        a = kwargs.get("aceleration", 0.0)
-        assert a <= 10, "Acceleration out of range: 0 ~ 10" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
-        # OR
-        t = kwargs.get("time", 0.0)
-
-        r = kwargs.get("r", 0.0)
+        assert acceleration <= 10, "Acceleration out of range: 0 ~ 10" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
         for pos in joint_positions:
             if not (0 <= pos <= math.pi*2):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
-        command = f"movej(p[{','.join(map(str, joint_positions))}], a={a}, v={v}, t={t}, r={r})\n"
+        command = f"movej(p[{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         return self.send_command(command)
 
-    def move_cartesian(self, robot_pose, *args, **kwargs)->str:
+    def move_cartesian(self, 
+                       robot_pose, 
+                        move_type: str = "movel",
+                        speed: float = 0.1,
+                        acceleration: float = 0.0,
+                        time: float = 0.0,
+                        radius: float = 0.0,
+                       *args, **kwargs)->str:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
@@ -77,18 +84,11 @@ class UniversalRobotics(SCT, Commands):
         r : float, optional
             Blend radius in meters (default: 0.0).
         """
-        moveType = kwargs.get("moveType", "movel")
-        assert moveType in ["movel", "movep"], "Unsupported move type: movel or movep"
+        assert move_type in ["movel", "movep"], "Unsupported move type: movel or movep"
 
-        v = kwargs.get("speed", 0.1)
-        assert v < 2, "Speed out of range: 0 ~ 2" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+        assert speed < 2, "Speed out of range: 0 ~ 2" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
         
-        a = kwargs.get("aceleration", 0.0)
-        assert a <= 10, "Acceleration out of range: 0 ~ 10" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
-        # OR
-        t = kwargs.get("time", 0.0)
-
-        r = kwargs.get("r", 0.0)
+        assert acceleration <= 10, "Acceleration out of range: 0 ~ 10" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
         for pos in robot_pose[3:]:
             if not (0 <= pos <= math.pi*2):
@@ -97,7 +97,7 @@ class UniversalRobotics(SCT, Commands):
         if self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose)))) == "False":
             raise ValueError("Cartesian position out of safety limits")
 
-        command = f"{moveType}(p[{','.join(map(str, robot_pose))}], a={a}, v={v}, t={t}, r={r})\n"
+        command = f"{move_type}(p[{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         return self.send_command(command)
 
     def get_joint_positions(self, *args, **kwargs):

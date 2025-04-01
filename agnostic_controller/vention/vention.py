@@ -39,7 +39,7 @@ class Vention(SCT, Commands):
         # Wait for the robot to finish moving
         self._wait_for_finish(delay=1)
 
-    def move_joints(self, joint_positions: Union[List[float], float, int], *args, **kwargs) -> None:
+    def move_joints(self, joint_positions: Union[List[float], float, int], speed:int=300, acceleration:int=100, move_type:str='abs', *args, **kwargs) -> None:
         """Moves the axes to specified positions"""
         valid_axes = {1, 2, 3}
 
@@ -53,16 +53,13 @@ class Vention(SCT, Commands):
             raise ValueError(f"Too many joint positions. Maximum supported axes are {len(valid_axes)}.")
 
         # Set speed and acceleration
-        speed = kwargs.get('speed', 300)
         if speed < 0 or speed > 3000:
             raise ValueError("Speed must be between 0 and 3000mm/s.")
-        acceleration = kwargs.get('acceleration', 100)
         if acceleration < 0 or acceleration > 1000:
             raise ValueError("Acceleration must be between 0 and 1000mm/s^2.")
         self.send_command("SET speed/{}/;".format(speed))
         self.send_command("SET acceleration/{}/;".format(acceleration))
 
-        move_type = kwargs.get('move_type', 'abs')
         if move_type not in ['abs', 'rel']:
             raise ValueError("Invalid move type. Must be 'abs' or 'rel'.")
 

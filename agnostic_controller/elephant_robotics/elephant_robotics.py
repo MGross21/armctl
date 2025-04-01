@@ -39,7 +39,10 @@ class ElephantRobotics(SCT, Commands):
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
-    def move_joints(self, joint_positions, *args, **kwargs):
+    def move_joints(self, 
+                    joint_positions:list[float],
+                    speed:int=500,
+                    *args, **kwargs):
         """
         Move the robot to the specified joint positions.
 
@@ -56,14 +59,13 @@ class ElephantRobotics(SCT, Commands):
         if type(joint_positions) != np.array:
             joint_positions = np.array(joint_positions)
 
-        if len(joint_positions) != kwargs.get("DOF", 6):
+        if len(joint_positions) != self.DOF:
             raise ValueError("Joint positions must have 6 elements")
 
         for i, (low, high) in enumerate(self.JOINT_RANGES):
             if not (low <= joint_positions[i] <= high):
                 raise ValueError(f"Joint {i+1} angle out of range: {low} ~ {high}")
 
-        speed = kwargs.get("speed", 200)
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
 
@@ -74,11 +76,13 @@ class ElephantRobotics(SCT, Commands):
         while not np.allclose(self.get_joint_positions(), joint_positions, atol=3):
             time.sleep(1)
 
-    def move_cartesian(self, robot_pose, *args, **kwargs) -> None:
+    def move_cartesian(self, 
+                       robot_pose:tuple[float,float,float,float,float,float], 
+                       speed:int=500,
+                       *args, **kwargs) -> None:
         if type(robot_pose) != np.array:
             robot_pose = np.array(robot_pose)
 
-        speed = kwargs.get("speed", 200)
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
         if len(robot_pose) != 6:
