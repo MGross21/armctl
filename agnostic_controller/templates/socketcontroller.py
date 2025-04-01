@@ -54,11 +54,19 @@ class SocketController(Communication):
             self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.socket.connect((self.ip, self.port))
             logger.info(f"Connected to {self.ip}:{self.port}")
-            
+
             # Optional: Check initial response
-            response = self.socket.recv(1024).decode()
-            logger.debug(f"Initial response: {response}")
-            
+            try:
+                response = self.socket.recv(1024)
+                decoded_response = response.decode("utf-8")
+                logger.debug(f"Initial response: {decoded_response}")
+            except UnicodeDecodeError:
+                response = self.socket.recv(1024).decode(errors='replace')
+                logger.debug(f"(Decoding Failed) Raw response: {response}")
+            except Exception as e:
+                logger.error(f"Error receiving initial response: {e}")
+                raise ConnectionError("Failed to receive initial response")
+
         except Exception as e:
             logger.error(f"Connection failed: {e}")
             raise ConnectionError(f"Failed to connect to {self.ip}:{self.port}")
@@ -73,7 +81,7 @@ class SocketController(Communication):
         except Exception as e:
             logger.error(f"Disconnection failed: {e}")
 
-    def send_command(self, command, timeout=5.0):
+    def send_command(self, command, timeout=5.0, supress_output=False):
         """
         Send a command to the robot and wait for a response.
 
@@ -101,14 +109,19 @@ class SocketController(Communication):
 
         try:
             # Send command
-            logger.send(f"Sending command: {command}")
+            if not supress_output:
+                logger.send(f"Sending command: {command}")
             self.socket.sendall(command.encode())
-
             # Wait for response with timeout handling
             self.socket.settimeout(timeout)
-            response = self.socket.recv(1024).decode()
+            try:
+                response = self.socket.recv(1024).decode("utf-8", errors='replace')
+            except UnicodeDecodeError:
+                response = self.socket.recv(1024).decode("ISO-8859-1", errors='replace')
+                logger.debug(f"(Decoding Failed) Raw response: {response}")
             
-            logger.receive(f"Received response: {response}")
+            if not supress_output:
+                logger.receive(f"Received response: {response}")
             return response
 
         except socket.timeout:

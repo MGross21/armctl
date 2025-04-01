@@ -13,9 +13,15 @@ class UniversalRobotics(SCT, Commands):
             (-math.pi, math.pi)
         ]
         self.DOF = len(self.JOINT_RANGES)
+    
+    def connect(self): 
+        super().connect()
+    
+    def disconnect(self):
+        super().disconnect()
 
     def sleep(self, seconds):
-        self.send_command(f"sleep({seconds})")
+        self.send_command(f"sleep({seconds})\n")
 
     def move_joints(self, 
                     joint_positions, 
@@ -94,7 +100,7 @@ class UniversalRobotics(SCT, Commands):
             if not (0 <= pos <= math.pi*2):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
-        if self.send_command("is_within_safety_limits({})".format(','.join(map(str, robot_pose)))) == "False":
+        if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, robot_pose)))) == "False":
             raise ValueError("Cartesian position out of safety limits")
 
         command = f"{move_type}(p[{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
@@ -107,7 +113,7 @@ class UniversalRobotics(SCT, Commands):
         return self.send_command("get_actual_tcp_pose()\n")
 
     def stop_motion(self):
-        return self.send_command("stopj(2)") # deceleration: 2 rad/s^2
+        return self.send_command("stopj(2)\n") # deceleration: 2 rad/s^2
 
     def get_robot_state(self):
         return self.send_command("get_robot_status()\n")
