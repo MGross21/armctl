@@ -24,22 +24,22 @@ class Commands(ABC):
         Retrieve the current state of the robot.
     """
     @abstractmethod
-    async def sleep(self, seconds): pass
+    def sleep(self, seconds): pass
 
     @abstractmethod
-    async def move_joints(self, joint_positions,*args, **kwargs): pass
+    def move_joints(self, joint_positions,*args, **kwargs): pass
 
     @abstractmethod
-    async def get_joint_positions(self, *args, **kwargs): pass
+    def get_joint_positions(self, *args, **kwargs): pass
 
     @abstractmethod
-    async def move_cartesian(self, robot_pose, *args, **kwargs): pass
+    def move_cartesian(self, robot_pose, *args, **kwargs): pass
 
     @abstractmethod
-    async def get_cartesian_position(self, *args, **kwargs): pass
+    def get_cartesian_position(self, *args, **kwargs): pass
 
     @abstractmethod
-    async def stop_motion(self): pass
+    def stop_motion(self): pass
 
     @abstractmethod
-    async def get_robot_state(self): pass
+    def get_robot_state(self): pass
