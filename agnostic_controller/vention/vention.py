@@ -1,10 +1,13 @@
 from agnostic_controller.templates import SocketController as SCT, Commands
+from agnostic_controller.templates.logger import logger
 import time
 from typing import Union, List
 
 class Vention(SCT, Commands):
     def __init__(self, ip: str = "192.168.7.2", port: int = 9999):
         super().__init__(ip, port)
+        self.MAX_JOINT_RANGE = 1250  # mm
+        self.MIN_JOINT_RANGE = 0  # mm
 
     def connect(self) -> None:
         """Establishes connection to the Vention controller and checks readiness."""
@@ -39,9 +42,23 @@ class Vention(SCT, Commands):
         # Wait for the robot to finish moving
         self._wait_for_finish(delay=1)
 
-    def move_joints(self, joint_positions: Union[List[float], float, int], speed:int=300, acceleration:int=100, move_type:str='abs', *args, **kwargs) -> None:
+    def move_joints(self, 
+                    joint_positions: Union[List[float], float, int], 
+                    speed:int=2500, acceleration:int=500,
+                    move_type:str='abs',
+                    *args, **kwargs) -> None:
         """Moves the axes to specified positions"""
         valid_axes = {1, 2, 3}
+
+        if move_type == "abs":
+            if any(pos < self.MIN_JOINT_RANGE or pos > self.MAX_JOINT_RANGE for pos in joint_positions):
+                raise ValueError(f"Absolute joint positions must be within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
+        elif move_type == "rel":
+            current_positions = self.get_joint_positions()
+            if any(not (self.MIN_JOINT_RANGE <= curr_pos + rel_pos <= self.MAX_JOINT_RANGE) 
+               for curr_pos, rel_pos in zip(current_positions, joint_positions)):
+                    raise ValueError(f"Relative joint positions must result in positions within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
+        
 
         # Normalize input to a list
         if isinstance(joint_positions, (float, int)):
@@ -68,10 +85,10 @@ class Vention(SCT, Commands):
             if axis not in valid_axes:
                 raise ValueError(f"Invalid axis: {axis}. Must be one of {valid_axes}.")
             
-            self.send_command(f"SET de_move_{move_type}_{axis}/{position}/;")
+            self.send_command(f"SET im_move_{move_type}_{axis}/{position}/;")
         
         # Execute movement
-        assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
+        # assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
 
         # Wait for the robot to finish moving
         self._wait_for_finish(delay=2)
@@ -91,12 +108,16 @@ class Vention(SCT, Commands):
             if axis not in valid_axes:
                 raise ValueError(f"Invalid axis: {axis}. Must be one of {valid_axes} or None for all axes.")
             return self._get_axis_position(axis)
+        
+        axis_positions = [self._get_axis_position(ax) for ax in valid_axes]
 
-        return [self._get_axis_position(ax) for ax in valid_axes]
+        logger.receive(f"Recieved Response: {axis_positions}")
+
+        return axis_positions
 
     def _get_axis_position(self, axis: int) -> float:
         """Fetches the position of a specific axis."""
-        response = self.send_command(f"GET im_get_controller_pos_axis_{axis};", timeout=10)
+        response = self.send_command(f"GET im_get_controller_pos_axis_{axis};", timeout=10, suppress_output=True)
         try:
             stripped_response = response.strip("()")
             if "undefined" in stripped_response: # Response: (undefined) if axis does not exists on robot
@@ -128,3 +149,13 @@ class Vention(SCT, Commands):
     def reset(self) -> None:
         """Resets the robot to its initial state."""
         self.send_command("estop/systemreset/request;")
+
+    def read_encoder(self):
+        encoder_positions = [
+            float(pos) if pos.replace('.', '', 1).isdigit() else 0.0
+            for pos in [
+            self.send_command(f"GET im_get_encoder_pos_aux_{i};", suppress_output=True).strip("()") for i in range(1, 4)
+            ]
+        ]
+        logger.receive(f"Recieved Response: {encoder_positions}")
+        return encoder_positions
