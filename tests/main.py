@@ -31,11 +31,12 @@ def vention_ur5():
 
 
 def ur():
-    with UR5() as ur5:
+    with UR5("192.168.1.111") as ur5:
         # [36, -45, 47, -93, -91, 22] -? [....,0]
         angle = ur5.get_joint_positions()
-        print(angle)
-        # ur5.get_cartesian_position()
+        print(tuple(a * 180 / 3.14 for a in angle))
+        cart = ur5.get_cartesian_position()  # Uncomment to get cartesian position
+        print(cart)
 
 
 def mycobot():

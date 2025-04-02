@@ -1,8 +1,9 @@
 from agnostic_controller.templates import SocketController as SCT, Commands
+from .rtde import RTDE
 import math
 
 class UniversalRobotics(SCT, Commands):
-    def __init__(self, ip:str, port:int | tuple[int, int] = (30_002, 30_003)):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
+    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
         super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
         self.JOINT_RANGES = [ 
             (-math.pi, math.pi),
@@ -107,10 +108,31 @@ class UniversalRobotics(SCT, Commands):
         return self.send_command(command)
 
     def get_joint_positions(self, *args, **kwargs):
-        return self.send_command("get_actual_joint_positions()\n")
+        """
+        Get the current joint positions of the robot.
+
+        Returns
+        -------
+        list of float
+            Joint positions in radians [j1, j2, j3, j4, j5, j6].
+        """
+        response = self.send_command("get_actual_joint_positions()\n", suppress_output=True, raw_response=True)
+        return RTDE.joint_angles(response)
 
     def get_cartesian_position(self, *args, **kwargs):
-        return self.send_command("get_actual_tcp_pose()\n")
+        """
+        Retrieves the current Cartesian position of the robot's tool center point (TCP).
+
+        This method sends a command to the robot to obtain the actual TCP pose and
+        processes the response to return the Cartesian position.
+
+        Returns:
+            list: A list representing the Cartesian position of the TCP in the format
+                  [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are the position coordinates in meters,
+                  and Rx, Ry, Rz are the rotation vector components in radians.
+        """
+        response = self.send_command("get_actual_tcp_pose()\n", suppress_output=True, raw_response=True)
+        return RTDE.tcp_pose(response)
 
     def stop_motion(self):
         return self.send_command("stopj(2)\n") # deceleration: 2 rad/s^2

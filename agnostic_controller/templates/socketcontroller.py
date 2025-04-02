@@ -86,7 +86,7 @@ class SocketController(Communication):
         except Exception as e:
             logger.error(f"Disconnection failed: {e}")
 
-    def send_command(self, command: str, timeout: float = 5.0, suppress_output: bool = False) -> str:
+    def send_command(self, command: str, timeout: float = 5.0, suppress_output: bool = False, raw_response: bool = False) -> str | bytes:
         """
         Send a command to the robot and wait for a response.
 
@@ -98,11 +98,13 @@ class SocketController(Communication):
             Maximum time to wait for a response (default: 5.0 seconds).
         suppress_output : bool
             If True, suppress logging of command and response (default: False).
+        raw_response : bool
+            If True, return the raw binary response instead of decoding it (default: False).
 
         Returns
         -------
-        str
-            The decoded response from the robot.
+        str or bytes
+            The decoded response from the robot, or the raw binary response if `raw_response` is True.
 
         Raises
         ------
@@ -122,11 +124,14 @@ class SocketController(Communication):
 
             # Wait for response with timeout handling
             self.recv_socket.settimeout(timeout)
-            
-            # Read raw binary data first and decode safely
             response = self.recv_socket.recv(4096)
-            response = self.recv_socket.recv(4096)
-            print(repr(response))  # This will show any special/non-printable characters
+
+            if raw_response:
+                if not suppress_output:
+                    logger.info(f"Received raw response: {response}")
+                return response
+
+            # Decode response
             try:
                 decoded_response = response.decode("utf-8")
             except UnicodeDecodeError:
