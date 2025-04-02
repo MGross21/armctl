@@ -2,8 +2,8 @@ from agnostic_controller.templates import SocketController as SCT, Commands
 import math
 
 class UniversalRobotics(SCT, Commands):
-    def __init__(self, ip:str, port:int):
-        super().__init__(ip, port)
+    def __init__(self, ip:str, port:int | tuple[int, int] = (30_002, 30_003)):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
+        super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
         self.JOINT_RANGES = [ 
             (-math.pi, math.pi),
             (-math.pi, math.pi),
