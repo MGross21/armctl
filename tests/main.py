@@ -16,22 +16,32 @@ from agnostic_controller import (
 pos1_low = [0.6116023063659668, -0.8117355865291138, 0.8821848074542444, -1.6617809734740199, -1.581780258809225, 0.3699551522731781]
 pos2_high = [0.8180813789367676, -1.0786418181708832, 1.1617329756366175, -1.6617847881712855, -1.581768814717428, 0.3699668049812317]
 
-def move_vention(vention:Vention,pos):
+close_to_table = [1.5701996088027954, -1.2257346671870728, 2.109311882649557, -2.4544340572752894, -1.5712249914752405, 0.003511645831167698]
+
+def move_vention(vention:Vention, pos):
     vention.move_joints(pos, speed=2_500, acceleration=500, move_type='abs')
+    # vention.home()
 
 def move_ur5(ur5:UR5,pos):
-    ur5.move_joints(pos, time=3)
+    ur5.move_joints(pos, t=3)
+    # ur5.home()
 
 def vention_ur5():
     with Vention("192.168.7.2") as vention, UR5("192.168.1.111") as ur5:
-        vention_thread = threading.Thread(target=move_vention, args=(vention, 500))
-        ur5_thread = threading.Thread(target=move_ur5, args=(ur5, pos1_low))
 
-        # Start both movements in parallel
+        # HOMING
+        ur_home = threading.Thread(target=vention.home)
+        vention_home = threading.Thread(target=ur5.home)
+        ur_home.start()
+        vention_home.start()
+        ur_home.join()
+        vention_home.join()
+
+        # MOVING
+        vention_thread = threading.Thread(target=move_vention, args=(vention, 800))
+        ur5_thread = threading.Thread(target=move_ur5, args=(ur5, close_to_table))
         vention_thread.start()
         ur5_thread.start()
-
-        # Wait for both to finish
         vention_thread.join()
         ur5_thread.join()
         # # vention.reset()
@@ -48,9 +58,9 @@ def ur():
     with UR5("192.168.1.111") as ur5:
         # [36, -45, 47, -93, -91, 22] -? [....,0]
         angle = ur5.get_joint_positions()
-        pos1_low = [0.6116023063659668, -0.8117355865291138, 0.8821848074542444, -1.6617809734740199, -1.581780258809225, 0.3699551522731781]
-        pos2_high = [0.8180813789367676, -1.0786418181708832, 1.1617329756366175, -1.6617847881712855, -1.581768814717428, 0.3699668049812317]
-        ur5.move_joints(pos1_low, time=3)
+        # pos1_low = [0.6116023063659668, -0.8117355865291138, 0.8821848074542444, -1.6617809734740199, -1.581780258809225, 0.3699551522731781]
+        # pos2_high = [0.8180813789367676, -1.0786418181708832, 1.1617329756366175, -1.6617847881712855, -1.581768814717428, 0.3699668049812317]
+        # ur5.move_joints(pos1_low, time=3)
         # cart = ur5.get_cartesian_position()  # Uncomment to get cartesian position
         # print(cart)
 
