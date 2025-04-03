@@ -86,7 +86,12 @@ class SocketController(Communication):
         except Exception as e:
             logger.error(f"Disconnection failed: {e}")
 
-    def send_command(self, command: str, timeout: float = 5.0, suppress_output: bool = False, raw_response: bool = False) -> str | bytes:
+    def send_command(self, 
+                     command: str, 
+                     timeout: float = 5.0,
+                     suppress_input: bool=False,
+                     suppress_output: bool = False, 
+                     raw_response: bool = False) -> str | bytes:
         """
         Send a command to the robot and wait for a response.
 
@@ -96,6 +101,8 @@ class SocketController(Communication):
             The command to send to the robot.
         timeout : float
             Maximum time to wait for a response (default: 5.0 seconds).
+        suppress_input : bool
+            If True, suppress logging of input command (default: False).
         suppress_output : bool
             If True, suppress logging of command and response (default: False).
         raw_response : bool
@@ -118,7 +125,9 @@ class SocketController(Communication):
 
         try:
             # Send command
-            logger.send(f"Sending command: {command}")
+            if not suppress_input:
+                logger.send(f"Sending command: {command}")
+
             self.send_socket.sendall(command.encode())
 
             # Wait for response with timeout handling
