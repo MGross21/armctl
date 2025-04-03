@@ -49,7 +49,19 @@ class Vention(SCT, Commands):
                     *args, **kwargs) -> None:
         """Moves the axes to specified positions"""
         valid_axes = {1, 2, 3}
+        
 
+        # Normalize input to a list
+        if isinstance(joint_positions, (float, int)):
+            joint_positions = [joint_positions]
+        elif not isinstance(joint_positions, list) or not all(isinstance(pos, (int, float)) for pos in joint_positions):
+            raise TypeError("Joint positions must be a list of numeric values, or a single numeric value.")
+        
+
+        if len(joint_positions) > len(valid_axes):
+            raise ValueError(f"Too many joint positions. Maximum supported axes are {len(valid_axes)}.")
+        
+        # Check if in range
         if move_type == "abs":
             if any(pos < self.MIN_JOINT_RANGE or pos > self.MAX_JOINT_RANGE for pos in joint_positions):
                 raise ValueError(f"Absolute joint positions must be within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
@@ -58,16 +70,6 @@ class Vention(SCT, Commands):
             if any(not (self.MIN_JOINT_RANGE <= curr_pos + rel_pos <= self.MAX_JOINT_RANGE) 
                for curr_pos, rel_pos in zip(current_positions, joint_positions)):
                     raise ValueError(f"Relative joint positions must result in positions within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
-        
-
-        # Normalize input to a list
-        if isinstance(joint_positions, (float, int)):
-            joint_positions = [joint_positions]
-        elif not isinstance(joint_positions, list) or not all(isinstance(pos, (int, float)) for pos in joint_positions):
-            raise TypeError("Joint positions must be a list of numeric values, or a single numeric value.")
-
-        if len(joint_positions) > len(valid_axes):
-            raise ValueError(f"Too many joint positions. Maximum supported axes are {len(valid_axes)}.")
 
         # Set speed and acceleration
         if speed < 0 or speed > 3000:
@@ -91,14 +93,16 @@ class Vention(SCT, Commands):
         # assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
 
         # Wait for the robot to finish moving
-        self._wait_for_finish(delay=2)
+        self._wait_for_finish()
         
     def _wait_for_finish(self, delay=1) -> None:
         """Waits for the robot to finish its current task."""
+        logger.info("Waiting for motion to complete...")
         while True:
-            if "true" in self.send_command("isMotionCompleted;", timeout=60, suppress_output=True):
+            if "true" in self.send_command("isMotionCompleted;", timeout=60, suppress_input=True, suppress_output=True):
                 break
             time.sleep(delay)
+        logger.info("Motion completed.")
 
     def get_joint_positions(self, axis: Union[int, None] = None, *args, **kwargs) -> Union[List[float], float]:
         """Gets the current position of an axis or all axes."""
