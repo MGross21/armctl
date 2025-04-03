@@ -47,13 +47,13 @@ class SocketController(Communication):
             # Create send socket
             self.send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.send_socket.connect((self.ip, self.send_port))
-            logger.info(f"Connected to {self.ip}:{self.send_port} " + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)"))
+            logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})" + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)"))
 
             # Create separate receive socket if different port is used
             if self.recv_port != self.send_port:
                 self.recv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 self.recv_socket.connect((self.ip, self.recv_port))
-                logger.info(f"Connected to {self.ip}:{self.recv_port} (RECV)")
+                logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)")
             else:
                 self.recv_socket = self.send_socket  # Use the same socket if ports are identical
 
@@ -73,15 +73,11 @@ class SocketController(Communication):
     def disconnect(self):
         """Disconnect from the robot by closing both sockets."""
         try:
-            if self.send_socket:
-                self.send_socket.close()
-                logger.info("Disconnected socket (SEND)")
-                self.send_socket = None
-            
-            if self.recv_socket and self.recv_socket != self.send_socket:
-                self.recv_socket.close()
-                logger.info("Disconnected socket (RECV)")
-                self.recv_socket = None
+            for sock in {self.send_socket, self.recv_socket}:
+                if sock:
+                    sock.close()
+            self.send_socket = self.recv_socket = None
+            logger.info(f"Disconnected from {self.__class__.__name__}")
 
         except Exception as e:
             logger.error(f"Disconnection failed: {e}")
