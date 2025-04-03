@@ -3,6 +3,7 @@ from agnostic_controller.templates.logger import logger
 from .rtde import RTDE
 import math
 import time
+import warnings
 
 class UniversalRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
@@ -67,13 +68,6 @@ class UniversalRobotics(SCT, Commands):
             
         command = f"movej([{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
         self.send_command(command, suppress_output=True, raw_response=True)
-
-        while True:
-            current_positions = self.get_joint_positions(suppress_input=True)
-            if all(abs(current - target) < 0.01 for current, target in zip(current_positions, joint_positions)):
-                break
-            time.sleep(0.1)
-        return
 
     def move_cartesian(self, 
                        robot_pose, 
@@ -149,7 +143,49 @@ class UniversalRobotics(SCT, Commands):
         return pose
 
     def stop_motion(self):
-        return self.send_command("stopj(2)\n") # deceleration: 2 rad/s^2
+        self.send_command("stopj(2)\n",suppress_output=True) # deceleration: 2 rad/s^2
 
     def get_robot_state(self):
         return self.send_command("get_robot_status()\n")
+    
+    def set_gripper_position(self, position: float, name: str="rg2", force: float=10) -> None:
+        """Set the analog position of the gripper (0-255)."""
+        if position < 0 or position > 255:
+            raise ValueError("Position must be between 0 and 255.")
+        
+        max_range = 140
+        position = int((position / 255) * max_range) # Relinearize the position to the internal range of the gripper
+
+        if force < 0 or force > 255:
+            raise ValueError("Force must be between 0 and 255.")
+        
+        max_force = 255
+        force = int((force / 255) * max_force)  # Linearize the force to the range 0-max_force
+        
+        valid_grippers = ["rg2", "rg6", "vgc10"]
+        if name not in valid_grippers:
+            raise ValueError(f"Gripper name must be one of {','.join(valid_grippers)}.")
+
+        if isinstance(position, float):
+            position = int(position)
+            warnings.warn(f"Position converted to int: {position}", UserWarning, 2)
+
+        self.send_command(f"{name}_set_force({force})\n", suppress_output=True)
+        self.send_command(f"{name}_set_width({position})\n", suppress_output=True)
+
+    def get_gripper_position(self) -> float:
+        """Get the current position of the gripper."""
+        response = self.send_command("rg2_get_width()\n", suppress_output=True, raw_response=True)
+        return float(response.strip())
+    
+    def get_gripper_status(self) -> bool:
+        """Get the current status of the gripper."""
+        response = self.send_command("rg2_get_status()\n", suppress_output=True, raw_response=True)
+        return response.strip() == "1"  # 1 means gripper is closed, 0 means open
+    
+    def open_gripper(self, force: float=150) -> None:
+        self.send_command("rg2_open()\n", suppress_output=True)
+
+    def close_gripper(self) -> None:
+        self.send_command("rg2_close()\n", suppress_output=True)
+        
