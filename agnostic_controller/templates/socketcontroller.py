@@ -126,7 +126,7 @@ class SocketController(Communication):
         try:
             # Send command
             if not suppress_input:
-                logger.send(f"Sending command: {command}")
+                logger.send(f"Sending command: {command.strip().replace(chr(10), '//n')}") # replace newlines for clarity
 
             self.send_socket.sendall(command.encode())
 
