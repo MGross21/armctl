@@ -88,7 +88,7 @@ class Vention(SCT, Commands):
             if axis not in valid_axes:
                 raise ValueError(f"Invalid axis: {axis}. Must be one of {valid_axes}.")
             
-            self.send_command(f"SET im_move_{move_type}_{axis}/{position}/;")
+            assert self.send_command(f"SET im_move_{move_type}_{axis}/{position}/;", timeout=30) == "Ack", f"Failed to set position for axis {axis}."
         
         # Execute movement
         # assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
