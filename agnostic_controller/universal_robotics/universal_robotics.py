@@ -2,6 +2,7 @@ from agnostic_controller.templates import SocketController as SCT, Commands
 from agnostic_controller.templates.logger import logger
 from .rtde import RTDE
 import math
+import time
 
 class UniversalRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
@@ -32,7 +33,7 @@ class UniversalRobotics(SCT, Commands):
                     joint_positions, 
                     speed: float = 0.25, 
                     acceleration: float = 0.1, 
-                    time: float = 0.0, 
+                    t: float = 0.0, 
                     radius: float = 0.0, 
                     *args, **kwargs) -> str:
         """
@@ -48,7 +49,7 @@ class UniversalRobotics(SCT, Commands):
             Speed of the movement in rad/s.
         acceleration : float, optional
             Acceleration of the movement in rad/s^2.
-        time : float, optional
+        t : float, optional
             The time in seconds to make the move. If specified, the command will ignore the speed and acceleration values.
         radius : float, optional
             Blend radius in meters.
@@ -64,8 +65,15 @@ class UniversalRobotics(SCT, Commands):
             if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
                 raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
             
-        command = f"movej([{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
-        return self.send_command(command, suppress_output=True, raw_response=True)
+        command = f"movej([{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
+        self.send_command(command, suppress_output=True, raw_response=True)
+
+        while True:
+            current_positions = self.get_joint_positions(suppress_input=True)
+            if all(abs(current - target) < 0.01 for current, target in zip(current_positions, joint_positions)):
+                break
+            time.sleep(0.1)
+        return
 
     def move_cartesian(self, 
                        robot_pose, 
@@ -106,7 +114,7 @@ class UniversalRobotics(SCT, Commands):
         if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, robot_pose)))) == "False":
             raise ValueError("Cartesian position out of safety limits")
 
-        command = f"{move_type}(p[{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
+        command = f"{move_type}([{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         return self.send_command(command, suppress_output=True, raw_response=True)
 
     def get_joint_positions(self, *args, **kwargs):
@@ -118,7 +126,7 @@ class UniversalRobotics(SCT, Commands):
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
-        response = self.send_command("get_actual_joint_positions()\n", suppress_output=True, raw_response=True)
+        response = self.send_command("get_actual_joint_positions()\n", suppress_output=True, raw_response=True, suppress_input=kwargs.get('suppress_input', False))
         angles = RTDE.joint_angles(response)
         logger.receive(f"Received response: {angles}")
         return angles
