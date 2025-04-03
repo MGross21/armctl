@@ -12,16 +12,17 @@ class Vention(SCT, Commands):
     def connect(self) -> None:
         """Establishes connection to the Vention controller and checks readiness."""
         super().connect()
-        response = self.send_command("isReady;", timeout=1)
+        response = self.send_command("isReady;", timeout=3, suppress_input=True, suppress_output=True)
         
         if "MachineMotion connection established" not in response and "MachineMotion isReady = true" not in response:
             raise AssertionError(f"Failed to connect to Vention robot. Received response: {response}")
         
-        # Optional: Check E-Stop status
-        estop_status = self.send_command("estop/status;", timeout=10)
+        # Check E-Stop status. Attempt to Release if engaged.
+        estop_status = self.send_command("estop/status;", timeout=10, suppress_input=True, suppress_output=True)
         if "true" in estop_status:
-            release_response = self.send_command("estop/release/request;", timeout=10)
-            assert "Ack estop/release/request" in release_response, "Failed to release E-Stop"
+            release_response = self.send_command("estop/release/request;", timeout=10, suppress_input=True, suppress_output=True)
+            if "Ack estop/release/request" not in release_response:
+                raise AssertionError(f"Failed to release E-Stop. Received response: {release_response}")
 
     def disconnect(self) -> None:
         """Disconnects from the Vention controller."""
