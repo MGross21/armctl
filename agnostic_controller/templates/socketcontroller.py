@@ -68,7 +68,7 @@ class SocketController(Communication):
 
         except Exception as e:
             logger.error(f"Connection failed: {e}")
-            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}/{self.recv_port}")
+            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}")
 
     def disconnect(self):
         """Disconnect from the robot by closing both sockets."""

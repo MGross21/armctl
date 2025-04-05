@@ -3,11 +3,12 @@ import warnings
 
 
 class OnRobot(SCT):
-    def __init__(self, ip:str = "192.168.1.111", port:int | tuple[int, int] = 502): 
+    def __init__(self, ip:str = "192.168.1.111", port:int | tuple[int, int] = 30_002): 
         super().__init__(ip, port)
 
     def connect(self):
         super().connect()
+        self.send_command("rg2_activate()\n", suppress_output=True) # activate Gripper
         # self.send_command("write_register(1000, 0x0100, unit=9)\n") # activate Gripper
 
     def disconnect(self):
@@ -48,8 +49,8 @@ class OnRobot(SCT):
         response = self.send_command("rg2_get_status()\n", suppress_output=True, raw_response=True)
         return response.strip() == "1"  # 1 means gripper is closed, 0 means open
     
-    def open(self, force: float=150) -> None:
-        # self.send_command("rg2_open()\n", suppress_output=True)
+    def open(self, force: float=20) -> None:
+        self.send_command("rg2_open()\n", suppress_output=True)
         self.set_position(255, force=force)
 
     def close(self) -> None:
