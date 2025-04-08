@@ -12,19 +12,19 @@ pip install git+https://github.com/MGross21/agnostic-controller.git#egg=agnostic
 from agnostic_controller import *
 ```
 
-## Supported Manufacturers
+## Supported Manufacturers & Series
 
-- Elephant Robotics
+- [Elephant Robotics](https://www.elephantrobotics.com/en/)
   - myCobot Pro600
-- Universal Robotics
+- [Universal Robotics](https://www.universal-robots.com)
   - UR5
   - UR5e
 
-### Under Development
+## Future Development
 
-- Dobot
+- [Dobot](https://www.dobot-robots.com)
   - Magician Lite
-- FANUC
+- [FANUC](https://www.fanucamerica.com)
   - LR Mate 200iD Series
 
 ## Contributing
