@@ -18,9 +18,20 @@
 
 - [Elephant Robotics](https://www.elephantrobotics.com/en/)
   - myCobot Pro600
+<!-- ![Elephant myCobot Pro600](assets/gifs/elephant_pro600.gif) -->
+
+
+<img src="assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
+
 - [Universal Robotics](https://www.universal-robots.com)
   - UR5
   - UR5e
+
+- [Vention](https://vention.io)
+  - 7th Axis Plate
+
+<img src="assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
+<!-- ![UR5 and Vention 7th Axis Plate](assets/gifs/ur5_vention.gif) -->
 
 ## Installation
 
