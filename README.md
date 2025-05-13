@@ -35,8 +35,22 @@
 
 ## Installation
 
+```text
+pip install git+https://github.com/MGross21/agnostic-controller.git
 ```
-pip install git+https://github.com/MGross21/agnostic-controller.git#egg=agnostic-controller
+
+## Adding to Project Dependencies
+
+*`requirements.txt`*
+
+```text
+git+https://github.com/MGross21/agnostic-controller.git
+```
+
+*`pyproject.toml`*
+
+```toml
+agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.git"}
 ```
 
 ## Usage
@@ -58,6 +72,8 @@ with UR5("ROBOT_IP_ADDRESS") as ur5:
   - Magician Lite
 - [FANUC](https://www.fanucamerica.com)
   - LR Mate 200iD Series
+- [JAKA](https://www.jaka.com/en)
+  - Zu 5
 
 ## Contributing
 
