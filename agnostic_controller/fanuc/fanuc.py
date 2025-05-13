@@ -4,6 +4,7 @@ from agnostic_controller.templates import SocketController as SCT, Commands
 class Fanuc(SCT, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
+        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
     async def move_joints(self, joint_positions, speed=1.0):
         return await self.send_command({"type": "move_joints", "positions": joint_positions, "speed": speed})

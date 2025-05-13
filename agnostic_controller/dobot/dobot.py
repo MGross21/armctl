@@ -3,6 +3,7 @@ from agnostic_controller.templates import SocketController as SCT
 class Dobot(SCT):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
+        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
     def sleep(self, seconds):
         self.send_command(f"sleep({seconds})")
