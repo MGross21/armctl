@@ -53,11 +53,18 @@ agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.gi
 
 ## Usage Examples
 
-### Manufacturer Defaults
+### Importing Library
+
+> [!NOTE]  
+> For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ```python
 from agnostic_controller import *
+```
 
+### Manufacturer Defaults
+
+```python
 with Manufacturer("ROBOT_IP_ADDRESS") as robot:
     robot.home()
     robot.move_joints([0,0,0,0,0,0])
@@ -77,7 +84,7 @@ with RobotSeries("ROBOT_IP_ADDRESS") as robot:
 > For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
 
 ```python
-with Robot1("ROBOT_IP_ADDRESS") as r1, Robot2("ROBOT_IP_ADDRESS") as r2:
+with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
     r1.home()
     r2.home()
 
