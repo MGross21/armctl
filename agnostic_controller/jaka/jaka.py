@@ -23,8 +23,6 @@ class Jaka(SCT, Commands, AngleUtils):
         self.MAX_JOINT_VELOCITY = math.radians(180) # rad/s
         self.MAX_JOINT_ACCELERATION = math.radians(720) # rad/s^2
 
-        raise NotImplementedError("Jaka Robot is not supported yet")    # TODO: Implement Jaka Robot
-
     def _response_handler(self, response: str):
         try:
             return ast.literal_eval(response)
