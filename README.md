@@ -51,7 +51,7 @@ git+https://github.com/MGross21/agnostic-controller.git
 agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.git"}
 ```
 
-## Usage Examples
+## Getting Started
 
 ### Importing Library
 
