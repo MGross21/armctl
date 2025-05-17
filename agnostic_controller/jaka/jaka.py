@@ -4,7 +4,7 @@ import math
 import ast
 import time
 
-### Jaka Notes ###
+### Notes ###
 # - Commands are sent as JSON strings.
 # - Command units are degrees & meters.
 
@@ -109,16 +109,10 @@ class Jaka(SCT, Commands, AngleUtils):
         ----------
         robot_pose : list of float
             Cartesian position and orientation [x, y, z, rx, ry, rz] in meters and radians.
-        move_type : str, optional
-            Type of movement: "movel" for linear cartesian pathing or "movep" for circular cartesian pathing.
         speed : float, optional
             Velocity of the movement in radians/sec
         acceleration : float, optional
-            Acceleration of the movement in radians/s^2
-        time : float, optional
-            The time in seconds to make the move. If specified, the command will ignore the speed and acceleration values.
-        radius : float, optional
-            Blend radius in meters.
+            Acceleration of the movement in radians/sec²
         """
         assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
         assert acceleration < self.MAX_JOINT_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
