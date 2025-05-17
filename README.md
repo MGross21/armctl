@@ -1,25 +1,17 @@
 # Robot Agnostic Controller
 
-## Control Template
+## Overview
 
-| Method Name                  | Description                                                                 |
-|------------------------------|-----------------------------------------------------------------------------|
-| `move_joints(joint_positions, *args, **kwargs)` | Move the robot to specified joint positions.                                |
-| `get_joint_positions(*args, **kwargs)` | Retrieve the current joint positions of the robot.                          |
-| `move_cartesian(robot_pose, *args, **kwargs)` | Move the robot to a specified Cartesian pose.                               |
-| `get_cartesian_position(*args, **kwargs)` | Retrieve the current Cartesian position of the robot.                      |
-| `stop_motion()`              | Stop all robot motion immediately.                                         |
-| `get_robot_state()`          | Retrieve the current state of the robot.                                   |
-| `sleep(seconds)`             | Pause execution for a specified number of seconds.                         |
+A unified Python interface for controlling a variety of industrial and collaborative robots from different manufacturers.
+
+---
 
 ## Supported Manufacturers & Series
 
 - [Elephant Robotics](https://www.elephantrobotics.com/en/)
   - myCobot Pro600
-<!-- ![Elephant myCobot Pro600](assets/gifs/elephant_pro600.gif) -->
-
-
-<img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
+  
+  <img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
 - [Universal Robotics](https://www.universal-robots.com)
   - UR5
@@ -27,17 +19,20 @@
 
 - [Vention](https://vention.io)
   - 7th Axis Plate
+  
+  <img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
 
-<img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
-<!-- ![UR5 and Vention 7th Axis Plate](assets/gifs/ur5_vention.gif) -->
+---
 
-## Installation
+## Quick Start
+
+### Installation
 
 ```text
 pip install git+https://github.com/MGross21/agnostic-controller.git
 ```
 
-## Adding to Project Dependencies
+#### Adding to Project Dependencies
 
 *`requirements.txt`*
 
@@ -51,9 +46,7 @@ git+https://github.com/MGross21/agnostic-controller.git
 agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.git"}
 ```
 
-## Getting Started
-
-### Importing Library
+### Importing the Library
 
 > [!NOTE]  
 > For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
@@ -62,7 +55,7 @@ agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.gi
 from agnostic_controller import *
 ```
 
-### Manufacturer Defaults
+### Basic Usage (Manufacturer Defaults)
 
 ```python
 with Manufacturer("ROBOT_IP_ADDRESS") as robot:
@@ -70,7 +63,7 @@ with Manufacturer("ROBOT_IP_ADDRESS") as robot:
     robot.move_joints([0,0,0,0,0,0])
 ```
 
-### Specific Robot Series
+### Usage with Specific Robot Series
 
 ```python
 with RobotSeries("ROBOT_IP_ADDRESS") as robot:
@@ -78,7 +71,7 @@ with RobotSeries("ROBOT_IP_ADDRESS") as robot:
     robot.move_joints([0,0,0,0,0,0])
 ```
 
-### Multi-Robotic Control
+### Multi-Robot Control
 
 > [!TIP]  
 > For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
@@ -92,6 +85,22 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
     r2.move_joints([0,0,0,0,0,0])
 ```
 
+---
+
+## API Reference
+
+| Method Name                  | Description                                                                 |
+|------------------------------|-----------------------------------------------------------------------------|
+| `move_joints(joint_positions, *args, **kwargs)` | Move the robot to specified joint positions.                                |
+| `get_joint_positions(*args, **kwargs)` | Retrieve the current joint positions of the robot.                          |
+| `move_cartesian(robot_pose, *args, **kwargs)` | Move the robot to a specified Cartesian pose.                               |
+| `get_cartesian_position(*args, **kwargs)` | Retrieve the current Cartesian position of the robot.                      |
+| `stop_motion()`              | Stop all robot motion immediately.                                         |
+| `get_robot_state()`          | Retrieve the current state of the robot.                                   |
+| `sleep(seconds)`             | Pause execution for a specified number of seconds.                         |
+
+---
+
 ## Future Development
 
 - [Dobot](https://www.dobot-robots.com)
@@ -101,9 +110,13 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 - [JAKA](https://www.jaka.com/en)
   - Zu 5
 
+---
+
 ## Contributing
 
 Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
+
+---
 
 ## License
 
