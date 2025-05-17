@@ -51,17 +51,38 @@ git+https://github.com/MGross21/agnostic-controller.git
 agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.git"}
 ```
 
-## Usage
+## Usage Examples
 
-*Example*
+### Manufacturer Defaults
 
 ```python
 from agnostic_controller import *
 
-with UR5("ROBOT_IP_ADDRESS") as ur5:
-    ur5.home()
-    ur5.move_joints([0,0,0,0,0,0])
+with Manufacturer("ROBOT_IP_ADDRESS") as robot:
+    robot.home()
+    robot.move_joints([0,0,0,0,0,0])
+```
 
+### Specific Robot Series
+
+```python
+with RobotSeries("ROBOT_IP_ADDRESS") as robot:
+    robot.home()
+    robot.move_joints([0,0,0,0,0,0])
+```
+
+### Multi-Robotic Control
+
+> [!TIP]  
+> For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
+
+```python
+with Robot1("ROBOT_IP_ADDRESS") as r1, Robot2("ROBOT_IP_ADDRESS") as r2:
+    r1.home()
+    r2.home()
+
+    r1.move_joints([0,0,0,0,0,0])
+    r2.move_joints([0,0,0,0,0,0])
 ```
 
 ## Future Development
