@@ -1,4 +1,6 @@
-# Robot Agnostic Controller
+<div align="center">
+    <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
+</div>
 
 ## Overview
 
