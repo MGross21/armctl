@@ -1,4 +1,4 @@
-from agnostic_controller.templates import SocketController as SCT, Commands
+from armctl.templates import SocketController as SCT, Commands
 
 # Non-Operational (1/31/2025)
 class Fanuc(SCT, Commands):

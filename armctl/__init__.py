@@ -1,24 +1,15 @@
 """
 armctl
-=======
+======
 
-This module provides a unified interface for controlling robotic arms from multiple manufacturers.
+A unified interface for controlling robotic arms from multiple manufacturers.
 
-Supported Manufacturers and Robot Series:
+Supported Manufacturers and Robots:
 - Dobot
-
-- Elephant Robotics:
-    - myCobot Pro600 (Ethernet)
-
-- Universal Robotics:
-    - UR5 (Ethernet)
-    - UR5e (Ethernet)
-
-    Grippers:
-    - OnRobot (Ethernet)
-
+- Elephant Robotics: myCobot Pro600 (Ethernet)
+- Universal Robotics: UR5, UR5e (Ethernet)
+    - Grippers: OnRobot (Ethernet)
 - Fanuc
-
 - Vention
 """
 

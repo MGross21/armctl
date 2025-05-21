@@ -1,4 +1,4 @@
-from agnostic_controller.templates import SocketController as SCT   
+from armctl.templates import SocketController as SCT   
 import warnings
 
 
