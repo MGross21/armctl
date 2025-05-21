@@ -92,6 +92,7 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
+| `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control.)*</sub> | Move the robot to its home position. |
 
 ## Future Development
 
