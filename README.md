@@ -55,8 +55,8 @@ from armctl import *
 
 ```python
 with Manufacturer("ROBOT_IP_ADDRESS") as robot:
-    robot.home()
-    robot.move_joints([0,0,0,0,0,0])
+    robot.move_joints([0,0,0,0,0])
+    print(robot.get_cartesian_position())
 ```
 
 ### Usage with Specific Robot Series
