@@ -3,10 +3,10 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [project]
-name = "agnostic-controller"
+name = "armctl"
 version = "0.3.0"
-description = "Agnostic Robotic Controller Project"
-packages = [{ include = "agnostic_controller" }]
+description = "Agnostic Robotic Manipulator Controller"
+packages = [{ include = "armctl" }]
 authors = [ { name = "Michael Gross", email = "MGross21@TODO.com" } ]
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -21,9 +21,9 @@ classifiers = [
 
 [tool.setuptools.packages.find]
 where = ["."] 
-include = ["agnostic_controller*"] 
+include = ["armctl*"] 
 exclude = ["tests*"]
 
 [project.urls]
-Homepage = "https://github.com/MGross21/agnostic-controller"
-Tracker = "https://github.com/MGross21/agnostic-controller/issues"
+Homepage = "https://github.com/MGross21/armctl"
+Tracker = "https://github.com/MGross21/armctl/issues"
