@@ -1,5 +1,5 @@
-from agnostic_controller.templates import SocketController as SCT, Commands
-from agnostic_controller.angle_utils import AngleUtils
+from armctl.templates import SocketController as SCT, Commands
+from armctl.angle_utils import AngleUtils
 import math
 import ast
 import time

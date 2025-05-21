@@ -1,5 +1,5 @@
-from agnostic_controller.templates import SocketController as SCT, Commands
-from agnostic_controller.templates.logger import logger
+from armctl.templates import SocketController as SCT, Commands
+from armctl.templates.logger import logger
 import time
 from typing import Union, List
 

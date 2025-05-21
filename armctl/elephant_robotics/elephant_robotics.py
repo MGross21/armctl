@@ -1,4 +1,4 @@
-from agnostic_controller.templates import SocketController as SCT, Commands
+from armctl.templates import SocketController as SCT, Commands
 import time
 import numpy as np
 

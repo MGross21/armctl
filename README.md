@@ -1,15 +1,15 @@
-# Robot Agnostic Controller
+<div align="center">
+    <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
+</div>
 
-## Overview
-
-A unified Python interface for controlling a variety of industrial and collaborative robots from different manufacturers.
+A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
 
 ## Supported Manufacturers & Series
 
 - [Elephant Robotics](https://www.elephantrobotics.com/en/)
   - myCobot Pro600
   <br>
-  <img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
+  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
 - [Universal Robotics](https://www.universal-robots.com)
   - UR5
@@ -18,14 +18,14 @@ A unified Python interface for controlling a variety of industrial and collabora
 - [Vention](https://vention.io)
   - 7th Axis Plate
   <br>
-  <img src="https://raw.githubusercontent.com/MGross21/agnostic-controller/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
+  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
 
 ## Quick Start
 
 ### Installation
 
 ```text
-pip install git+https://github.com/MGross21/agnostic-controller.git
+pip install git+https://github.com/MGross21/armctl.git
 ```
 
 #### Adding to Project Dependencies
@@ -33,13 +33,13 @@ pip install git+https://github.com/MGross21/agnostic-controller.git
 *`requirements.txt`*
 
 ```text
-git+https://github.com/MGross21/agnostic-controller.git
+git+https://github.com/MGross21/armctl.git
 ```
 
 *`pyproject.toml`*
 
 ```toml
-agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.git"}
+armctl = {git = "https://github.com/MGross21/armctl.git"}
 ```
 
 ### Importing the Library
@@ -48,7 +48,7 @@ agnostic-controller = {git = "https://github.com/MGross21/agnostic-controller.gi
 > For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ```python
-from agnostic_controller import *
+from armctl import *
 ```
 
 ### Basic Usage (Manufacturer Defaults)
@@ -108,4 +108,4 @@ Please feel free to submit a pull request or open an issue for any enhancements 
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](https://github.com/MGross21/agnostic-controller/blob/main/LICENSE) file for more details.
+This project is licensed under the MIT License. See the [LICENSE](https://github.com/MGross21/armctl/blob/main/LICENSE) file for more details.
