@@ -2,7 +2,7 @@
     <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
 </div>
 
-A unified Python interface for controlling a variety of industrial and hobbiest robots from different manufacturers.
+A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
 
 ## Supported Manufacturers & Series
 
