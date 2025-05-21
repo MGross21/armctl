@@ -1,5 +1,6 @@
 """
-agnostic_controller
+armctl
+=======
 
 This module provides a unified interface for controlling robotic arms from multiple manufacturers.
 
