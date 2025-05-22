@@ -5,7 +5,6 @@ commands, and handling responses with enhanced debugging features.
 
 THIS CLASS IS NOT IMPLEMENTED YET.
 """
-import socket
 from .logger import logger
 from .communication import Communication
 

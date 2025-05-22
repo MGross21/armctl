@@ -1,7 +1,7 @@
-from armctl.templates import SocketController as SCT, Commands
+from armctl.templates import PLCController as PLC, Commands
 
 # Non-Operational (1/31/2025)
-class Fanuc(SCT, Commands):
+class Fanuc(PLC, Commands):
     def __init__(self, ip:str, port:int):
         super().__init__(ip, port)
         raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
