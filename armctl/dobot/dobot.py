@@ -1,4 +1,4 @@
-from armctl.templates import SocketController as SCT
+from armctl.templates import SerialController as SCT
 
 class Dobot(SCT):
     def __init__(self, ip: str, port: int):

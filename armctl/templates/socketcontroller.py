@@ -1,6 +1,4 @@
 """
-Module: socket
-
 This module provides a base class `SocketController` for implementing socket-based 
 robot controllers. It provides methods for connecting, disconnecting, sending 
 commands, and handling responses with enhanced debugging features.

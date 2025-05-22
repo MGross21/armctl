@@ -10,4 +10,5 @@ Commands : ABC
 """
 
 from .socketcontroller import SocketController
+from .serialcontroller import SerialController
 from .commands import Commands
