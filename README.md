@@ -85,7 +85,7 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 
 ### Control Template
 
-The following methods are available to users of the library.
+The following methods are available to users of the library to control various supported robots.
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
@@ -100,7 +100,7 @@ The following methods are available to users of the library.
 
 ### Connection Template
 
-The following methods are available for explicit connection management. These are typically only necessary if you are not utilizing Python's `with/as` context manager protocol, which is the recommended approach.
+The following methods facilitate explicit connection management and low-level command execution. These are generally intended for advanced use cases, such as when not leveraging Python's `with/as` context manager or when issuing custom commands beyond the standard API.
 
 | Method Name                  | Description                                                      |
 |------------------------------|------------------------------------------------------------------|
