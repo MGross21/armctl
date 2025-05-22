@@ -94,6 +94,34 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
 | `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control.)*</sub> | Move the robot to its home position. |
 
+```mermaid
+flowchart TD
+    subgraph ConnTemplate["Connection Template"]
+        CT1["1. Connect"]
+        CT2["2. Send Command"]
+        CT3["3. Disconnect"]
+    end
+
+    subgraph CtrlTemplate["Controller Template"]
+        C1["1. Move Joint(s)"]
+        C2["2. Get Joint Position"]
+        C3["3. Move Cartesian"]
+        C4["4. Get Cartesian Position"]
+        C5["5. Stop Motion"]
+        C6["6. Sleep"]
+        C7["7. Get Robot Status"]
+    end
+
+    SocketController["Socket Controller"]
+    RobotManuf["Robot Manufacturer<br>Refines Controller"]
+    RobotModel["Robot Model/Series<br>Adds Joint Motion Limits"]
+
+    ConnTemplate --> SocketController
+    CtrlTemplate --> RobotManuf
+    SocketController --> RobotManuf
+    RobotManuf --> RobotModel
+```
+
 ## Future Development
 
 - [Dobot](https://www.dobot-robots.com)
