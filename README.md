@@ -6,19 +6,26 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 
 ## Supported Manufacturers & Series
 
-- [Elephant Robotics](https://www.elephantrobotics.com/en/)
-  - myCobot Pro600
-  <br>
+### Elephant Robotics
+- **Models:** myCobot Pro600  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
-- [Universal Robotics](https://www.universal-robots.com)
-  - UR5
-  - UR5e
+[Elephant Robotics Website](https://www.elephantrobotics.com/en/)
 
-- [Vention](https://vention.io)
-  - 7th Axis Plate
-  <br>
+---
+
+### Universal Robotics
+- **Models:** UR5, UR5e
+
+[Universal Robotics Website](https://www.universal-robots.com)
+
+---
+
+### Vention
+- **Models:** 7th Axis Plate  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
+
+[Vention Website](https://vention.io)
 
 ## Quick Start
 
@@ -83,6 +90,9 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 
 ## API Reference
 
+> [!NOTE]  
+> The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are planned for future releases to further expand functionality.
+
 ### Control Template
 
 The following methods are available to users of the library to control various supported robots.
@@ -100,7 +110,7 @@ The following methods are available to users of the library to control various s
 
 ### Connection Template
 
-The following methods facilitate explicit connection management and low-level command execution. These are generally intended for advanced use cases, such as when not leveraging Python's `with/as` context manager or when issuing custom commands beyond the standard API.
+The following methods facilitate explicit connection management and low-level command execution. These are primarily intended for advanced scenarios, such as when not using Python's `with/as` context manager or when sending custom commands outside the standard API. *Use with caution*.
 
 | Method Name                  | Description                                                      |
 |------------------------------|------------------------------------------------------------------|

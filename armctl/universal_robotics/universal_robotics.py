@@ -1,6 +1,6 @@
 from armctl.templates import SocketController as SCT, Commands
 from armctl.templates.logger import logger
-from .rtde import RTDE
+from .protocols.rtde import RTDE
 import math
 
 class UniversalRobotics(SCT, Commands):

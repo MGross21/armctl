@@ -1,3 +1,11 @@
+"""
+Real-Time Data Exchange (RTDE) Protocol
+
+This module provides utilities for parsing RTDE protocol messages from Universal Robots.
+For more information, see:
+https://www.universal-robots.com/developer/communication-protocol/rtde/
+"""
+
 import struct
 
 class RTDE:
