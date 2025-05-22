@@ -83,6 +83,10 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 
 ## API Reference
 
+### Control Template
+
+The following methods are available to users of the library.
+
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
 | `move_joints(joint_positions, *args, **kwargs)` | Move the robot to specified joint positions.             |
@@ -94,32 +98,60 @@ with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
 | `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control.)*</sub> | Move the robot to its home position. |
 
+### Connection Template
+
+The following methods are available for explicit connection management. These are typically only necessary if you are not utilizing Python's `with/as` context manager protocol, which is the recommended approach.
+
+| Method Name                  | Description                                                      |
+|------------------------------|------------------------------------------------------------------|
+| `connect()`                  | Establish a connection to the robot controller.                  |
+| `disconnect()`               | Close the connection to the robot controller.                    |
+| `send_command(command, *args, **kwargs)` | Send a low-level command to the robot controller.    |
+
+### Graphical Overview
+
+Below is a high-level diagram illustrating the architecture of the `armctl` library. This design emphasizes the careful templatization of connection and control APIs, ensuring a consistent and extensible interface across different manufacturers and robot series.
+
 ```mermaid
 flowchart TD
-    subgraph ConnTemplate["Connection Template"]
-        CT1["1. Connect"]
-        CT2["2. Send Command"]
-        CT3["3. Disconnect"]
-    end
+    %% Templates
+    ConnTemplate["Connection Template"]
+    CtrlTemplate["Control Template"]
 
-    subgraph CtrlTemplate["Controller Template"]
-        C1["1. Move Joint(s)"]
-        C2["2. Get Joint Position"]
-        C3["3. Move Cartesian"]
-        C4["4. Get Cartesian Position"]
-        C5["5. Stop Motion"]
-        C6["6. Sleep"]
-        C7["7. Get Robot Status"]
-    end
-
+    %% Controller Implementations
     SocketController["Socket Controller"]
-    RobotManuf["Robot Manufacturer<br>Refines Controller"]
-    RobotModel["Robot Model/Series<br>Adds Joint Motion Limits"]
+    PLCController["PLC Controller"]
+    SerialController["Serial Controller"]
 
+    %% Manufacturers
+    Manufacturer1["Manufacturer (Socket-based)"]
+    Manufacturer2["Manufacturer (PLC-based)"]
+    Manufacturer3["Manufacturer (Serial-based)"]
+
+    %% Robot Series
+    Series1["Robot Series"]
+    Series2["Robot Series"]
+    Series3["Robot Series"]
+
+    %% Connection Template to Controllers
     ConnTemplate --> SocketController
-    CtrlTemplate --> RobotManuf
-    SocketController --> RobotManuf
-    RobotManuf --> RobotModel
+    ConnTemplate --> PLCController
+    ConnTemplate --> SerialController
+
+    %% Control Template to Manufacturers
+    CtrlTemplate --> Manufacturer1
+    CtrlTemplate --> Manufacturer2
+    CtrlTemplate --> Manufacturer3
+
+    %% Controllers to Manufacturers
+    SocketController --> Manufacturer1
+    PLCController --> Manufacturer2
+    SerialController --> Manufacturer3
+
+    %% Manufacturers to Series
+    Manufacturer1 --> Series1
+    Manufacturer2 --> Series2
+    Manufacturer3 --> Series3
 ```
 
 ## Future Development
