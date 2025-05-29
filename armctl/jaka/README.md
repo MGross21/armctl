@@ -1,5 +1,23 @@
 # JAKA
 
+## Turning On the Robot
+
+### Power On
+
+Press the **Power** button if the control box LED isn't already breathing blue.
+
+### Unlock Safety
+
+Press and hold the **Lock** button for about 3 seconds until the LED turns green.
+
+### Enable the Robot
+
+Press the **Enable** or **Motor** button to power the joints.
+
+You should hear a click or hum if it's working. Some models require you to press and hold briefly.
+
+The LED or other feedback may indicate the robot is "ready."
+
 ## Documentation Reference
 
 [JAKA TCP/IP Control Protocol](https://www.jaka.com/docs/en/guide/tcpip.html)
