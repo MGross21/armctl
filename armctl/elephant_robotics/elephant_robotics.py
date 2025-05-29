@@ -1,6 +1,5 @@
 from armctl.templates import SocketController as SCT, Commands
 import time
-import numpy as np
 
 class ElephantRobotics(SCT, Commands):
     def __init__(self, ip: str, port: int):
@@ -56,9 +55,6 @@ class ElephantRobotics(SCT, Commands):
             Degrees of freedom (default: 6).
         """
 
-        if type(joint_positions) != np.array:
-            joint_positions = np.array(joint_positions)
-
         if len(joint_positions) != self.DOF:
             raise ValueError("Joint positions must have 6 elements")
 
@@ -73,15 +69,13 @@ class ElephantRobotics(SCT, Commands):
         response = self.send_command(f"{command}({','.join(map(str, joint_positions))},{speed})")
         assert response == f"{command}:[ok]", f"Failed to move joints: {response}"
 
-        while not np.allclose(self.get_joint_positions(), joint_positions, atol=3):
+        while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), joint_positions)):
             time.sleep(1)
 
     def move_cartesian(self, 
                        robot_pose:tuple[float,float,float,float,float,float], 
                        speed:int=500,
                        *args, **kwargs) -> None:
-        if type(robot_pose) != np.array:
-            robot_pose = np.array(robot_pose)
 
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
@@ -92,7 +86,7 @@ class ElephantRobotics(SCT, Commands):
 
         assert self.send_command(command) == "set_coords:[ok]"
 
-        while not np.allclose(self.get_cartesian_position(), robot_pose, atol=1):
+        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), robot_pose)):
             time.sleep(1)
 
     def get_joint_positions(self, *args, **kwargs):
@@ -100,14 +94,14 @@ class ElephantRobotics(SCT, Commands):
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid joint positions response from robot")
         joint_positions = list(map(float, response[response.index("[")+1:response.index("]")].split(",")))  # From string list to float list
-        return np.array(joint_positions).round(1)
+        return [round(x, 2) for x in joint_positions]
 
     def get_cartesian_position(self, *args, **kwargs):
         response = self.send_command("get_coords()")  # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid cartesian position response from robot")
         cartesian_position = list(map(float, response[response.index("[")+1:response.index("]")].split(",")))  # From string list to float list
-        return np.array(cartesian_position).round(2)
+        return [round(x, 2) for x in cartesian_position]
 
     def stop_motion(self):
         command = "task_stop"
