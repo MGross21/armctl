@@ -6,26 +6,19 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 
 ## Supported Manufacturers & Series
 
-### Elephant Robotics
+### [Elephant Robotics](https://www.elephantrobotics.com/en/)
+
 - **Models:** myCobot Pro600  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
-[Elephant Robotics Website](https://www.elephantrobotics.com/en/)
+### [Universal Robotics](https://www.universal-robots.com)
 
----
-
-### Universal Robotics
 - **Models:** UR5, UR5e
 
-[Universal Robotics Website](https://www.universal-robots.com)
+### [Vention](https://vention.io)
 
----
-
-### Vention
 - **Models:** 7th Axis Plate  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
-
-[Vention Website](https://vention.io)
 
 ## Quick Start
 
@@ -106,7 +99,7 @@ The following methods are available to users of the library to control various s
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
-| `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control.)*</sub> | Move the robot to its home position. |
+| `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
 
 ### Connection Template
 
@@ -167,11 +160,11 @@ flowchart TD
 ## Future Development
 
 - [Dobot](https://www.dobot-robots.com)
-  - Magician Lite
+  - **Models:** Magician Lite
 - [FANUC](https://www.fanucamerica.com)
-  - LR Mate 200iD Series
+  - **Models:** LR Mate 200iD Series
 - [JAKA](https://www.jaka.com/en)
-  - Zu 5
+  - **Models:** Zu 5
 
 ## Contributing
 
