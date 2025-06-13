@@ -51,7 +51,7 @@ armctl = {git = "https://github.com/MGross21/armctl.git"}
 from armctl import *
 ```
 
-### Basic Usage (Manufacturer Defaults)
+### Simple Example with Manufacturer Defaults
 
 ```python
 with Manufacturer("ROBOT_IP_ADDRESS") as robot:
@@ -59,7 +59,7 @@ with Manufacturer("ROBOT_IP_ADDRESS") as robot:
     print(robot.get_cartesian_position())
 ```
 
-### Usage with Specific Robot Series
+### Simple Example with Specific Robot Series
 
 ```python
 with RobotSeries("ROBOT_IP_ADDRESS") as robot:
@@ -73,7 +73,10 @@ with RobotSeries("ROBOT_IP_ADDRESS") as robot:
 > For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
 
 ```python
-with Robot1("ROBOT1_IP_ADDRESS") as r1, Robot2("ROBOT2_IP_ADDRESS") as r2:
+with (
+  Robot1("ROBOT1_IP_ADDRESS") as r1,
+  Robot2("ROBOT2_IP_ADDRESS") as r2,
+):
     r1.home()
     r2.home()
 
