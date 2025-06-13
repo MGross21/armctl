@@ -83,45 +83,45 @@ class SocketController(Communication):
     def send_command(self, 
                      command: str, 
                      timeout: float = 5.0,
-                     suppress_input: bool=False,
+                     suppress_input: bool = False,
                      suppress_output: bool = False, 
                      raw_response: bool = False) -> str | bytes:
         """
-        Send a command to the robot and wait for a response.
+        Send a command to the robot and return the response.
 
         Parameters
         ----------
         command : str
-            The command to send to the robot.
+            Command to send to the robot.
         timeout : float
-            Maximum time to wait for a response (default: 5.0 seconds).
+            Timeout for response in seconds.
         suppress_input : bool
-            If True, suppress logging of input command (default: False).
+            Suppress input command logging.
         suppress_output : bool
-            If True, suppress logging of command and response (default: False).
+            Suppress output/response logging.
         raw_response : bool
-            If True, return the raw binary response instead of decoding it (default: False).
+            Return raw bytes instead of decoded string.
 
         Returns
         -------
         str or bytes
-            The decoded response from the robot, or the raw binary response if `raw_response` is True.
+            Decoded string or raw response bytes.
 
         Raises
         ------
         ConnectionError
-            If not connected to the robot or command sending fails.
+            If socket isn't connected or fails.
         TimeoutError
-            If the command times out while waiting for a response.
+            If response times out.
         """
-        if not self.send_socket:
-            raise ConnectionError("Not connected to the robot")
+        if not self.send_socket or not self.recv_socket:
+            raise ConnectionError("Robot is not connected.")
+        
+        if not suppress_input:
+            logger.send(f"Sending command: {command.strip().replace('\n', '//n')}")  # Explicitly show newline char in logger
 
         try:
             # Send command
-            if not suppress_input:
-                logger.send(f"Sending command: {command.strip().replace(chr(10), '//n')}") # replace newlines for clarity
-
             self.send_socket.sendall(command.encode())
 
             # Wait for response with timeout handling
@@ -132,24 +132,24 @@ class SocketController(Communication):
                 if not suppress_output:
                     logger.receive(f"Received raw response: {response}")
                 return response
-
-            # Decode response
-            try:
-                decoded_response = response.decode("utf-8")
-            except UnicodeDecodeError:
-                try:
-                    decoded_response = response.decode("ISO-8859-1")  # Alternative encoding
-                except UnicodeDecodeError:
-                    decoded_response = response.decode("latin1", errors="replace")  # Last resort
-
-            if not suppress_output:
-                logger.receive(f"Received response: {decoded_response}")
-            return decoded_response
-
+            
         except socket.timeout:
-            logger.error("Command timed out")
             raise TimeoutError("Command timed out")
-        
+
         except Exception as e:
-            logger.error(f"Error sending command: {e}")
-            raise ConnectionError(f"Failed to send command: {command}")
+            raise ConnectionError(f"Failed to send command: {command}") from e
+
+        # Handle potential decoding issues
+        for encoding in ("utf-8", "ISO-8859-1", "latin1"):
+            try:
+                decoded = response.decode(encoding)
+                break
+            except UnicodeDecodeError:
+                continue
+        else:
+            decoded = response.decode("utf-8", errors="replace")
+
+        if not suppress_output:
+            logger.receive(f"Received response: {decoded}")
+
+        return decoded
