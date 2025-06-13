@@ -121,26 +121,23 @@ class SocketController(Communication):
             logger.send(f"Sending command: {command.strip().replace('\n', '//n')}")  # Explicitly show newline char in logger
 
         try:
-            # Send command
-            self.send_socket.sendall(command.encode())
-
-            # Wait for response with timeout handling
-            self.recv_socket.settimeout(timeout)
-            response = self.recv_socket.recv(4096)
-
-            if raw_response:
-                if not suppress_output:
-                    logger.receive(f"Received raw response: {response}")
-                return response
-            
+            self.send_socket.sendall(command.encode())  # Send Command
+            self.recv_socket.settimeout(timeout)        # Set timeout for receiving response
+            response = self.recv_socket.recv(4096)      # Receive response
+           
         except socket.timeout:
             raise TimeoutError("Command timed out")
 
         except Exception as e:
             raise ConnectionError(f"Failed to send command: {command}") from e
+        
+        if raw_response:
+            if not suppress_output:
+                logger.receive(f"Received raw response: {response}")
+            return response
 
-        # Handle potential decoding issues
-        for encoding in ("utf-8", "ISO-8859-1", "latin1"):
+        # Preferred decoding chain for robot protocols
+        for encoding in ("utf-8", "latin1"):
             try:
                 decoded = response.decode(encoding)
                 break
