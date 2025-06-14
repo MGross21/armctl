@@ -118,7 +118,7 @@ class SocketController(Communication):
             raise ConnectionError("Robot is not connected.")
         
         if not suppress_input:
-            logger.send(f"Sending command: {command.strip().replace('\n', '//n')}")  # Explicitly show newline char in logger
+            logger.send(f"Sending command: {command.strip().replace(chr(10), '//n')}")  # Explicitly show newline char in logger
 
         try:
             self.send_socket.sendall(command.encode())  # Send Command
