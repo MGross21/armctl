@@ -76,6 +76,16 @@ class ElephantRobotics(SCT, Commands):
                        robot_pose:tuple[float,float,float,float,float,float], 
                        speed:int=500,
                        *args, **kwargs) -> None:
+        """
+        Move the robot to the specified Cartesian coordinates.
+
+        Parameters
+        ----------
+        robot_pose : tuple of float
+            Cartesian coordinates in the format `[x, y, z, rx, ry, rz]`.
+        speed : int, optional
+            Speed of the movement, range 0 ~ 2000 (default: 500).
+        """
 
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
