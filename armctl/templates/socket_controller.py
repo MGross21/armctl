@@ -40,13 +40,13 @@ class SocketController(Communication):
         self.disconnect()
 
     def connect(self):
-        """Connect to the robot using separate sockets for sending and receiving if needed. Optimized for clarity and resource safety."""
+        """Connect to the robot using sockets for sending and receiving"""
         try:
             # Create and connect send socket
             self.send_socket = socket.create_connection((self.ip, self.send_port))
             logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})" + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)"))
 
-            # Create and connect receive socket only if needed
+            # Create and connect separate receive socket only if needed
             if self.recv_port != self.send_port:
                 self.recv_socket = socket.create_connection((self.ip, self.recv_port))
                 logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)")
@@ -71,20 +71,18 @@ class SocketController(Communication):
             if self.recv_socket and self.recv_socket is not self.send_socket:
                 self.recv_socket.close()
             self.send_socket = self.recv_socket = None
-            logger.error(f"Connection failed: {e}")
-            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}")
+            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}") from e
 
     def disconnect(self):
-        """Disconnect from the robot by closing both sockets."""
-        try:
-            for sock in {self.send_socket, self.recv_socket}:
-                if sock:
+        """Disconnect from the robot by closing sockets."""
+        for sock in {self.send_socket, self.recv_socket}:
+            if sock:
+                try:
                     sock.close()
-            self.send_socket = self.recv_socket = None
-            logger.info(f"Disconnected from {self.__class__.__name__}")
-
-        except Exception as e:
-            logger.error(f"Disconnection failed: {e}")
+                except Exception as e:
+                    logger.error(f"Failed to close socket: {e}")
+        self.send_socket = self.recv_socket = None
+        logger.info(f"Disconnected from {self.__class__.__name__}")
 
     def send_command(self, 
                      command: str, 
