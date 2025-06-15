@@ -1,8 +1,8 @@
 from .elephant_robotics import ElephantRobotics
 
-# My Cobot Pro 600
 class Pro600(ElephantRobotics):
         def __init__(self, ip:str = "192.168.1.159", port:int = 5001):
+            """Elephant Robotics myCobot Pro600"""
             super().__init__(ip, port)
             self.HOME_POSITION = [0,-90, 90,-90,-90,0]
             self.JOINT_RANGES = [
@@ -14,6 +14,8 @@ class Pro600(ElephantRobotics):
                 (-174.00, 174.00)
             ]
             self.DOF = len(self.JOINT_RANGES)
+
+            self.__class__.__name__ = f"{self.__class__.__bases__[0].__name__} {__name__.split('.')[-1]} {self.__class__.__name__}"
 
         def home(self):
             """
