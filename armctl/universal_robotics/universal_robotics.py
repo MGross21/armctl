@@ -2,6 +2,7 @@ from armctl.templates import SocketController as SCT, Commands
 from armctl.templates.logger import logger
 from .protocols.rtde import RTDE
 import math
+from time import sleep as _sleep
 
 class UniversalRobotics(SCT, Commands):
     def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
@@ -30,11 +31,11 @@ class UniversalRobotics(SCT, Commands):
 
     def move_joints(self, 
                     joint_positions, 
-                    speed: float = 0.25, 
-                    acceleration: float = 0.1, 
+                    speed: float = 0.1, 
+                    acceleration: float = 0.05, 
                     t: float = 0.0, 
                     radius: float = 0.0, 
-                    *args, **kwargs) -> str:
+                    *args, **kwargs) -> None:
         """
         MoveJ
         --------
@@ -65,16 +66,20 @@ class UniversalRobotics(SCT, Commands):
                 raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
             
         command = f"movej([{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
-        self.send_command(command, timeout=t+10, suppress_output=True, raw_response=True)
+        self.send_command(command, timeout=t+10, suppress_output=True, raw_response=False)
+
+        # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_joint_positions(), joint_positions)):
+        #     _sleep(2)
+        # return
 
     def move_cartesian(self, 
                        robot_pose, 
                         move_type: str = "movel",
-                        speed: float = 0.25,
-                        acceleration: float = 0.0,
+                        speed: float = 0.1,
+                        acceleration: float = 0.1,
                         time: float = 0.0,
                         radius: float = 0.0,
-                       *args, **kwargs)->str:
+                       *args, **kwargs)->None:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
@@ -103,11 +108,15 @@ class UniversalRobotics(SCT, Commands):
             if not (0 <= pos <= math.pi*2):
                 raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
             
-        if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, robot_pose)))) == "False":
-            raise ValueError("Cartesian position out of safety limits")
+        # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, robot_pose)))) == "False":
+        #     raise ValueError("Cartesian position out of safety limits")
 
         command = f"{move_type}([{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
-        return self.send_command(command, suppress_output=True, raw_response=True)
+        self.send_command(command, suppress_output=True)
+
+        # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), robot_pose)):
+        #     _sleep(2)
+        return
 
     def get_joint_positions(self, *args, **kwargs):
         """
