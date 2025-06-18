@@ -30,12 +30,11 @@ class UniversalRobotics(SCT, Commands):
         self.send_command(f"sleep({seconds})\n")
 
     def move_joints(self, 
-                    joint_positions, 
+                    pos: list[float], 
                     speed: float = 0.1, 
                     acceleration: float = 0.05, 
                     t: float = 0.0, 
-                    radius: float = 0.0, 
-                    *args, **kwargs) -> None:
+                    radius: float = 0.0) -> None:
         """
         MoveJ
         --------
@@ -43,7 +42,7 @@ class UniversalRobotics(SCT, Commands):
 
         Parameters
         ----------
-        joint_positions : list of float
+        pos : list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         speed : float, optional
             Speed of the movement in rad/s.
@@ -54,18 +53,18 @@ class UniversalRobotics(SCT, Commands):
         radius : float, optional
             Blend radius in meters.
         """
-        if len(joint_positions) != self.DOF:
+        if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
         assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
         
         assert acceleration <= self.MAX_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
-        for idx, pos in enumerate(joint_positions):
+        for idx, pos in enumerate(pos):
             if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
                 raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
             
-        command = f"movej([{','.join(map(str, joint_positions))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
+        command = f"movej([{','.join(map(str, pos))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
         self.send_command(command, timeout=t+10, suppress_output=True, raw_response=False)
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_joint_positions(), joint_positions)):
@@ -73,13 +72,12 @@ class UniversalRobotics(SCT, Commands):
         # return
 
     def move_cartesian(self, 
-                       robot_pose, 
+                       pose: list[float], 
                         move_type: str = "movel",
                         speed: float = 0.1,
                         acceleration: float = 0.1,
                         time: float = 0.0,
-                        radius: float = 0.0,
-                       *args, **kwargs)->None:
+                        radius: float = 0.0)->None:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
@@ -104,21 +102,21 @@ class UniversalRobotics(SCT, Commands):
         
         assert acceleration <= self.MAX_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
-        for pos in robot_pose[3:]:
-            if not (0 <= pos <= math.pi*2):
-                raise ValueError(f"Joint position {pos} out of range: 0 ~ {math.pi*2}")
+        for p in pose[3:]:
+            if not (0 <= p <= math.pi*2):
+                raise ValueError(f"Joint position {p} out of range: 0 ~ {math.pi*2}")
             
-        # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, robot_pose)))) == "False":
+        # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
 
-        command = f"{move_type}([{','.join(map(str, robot_pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
+        command = f"{move_type}([{','.join(map(str, pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         self.send_command(command, suppress_output=True)
 
-        # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), robot_pose)):
+        # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), pose)):
         #     _sleep(2)
         return
 
-    def get_joint_positions(self, *args, **kwargs):
+    def get_joint_positions(self, *args, **kwargs) -> list[float]:
         """
         Get the current joint positions of the robot.
 
@@ -132,7 +130,7 @@ class UniversalRobotics(SCT, Commands):
         logger.receive(f"Received response: {angles}")
         return angles
 
-    def get_cartesian_position(self, *args, **kwargs):
+    def get_cartesian_position(self) -> list[float]:
         """
         Retrieves the current Cartesian position of the robot's tool center point (TCP).
 
@@ -149,8 +147,9 @@ class UniversalRobotics(SCT, Commands):
         logger.receive(f"Received response: {pose}")
         return pose
 
-    def stop_motion(self):
-        self.send_command("stopj(2)\n",suppress_output=True) # deceleration: 2 rad/s^2
+    def stop_motion(self) -> None:
+        deceleration = 2.0  # rad/s^2
+        self.send_command("stopj({})\n".format(deceleration), suppress_output=True)
 
     def get_robot_state(self):
         return self.send_command("get_robot_status()\n")
