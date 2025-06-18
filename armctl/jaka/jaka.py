@@ -57,16 +57,15 @@ class Jaka(SCT, Commands, AngleUtils):
         time.sleep(seconds)
 
     def move_joints(self,
-                    joint_positions: list[float],
+                    pos: list[float],
                     speed: float = 0.25,
-                    acceleration: float = 0.1,
-                    *args, **kwargs) -> None:
+                    acceleration: float = 0.1) -> None:
         """
         Move the robot to the specified joint positions.
 
         Parameters
         ----------
-        joint_positions : list of float
+        pos : list of float
             Target joint positions in radians [j1, j2, j3, j4, j5, j6]
         speed : float
             Joint velocity in radians/sec
@@ -75,20 +74,20 @@ class Jaka(SCT, Commands, AngleUtils):
         relFlag : int
             0 for absolute motion, 1 for relative motion. 
         """
-        if len(joint_positions) != self.DOF:
+        if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
         assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
         assert acceleration < self.MAX_JOINT_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
 
-        for idx, pos in enumerate(joint_positions):
+        for idx, pos in enumerate(pos):
             if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
                 raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
             
         cmd = {
             "cmdName": "joint_move",
             "relFlag": 0,       # 0 for absolute motion, 1 for relative motion.
-            "jointPosition": self.to_degrees_joint(joint_positions),
+            "jointPosition": self.to_degrees_joint(pos),
             "speed": math.degrees(speed),
             "accel": math.degrees(acceleration),
         }
@@ -98,16 +97,15 @@ class Jaka(SCT, Commands, AngleUtils):
             raise RuntimeError(f"Failed to move joints: {response}. {response.get('errorMsg')}")
 
     def move_cartesian(self, 
-                       robot_pose: list[float], 
+                       pose: list[float], 
                        speed: float = 0.25,
-                       acceleration: float = 0.0,
-                       *args, **kwargs) -> None:
+                       acceleration: float = 0.0) -> None:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
         Parameters
         ----------
-        robot_pose : list of float
+        pose : list of float
             Cartesian position and orientation [x, y, z, rx, ry, rz] in meters and radians.
         speed : float, optional
             Velocity of the movement in radians/sec
@@ -118,13 +116,13 @@ class Jaka(SCT, Commands, AngleUtils):
         assert acceleration < self.MAX_JOINT_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
 
         # Only check orientation part for radians
-        for pos in robot_pose[3:]:
-            if not (0 <= pos <= math.pi*2):
-                raise ValueError(f"Orientation value {pos} out of range: 0 ~ {math.pi*2}")
+        for p in pose[3:]:
+            if not (0 <= p <= math.pi*2):
+                raise ValueError(f"Orientation value {p} out of range: 0 ~ {math.pi*2}")
 
         cmd = {
             "cmdName": "end_move",
-            "end_position": self.to_degrees_cartesian(robot_pose),
+            "end_position": self.to_degrees_cartesian(pose),
             "speed": self.to_degrees_joint(speed),
             "accel": self.to_degrees_joint(acceleration),
         }
@@ -133,7 +131,7 @@ class Jaka(SCT, Commands, AngleUtils):
         if not (isinstance(response, dict) and response.get("errorCode") == "0" and response.get("cmdName") == "joint_move"):
             raise RuntimeError(f"Failed to move joints: {response}. {response.get('errorMsg')}")
 
-    def get_joint_positions(self, *args, **kwargs) -> list[float]:
+    def get_joint_positions(self) -> list[float]:
         """
         Get the current joint positions of the robot.
 
@@ -150,7 +148,7 @@ class Jaka(SCT, Commands, AngleUtils):
         
         return [math.radians(angle) for angle in response["joint_pos"]]
 
-    def get_cartesian_position(self, *args, **kwargs) -> list[float]:
+    def get_cartesian_position(self) -> list[float]:
         """
         Retrieves the current Cartesian position of the robot's tool center point (TCP).
 

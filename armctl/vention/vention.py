@@ -44,32 +44,31 @@ class Vention(SCT, Commands):
         self._wait_for_finish(delay=1)
 
     def move_joints(self, 
-                    joint_positions: Union[List[float], float, int], 
+                    pos: Union[List[float], float, int], 
                     speed:int=2500, acceleration:int=500,
-                    move_type:str='abs',
-                    *args, **kwargs) -> None:
+                    move_type:str='abs') -> None:
         """Moves the axes to specified positions"""
         valid_axes = {1, 2, 3}
         
 
         # Normalize input to a list
-        if isinstance(joint_positions, (float, int)):
-            joint_positions = [joint_positions]
-        elif not isinstance(joint_positions, list) or not all(isinstance(pos, (int, float)) for pos in joint_positions):
+        if isinstance(pos, (float, int)):
+            pos = [pos]
+        elif not isinstance(pos, list) or not all(isinstance(pos, (int, float)) for pos in pos):
             raise TypeError("Joint positions must be a list of numeric values, or a single numeric value.")
         
 
-        if len(joint_positions) > len(valid_axes):
+        if len(pos) > len(valid_axes):
             raise ValueError(f"Too many joint positions. Maximum supported axes are {len(valid_axes)}.")
         
         # Check if in range
         if move_type == "abs":
-            if any(pos < self.MIN_JOINT_RANGE or pos > self.MAX_JOINT_RANGE for pos in joint_positions):
+            if any(pos < self.MIN_JOINT_RANGE or pos > self.MAX_JOINT_RANGE for pos in pos):
                 raise ValueError(f"Absolute joint positions must be within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
         elif move_type == "rel":
             current_positions = self.get_joint_positions()
             if any(not (self.MIN_JOINT_RANGE <= curr_pos + rel_pos <= self.MAX_JOINT_RANGE) 
-               for curr_pos, rel_pos in zip(current_positions, joint_positions)):
+               for curr_pos, rel_pos in zip(current_positions, pos)):
                     raise ValueError(f"Relative joint positions must result in positions within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm.")
 
         # Set speed and acceleration
@@ -84,11 +83,11 @@ class Vention(SCT, Commands):
             raise ValueError("Invalid move type. Must be 'abs' or 'rel'.")
 
         # Send movement commands for each axis
-        for axis, position in enumerate(joint_positions, start=1):
+        for axis, p in enumerate(pos, start=1):
             if axis not in valid_axes:
                 raise ValueError(f"Invalid axis: {axis}. Must be one of {valid_axes}.")
             
-            assert self.send_command(f"SET im_move_{move_type}_{axis}/{position}/;", timeout=30) == "Ack", f"Failed to set position for axis {axis}."
+            assert self.send_command(f"SET im_move_{move_type}_{axis}/{p}/;", timeout=30) == "Ack", f"Failed to set position for axis {axis}."
         
         # Execute movement
         # assert self.send_command(f"de_move_{move_type}_exec;", timeout=30) == "Ack", "Failed to execute movement."
@@ -105,7 +104,7 @@ class Vention(SCT, Commands):
             time.sleep(delay)
         logger.info("Motion completed.")
 
-    def get_joint_positions(self, axis: Union[int, None] = None, *args, **kwargs) -> Union[List[float], float]:
+    def get_joint_positions(self, axis: Union[int, None] = None) -> Union[List[float], float]:
         """Gets the current position of an axis or all axes."""
         valid_axes = {1, 2, 3}
 
@@ -138,11 +137,11 @@ class Vention(SCT, Commands):
         if "Ack" not in self.send_command("im_stop;"):
             raise RuntimeError("Failed to stop motion.")
 
-    def move_cartesian(self, robot_pose: List[float], *args, **kwargs) -> None:
+    def move_cartesian(self, pose: List[float]) -> None:
         """Moves the robot to a specified Cartesian pose (not implemented)."""
         raise NotImplementedError("This method is not implemented yet.")
 
-    def get_cartesian_position(self, *args, **kwargs) -> List[float]:
+    def get_cartesian_position(self) -> List[float]:
         """Gets the current Cartesian position of the robot (not implemented)."""
         raise NotImplementedError("This method is not implemented yet.")
 
