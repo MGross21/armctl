@@ -3,41 +3,42 @@ from armctl.templates import SerialController as SCT
 class Dobot(SCT):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
-        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
-
-    def sleep(self, seconds):
-        self.send_command(f"sleep({seconds})")
-
-    def move_joints(self, joint_positions, *args, **kwargs) -> str:
-        "MovJ"
-
-        if len(joint_positions) != kwargs.get("DOF", 4):
-            raise ValueError("Joint positions must have 4 elements")
-        
-        joint_ranges = [
+        self.JOINT_RANGES = [
             (-135.00, 135.00),
             (-5.00, 80.00),
             (-10.00, 85.00),
             (-145.00, 145.00)
         ]
-        for i, (low, high) in enumerate(joint_ranges):
-            if not (low <= joint_positions[i] <= high):
-                raise ValueError(f"Joint {i+1} angle out of range: {low} ~ {high}")
+        self.DOF = len(self.JOINT_RANGES)
+        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
+
+    def sleep(self, seconds):
+        self.send_command(f"sleep({seconds})")
+
+    def move_joints(self, pos, *args, **kwargs) -> str:
+        "MovJ"
+
+        if len(pos) != kwargs.get("DOF", 4):
+            raise ValueError("Joint positions must have 4 elements")
+
+        for j, (lower, upper) in enumerate(self.JOINT_RANGES):
+            if not (lower <= pos[j] <= upper):
+                raise ValueError(f"Joint {j+1} angle out of range: {lower} ~ {upper}")
             
-        command = "MOVJ({})".format(','.join(map(str, joint_positions)))
+        command = "MOVJ({})".format(','.join(map(str, pos)))
         return self.send_command(command)
 
-    def move_cartesian(self, robot_pose, *args, **kwargs) -> str:
+    def move_cartesian(self, pose) -> str:
         "MOVEL"
 
-        if len(robot_pose) == 3:
-            robot_pose.append(0)
+        if len(pose) == 3:
+            pose.append(0)
 
         # Now check again if the robot pose has 4 elements
-        if len(robot_pose) != 4:    
+        if len(pose) != 4:    
             raise ValueError("Robot pose must have 3 ([x, y, z]) or 4 elements: [x, y, z, rz]")
-        
-        command = "MOVEL({})".format(','.join(map(str, robot_pose)))
+
+        command = "MOVEL({})".format(','.join(map(str, pose)))
         return self.send_command(command)
 
     def get_joint_positions(self): pass

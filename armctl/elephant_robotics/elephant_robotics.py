@@ -39,15 +39,14 @@ class ElephantRobotics(SCT, Commands):
         time.sleep(seconds)
 
     def move_joints(self, 
-                    joint_positions:list[float],
-                    speed:int=500,
-                    *args, **kwargs):
+                    pos:list[float],
+                    speed:int=500) -> None:
         """
         Move the robot to the specified joint positions.
 
         Parameters
         ----------
-        joint_positions : list of float
+        pos : list of float
             Joint positions in degrees [j1, j2, j3, j4, j5, j6].
         speed : int, optional
             Speed of the movement, range 0 ~ 2000 (default: 200).
@@ -55,48 +54,57 @@ class ElephantRobotics(SCT, Commands):
             Degrees of freedom (default: 6).
         """
 
-        if len(joint_positions) != self.DOF:
+        if len(pos) != self.DOF:
             raise ValueError("Joint positions must have 6 elements")
 
         for i, (low, high) in enumerate(self.JOINT_RANGES):
-            if not (low <= joint_positions[i] <= high):
+            if not (low <= pos[i] <= high):
                 raise ValueError(f"Joint {i+1} angle out of range: {low} ~ {high}")
 
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
 
         command = "set_angles"
-        response = self.send_command(f"{command}({','.join(map(str, joint_positions))},{speed})")
+        response = self.send_command(f"{command}({','.join(map(str, pos))},{speed})")
         assert response == f"{command}:[ok]", f"Failed to move joints: {response}"
 
-        while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), joint_positions)):
+        while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)):
             time.sleep(1)
 
     def move_cartesian(self, 
-                       robot_pose:tuple[float,float,float,float,float,float], 
-                       speed:int=500,
-                       *args, **kwargs) -> None:
+                       pose:tuple[float,float,float,float,float,float], 
+                       speed:int=500) -> None:
+        """
+        Move the robot to the specified Cartesian coordinates.
+
+        Parameters
+        ----------
+        pose : tuple of float
+            Cartesian coordinates in the format `[x, y, z, rx, ry, rz]`.
+        speed : int, optional
+            Speed of the movement, range 0 ~ 2000 (default: 500).
+        """
 
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
-        if len(robot_pose) != 6:
+        if len(pose) != 6:
             raise ValueError("Robot pose must have 6 elements: [x, y, z, rx, ry, rz]")
 
-        command = f"set_coords({','.join(map(str, robot_pose))},{speed})"
+        command = f"set_coords({','.join(map(str, pose))},{speed})"
 
         assert self.send_command(command) == "set_coords:[ok]"
 
-        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), robot_pose)):
+        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)):
             time.sleep(1)
 
-    def get_joint_positions(self, *args, **kwargs):
+    def get_joint_positions(self):
         response = self.send_command("get_angles()")
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid joint positions response from robot")
         joint_positions = list(map(float, response[response.index("[")+1:response.index("]")].split(",")))  # From string list to float list
         return [round(x, 2) for x in joint_positions]
 
-    def get_cartesian_position(self, *args, **kwargs):
+    def get_cartesian_position(self):
         response = self.send_command("get_coords()")  # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid cartesian position response from robot")

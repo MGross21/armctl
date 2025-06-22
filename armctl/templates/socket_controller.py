@@ -40,45 +40,49 @@ class SocketController(Communication):
         self.disconnect()
 
     def connect(self):
-        """Connect to the robot using separate sockets for sending and receiving if needed."""
+        """Connect to the robot using sockets for sending and receiving"""
         try:
-            # Create send socket
-            self.send_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.send_socket.connect((self.ip, self.send_port))
+            # Create and connect send socket
+            self.send_socket = socket.create_connection((self.ip, self.send_port))
             logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})" + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)"))
 
-            # Create separate receive socket if different port is used
+            # Create and connect separate receive socket only if needed
             if self.recv_port != self.send_port:
-                self.recv_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-                self.recv_socket.connect((self.ip, self.recv_port))
+                self.recv_socket = socket.create_connection((self.ip, self.recv_port))
                 logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)")
             else:
-                self.recv_socket = self.send_socket  # Use the same socket if ports are identical
+                self.recv_socket = self.send_socket
 
-            # Optional: Check initial response
+            # Try to receive initial response (non-blocking, short timeout)
+            self.recv_socket.settimeout(2.0)
             try:
                 response = self.recv_socket.recv(4096)
                 decoded_response = response.decode("utf-8", errors="replace")
                 logger.debug(f"Initial response: {decoded_response}")
             except Exception as e:
-                logger.error(f"Error receiving initial response: {e}")
-                raise ConnectionError("Failed to receive initial response")
+                logger.warning(f"No initial response")
+            finally:
+                self.recv_socket.settimeout(None)
 
         except Exception as e:
-            logger.error(f"Connection failed: {e}")
-            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}")
+            # Clean up sockets on failure
+            if self.send_socket:
+                self.send_socket.close()
+            if self.recv_socket and self.recv_socket is not self.send_socket:
+                self.recv_socket.close()
+            self.send_socket = self.recv_socket = None
+            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}") from e
 
     def disconnect(self):
-        """Disconnect from the robot by closing both sockets."""
-        try:
-            for sock in {self.send_socket, self.recv_socket}:
-                if sock:
+        """Disconnect from the robot by closing sockets."""
+        for sock in {self.send_socket, self.recv_socket}:
+            if sock:
+                try:
                     sock.close()
-            self.send_socket = self.recv_socket = None
-            logger.info(f"Disconnected from {self.__class__.__name__}")
-
-        except Exception as e:
-            logger.error(f"Disconnection failed: {e}")
+                except Exception as e:
+                    logger.error(f"Failed to close socket: {e}")
+        self.send_socket = self.recv_socket = None
+        logger.info(f"Disconnected from {self.__class__.__name__}")
 
     def send_command(self, 
                      command: str, 
@@ -118,7 +122,7 @@ class SocketController(Communication):
             raise ConnectionError("Robot is not connected.")
         
         if not suppress_input:
-            logger.send(f"Sending command: {command.strip().replace('\n', '//n')}")  # Explicitly show newline char in logger
+            logger.send(f"Sending command: {command.strip().replace(chr(10), '//n')}")  # Explicitly show newline char in logger
 
         try:
             self.send_socket.sendall(command.encode())  # Send Command

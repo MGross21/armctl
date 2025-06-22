@@ -6,16 +6,16 @@ class Fanuc(PLC, Commands):
         super().__init__(ip, port)
         raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
-    async def move_joints(self, joint_positions, speed=1.0):
-        return await self.send_command({"type": "move_joints", "positions": joint_positions, "speed": speed})
+    async def move_joints(self, pos, speed=1.0):
+        return await self.send_command({"type": "move_joints", "positions": pos, "speed": speed})
 
-    async def move_cartesian(self, x, y, z, rx, ry, rz, speed=1.0):
-        return await self.send_command({"type": "move_cartesian", "position": [x, y, z, rx, ry, rz], "speed": speed})
+    async def move_cartesian(self, pose, speed=1.0):
+        return await self.send_command({"type": "move_cartesian", "position": pose, "speed": speed})
 
-    async def get_joint_positions(self, *args, **kwargs):
+    async def get_joint_positions(self):
         return await self.send_command({"type": "get_joint_positions"})
 
-    async def get_cartesian_position(self, *args, **kwargs):
+    async def get_cartesian_position(self):
         return await self.send_command({"type": "get_cartesian_position"})
 
     async def stop_motion(self):
