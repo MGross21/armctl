@@ -69,9 +69,6 @@ with RobotSeries("ROBOT_IP_ADDRESS") as robot:
 
 ### Multi-Robot Control
 
-> [!TIP]  
-> For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
-
 ```python
 with (
   Robot1("ROBOT1_IP_ADDRESS") as r1,
@@ -84,14 +81,39 @@ with (
     r2.move_joints([0,0,0,0,0,0])
 ```
 
+> [!TIP]  
+> For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
+
+#### Multithread Control
+
+Replicating the prior example,
+
+```python
+import threading
+
+def control_robot(robot, ip):
+  with robot(ip) as r:
+    r.home()
+    r.move_joints([0] * r.DOF)
+
+threads = [
+  threading.Thread(target=control_robot, args=(Robot1, "ROBOT1_IP")),
+  threading.Thread(target=control_robot, args=(Robot2, "ROBOT2_IP"))
+]
+
+for t in threads:
+  t.start()
+for t in threads:
+  t.join()
+```
+
 ## API Reference
 
 > [!NOTE]  
-> The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are planned for future releases to further expand functionality.
+> The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are probotfuipses to furrobot ipity.
+rControrplate
 
-### Control Template
-
-The following methods are available to users of the library to control various supported robots.
+The fring methods are avareDOFtorted robots.
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
