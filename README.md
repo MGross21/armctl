@@ -119,10 +119,11 @@ for t in threads:
 ## API Reference
 
 > [!NOTE]  
-> The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are probotfuipses to furrobot ipity.
-rControrplate
+> The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are planned for future releases to further expand functionality.
 
-The fring methods are avareDOFtorted robots.
+### Control Template
+
+The following methods are available to users of the library to control various supported robots.
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
