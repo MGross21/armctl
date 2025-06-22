@@ -55,8 +55,12 @@ from armctl import *
 
 ```python
 with Manufacturer("ROBOT_IP_ADDRESS") as robot:
-    robot.move_joints([0,0,0,0,0])
-    print(robot.get_cartesian_position())
+    robot.move_joints([...])
+    robot.get_joint_positions()
+    robot.move_cartesian([...])
+    robot.get_cartesian_position(...)
+    robot.sleep(...)
+    robot.get_robot_state()
 ```
 
 ### Simple Example with Specific Robot Series
@@ -64,7 +68,12 @@ with Manufacturer("ROBOT_IP_ADDRESS") as robot:
 ```python
 with RobotSeries("ROBOT_IP_ADDRESS") as robot:
     robot.home()
-    robot.move_joints([0,0,0,0,0,0])
+    robot.move_joints([...])
+    robot.get_joint_positions()
+    robot.move_cartesian([...])
+    robot.get_cartesian_position()
+    robot.sleep(...)
+    robot.get_robot_state()
 ```
 
 ### Multi-Robot Control
@@ -77,8 +86,8 @@ with (
     r1.home()
     r2.home()
 
-    r1.move_joints([0,0,0,0,0,0])
-    r2.move_joints([0,0,0,0,0,0])
+    r1.move_joints([...])
+    r2.move_joints([...])
 ```
 
 > [!TIP]  
