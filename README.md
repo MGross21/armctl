@@ -127,10 +127,10 @@ The following methods are available to users of the library to control various s
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| `move_joints(joint_positions, *args, **kwargs)` | Move the robot to specified joint positions.             |
-| `get_joint_positions(*args, **kwargs)` | Retrieve the current joint positions of the robot.                |
-| `move_cartesian(robot_pose, *args, **kwargs)` | Move the robot to a specified Cartesian pose.              |
-| `get_cartesian_position(*args, **kwargs)` | Retrieve the current Cartesian position of the robot.          |
+| `move_joints(pos)` | Move the robot to specified joint positions.             |
+| `get_joint_positions()` | Retrieve the current joint positions of the robot.                |
+| `move_cartesian(pose)` | Move the robot to a specified Cartesian pose.              |
+| `get_cartesian_position()` | Retrieve the current Cartesian position of the robot.          |
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
@@ -144,7 +144,7 @@ The following methods facilitate explicit connection management and low-level co
 |------------------------------|------------------------------------------------------------------|
 | `connect()`                  | Establish a connection to the robot controller.                  |
 | `disconnect()`               | Close the connection to the robot controller.                    |
-| `send_command(command, *args, **kwargs)` | Send a low-level command to the robot controller.    |
+| `send_command(cmd)` | Send a low-level command to the robot controller.    |
 
 ### Graphical Overview
 
