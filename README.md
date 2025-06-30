@@ -152,44 +152,21 @@ Below is a high-level diagram illustrating the architecture of the `armctl` libr
 
 ```mermaid
 flowchart TD
-    %% Templates
-    ConnTemplate["Connection Template"]
-    CtrlTemplate["Control Template"]
-
-    %% Controller Implementations
-    SocketController["Socket Controller"]
-    PLCController["PLC Controller"]
-    SerialController["Serial Controller"]
-
-    %% Manufacturers
-    Manufacturer1["Manufacturer (Socket-based)"]
-    Manufacturer2["Manufacturer (PLC-based)"]
-    Manufacturer3["Manufacturer (Serial-based)"]
-
-    %% Robot Series
-    Series1["Robot Series"]
-    Series2["Robot Series"]
-    Series3["Robot Series"]
-
-    %% Connection Template to Controllers
-    ConnTemplate --> SocketController
-    ConnTemplate --> PLCController
-    ConnTemplate --> SerialController
-
-    %% Control Template to Manufacturers
-    CtrlTemplate --> Manufacturer1
-    CtrlTemplate --> Manufacturer2
-    CtrlTemplate --> Manufacturer3
-
-    %% Controllers to Manufacturers
+    CommTemplate["Communication Template"] --> SocketController["Socket Controller"] & PLCController["PLC Controller"] & SerialController["Serial Controller"]
+    CtrlTemplate["Control Template"] --> Manufacturer1["Manufacturer (Socket-based)"] & Manufacturer2["Manufacturer (PLC-based)"] & Manufacturer3["Manufacturer (Serial-based)"]
     SocketController --> Manufacturer1
     PLCController --> Manufacturer2
     SerialController --> Manufacturer3
-
-    %% Manufacturers to Series
-    Manufacturer1 --> Series1
-    Manufacturer2 --> Series2
-    Manufacturer3 --> Series3
+    Manufacturer2 --> Series2["Robot Series"]
+    Manufacturer3 --> Series3["Robot Series"]
+    Manufacturer1 --> n3["Robot Series"]
+    style CommTemplate color:#D50000
+    style SocketController stroke:#000000
+    style PLCController stroke:#000000
+    style SerialController stroke:#000000
+    style CtrlTemplate color:#D50000
+    style Manufacturer2 stroke:#000000
+    style Manufacturer3 stroke:#000000
 ```
 
 ## Future Development
