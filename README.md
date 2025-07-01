@@ -116,6 +116,28 @@ for t in threads:
   t.join()
 ```
 
+### Custom Robot Platforms (DIY Robot)
+
+For engineers with custom robotic platforms that aren't directly supported, `armctl` provides a flexible `DIYRobot` factory class:
+
+```python
+from armctl import DIYRobot
+from armctl.templates import SocketController
+
+# Create a blank robot factory
+robot = DIYRobot()
+
+# Configure with any communication method
+robot(SocketController, "192.168.1.100", 8080)
+
+# Use basic communication methods for custom protocols
+robot.connect()
+response = robot.send_command("CUSTOM_COMMAND")
+robot.disconnect()
+```
+
+The `DIYRobot` provides only basic communication methods (`connect`, `disconnect`, `send_command`) without any template commands, allowing full customization for any robotic platform.
+
 ## API Reference
 
 > [!NOTE]  

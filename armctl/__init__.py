@@ -10,6 +10,7 @@ Supported Manufacturers and Robots:
     - Grippers: OnRobot (Ethernet)
 - Vention (Ethernet)
 - Jaka Robotics: Jaka (Ethernet)
+- DIY/Custom Robots: DIYRobot factory class for custom platforms
 """
 
 # from .dobot import Dobot
