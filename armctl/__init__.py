@@ -18,6 +18,7 @@ from .universal_robotics import UniversalRobotics, UR5, UR5e, OnRobot
 # from .fanuc import Fanuc
 from .vention import Vention
 from .jaka import Jaka
+from .diy_robot import DIYRobot
 
 __all__ = [
     "ElephantRobotics",
@@ -30,4 +31,5 @@ __all__ = [
 
     "Vention",
     "Jaka",
+    "DIYRobot",
 ]
