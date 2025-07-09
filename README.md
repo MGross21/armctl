@@ -136,6 +136,16 @@ The following methods are available to users of the library to control various s
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
 | `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
 
+#### Standard Units
+
+All inputs and outputs use these standard units:
+
+| Type                   | Unit                     |
+| ---------------------- | ------------------------ |
+| **Joint Angle**        | radians                  |
+| **Cartesian Position** | meters (`[x, y, z]`)     |
+| **Cartesian Rotation** | radians (`[rx, ry, rz]`) |
+
 ### Connection Template
 
 The following methods facilitate explicit connection management and low-level command execution. These are primarily intended for advanced scenarios, such as when not using Python's `with/as` context manager or when sending custom commands outside the standard API. *Use with caution*.
@@ -180,7 +190,7 @@ flowchart TD
 
 ## Contributing
 
-Please feel free to submit a pull request or open an issue for any enhancements or bug fixes.
+Please feel free to submit a pull request or open an issue for any enhancements or bug fixes. See [CONTRIBUTING](https://github.com/MGross21/armctl/blob/main/CONTRIBUTING.md) for more details.
 
 ## License
 
