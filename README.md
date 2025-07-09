@@ -179,14 +179,21 @@ flowchart TD
     style Manufacturer3 stroke:#000000
 ```
 
-## Future Development
+## Under Development
 
-- [Dobot](https://www.dobot-robots.com)
-  - **Models:** Magician Lite
-- [FANUC](https://www.fanucamerica.com)
-  - **Models:** LR Mate 200iD Series
 - [JAKA](https://www.jaka.com/en)
   - **Models:** Zu 5
+- [Dobot](https://www.dobot-robots.com)
+  - **Models:** Magician Lite
+
+## Future Development
+
+- [FANUC](https://www.fanucamerica.com)
+  - **Models:** LR Mate 200iD Series
+- **More manufacturers and robot series will be supported in future releases.**
+
+> **Contributors wanted!**  
+> Interested in robotics or Python? Join the project and help expand `armctl`!
 
 ## Contributing
 
