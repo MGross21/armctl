@@ -1,5 +1,6 @@
 from armctl.templates import SocketController as SCT, Commands
 from armctl.angle_utils import AngleUtils
+from typing import Union, List, Dict, Any
 import math
 import ast
 import time
@@ -9,33 +10,34 @@ import time
 # - Command units are degrees & meters.
 
 class Jaka(SCT, Commands, AngleUtils):
-    def __init__(self, ip:str, port:int | tuple[int, int] = (10_001, 10_000)):
-        super().__init__(ip, port)                                         
-        self.JOINT_RANGES = [           # Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
-            (-math.pi, math.pi),
-            (math.radians(-85), math.radians(265)),
-            (math.radians(-175), math.radians(175)),
-            (math.radians(-85), math.radians(265)),
-            (math.radians(-300), math.radians(300)),
-            (-math.pi, math.pi),
-        ]
-        self.DOF = len(self.JOINT_RANGES)
-        self.MAX_JOINT_VELOCITY = math.radians(180) # rad/s
-        self.MAX_JOINT_ACCELERATION = math.radians(720) # rad/s^2
+    JOINT_RANGES = [        # Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
+        (-math.pi, math.pi),
+        (math.radians(-85), math.radians(265)),
+        (math.radians(-175), math.radians(175)),
+        (math.radians(-85), math.radians(265)),
+        (math.radians(-300), math.radians(300)),
+        (-math.pi, math.pi),
+    ]
+    DOF = len(JOINT_RANGES)
+    MAX_JOINT_VELOCITY = math.radians(180)  # rad/s
+    MAX_JOINT_ACCELERATION = math.radians(720)  # rad/s^2
 
-    def _response_handler(self, response: str):
+    def __init__(self, ip: str, port: Union[int, tuple[int, int]] = (10_001, 10_000)):
+        super().__init__(ip, port)
+
+    def _response_handler(self, response: str) -> Any:
         try:
             return ast.literal_eval(response)
         except (ValueError, SyntaxError) as e:
             raise RuntimeError(f"Failed to parse response: {response}") from e
 
-    def _send_and_check(self, cmd_dict):
+    def _send_and_check(self, cmd_dict: Dict[str, Any]) -> Dict[str, Any]:
         resp = self._response_handler(self.send_command(str(cmd_dict)))
         if not (isinstance(resp, dict) and resp.get("errorCode") == "0" and resp.get("cmdName") == cmd_dict["cmdName"]):
             raise RuntimeError(f"Failed to execute {cmd_dict['cmdName']}: {resp}. {resp.get('errorMsg')}")
         return resp
-    
-    def connect(self): 
+
+    def connect(self) -> None:
         super().connect()
         self._send_and_check({"cmdName": "power_on"})
         self._send_and_check({"cmdName": "emergency_stop_status"})
@@ -46,23 +48,26 @@ class Jaka(SCT, Commands, AngleUtils):
             "angleZ": 0,    # Robot rotation angle in the Z direction, range: [0, 360) degrees.
         })
 
-    def disconnect(self):
+    def disconnect(self) -> None:
         self._send_and_check({"cmdName": "disable_robot"})
         # self._send_and_check({"cmdName": "shutdown"})  # NOT RECOMMENDED: Shuts down the Robot TCP Server
         super().disconnect()
 
-    def sleep(self, seconds: float):
-        assert isinstance(seconds, (int, float)), "Seconds must be a numeric value."
-        assert seconds >= 0, "Seconds must be a non-negative value."
+    def sleep(self, seconds: float) -> None:
+        if not isinstance(seconds, (int, float)):
+            raise TypeError("Seconds must be a numeric value.")
+        if seconds < 0:
+            raise ValueError("Seconds must be a non-negative value.")
         time.sleep(seconds)
 
-    def move_joints(self,
-                    pos: list[float],
-                    speed: float = 0.25,
-                    acceleration: float = 0.1) -> None:
+    def move_joints(
+        self,
+        pos: List[float],
+        speed: float = 0.25,
+        acceleration: float = 0.1
+    ) -> None:
         """
         Move the robot to the specified joint positions.
-
         Parameters
         ----------
         pos : list of float
@@ -71,19 +76,17 @@ class Jaka(SCT, Commands, AngleUtils):
             Joint velocity in radians/sec
         acceleration : float
             Joint acceleration in radians/sec²
-        relFlag : int
-            0 for absolute motion, 1 for relative motion. 
         """
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
-
-        assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        assert acceleration < self.MAX_JOINT_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
-
-        for idx, pos in enumerate(pos):
-            if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
-                raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
-            
+        if not (0 < speed <= self.MAX_JOINT_VELOCITY):
+            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
+        if not (0 < acceleration <= self.MAX_JOINT_ACCELERATION):
+            raise ValueError(f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}")
+        for idx, p in enumerate(pos):
+            min_j, max_j = self.JOINT_RANGES[idx]
+            if not (min_j <= p <= max_j):
+                raise ValueError(f"Joint {idx + 1} position {p} is out of range: {self.JOINT_RANGES[idx]}")
         cmd = {
             "cmdName": "joint_move",
             "relFlag": 0,       # 0 for absolute motion, 1 for relative motion.
@@ -91,18 +94,16 @@ class Jaka(SCT, Commands, AngleUtils):
             "speed": math.degrees(speed),
             "accel": math.degrees(acceleration),
         }
+        self._send_and_check(cmd)
 
-        response = self._response_handler(self.send_command(str(cmd)))
-        if not (isinstance(response, dict) and response.get("errorCode") == "0" and response.get("cmdName") == "joint_move"):
-            raise RuntimeError(f"Failed to move joints: {response}. {response.get('errorMsg')}")
-
-    def move_cartesian(self, 
-                       pose: list[float], 
-                       speed: float = 0.25,
-                       acceleration: float = 0.0) -> None:
+    def move_cartesian(
+        self,
+        pose: List[float],
+        speed: float = 0.25,
+        acceleration: float = 0.0
+    ) -> None:
         """
-        Move the robot to the specified cartesian position. (`movel` or `movep`)
-
+        Move the robot to the specified cartesian position.
         Parameters
         ----------
         pose : list of float
@@ -112,74 +113,61 @@ class Jaka(SCT, Commands, AngleUtils):
         acceleration : float, optional
             Acceleration of the movement in radians/sec²
         """
-        assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        assert acceleration < self.MAX_JOINT_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
-
-        # Only check orientation part for radians
+        if not (0 < speed <= self.MAX_JOINT_VELOCITY):
+            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
+        if not (0 <= acceleration <= self.MAX_JOINT_ACCELERATION):
+            raise ValueError(f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}")
         for p in pose[3:]:
-            if not (0 <= p <= math.pi*2):
-                raise ValueError(f"Orientation value {p} out of range: 0 ~ {math.pi*2}")
-
+            if not (0 <= p <= math.pi * 2):
+                raise ValueError(f"Orientation value {p} out of range: 0 ~ {math.pi * 2}")
         cmd = {
             "cmdName": "end_move",
             "end_position": self.to_degrees_cartesian(pose),
-            "speed": self.to_degrees_joint(speed),
-            "accel": self.to_degrees_joint(acceleration),
+            "speed": math.degrees(speed),
+            "accel": math.degrees(acceleration),
         }
+        self._send_and_check(cmd)
 
-        response = self._response_handler(self.send_command(str(cmd)))
-        if not (isinstance(response, dict) and response.get("errorCode") == "0" and response.get("cmdName") == "joint_move"):
-            raise RuntimeError(f"Failed to move joints: {response}. {response.get('errorMsg')}")
-
-    def get_joint_positions(self) -> list[float]:
+    def get_joint_positions(self) -> List[float]:
         """
         Get the current joint positions of the robot.
-
         Returns
         -------
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
         cmd = {"cmdName": "get_joint_pos"}
-        response = self._response_handler(self.send_command(str(cmd))) # Returned in Degrees
-
-        if not (isinstance(response, dict) and response.get("errorCode") == "0" and response.get("cmdName") == cmd["cmdName"]):
-            raise RuntimeError(f"Failed to get joint positions: {response}. {response.get('errorMsg')}")
-        
+        response = self._send_and_check(cmd)
         return [math.radians(angle) for angle in response["joint_pos"]]
 
-    def get_cartesian_position(self) -> list[float]:
+    def get_cartesian_position(self) -> List[float]:
         """
         Retrieves the current Cartesian position of the robot's tool center point (TCP).
-
         Returns
         -------
         list of float
             Cartesian position [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are in meters and Rx, Ry, Rz are in radians.
         """
         cmd = {"cmdName": "get_tcp_pos"}
-        response = self._response_handler(self.send_command(str(cmd)))
-
-        if not (isinstance(response, dict) and response.get("errorCode") == "0" and response.get("cmdName") == cmd["cmdName"]):
-            raise RuntimeError(f"Failed to get TCP position: {response}. {response.get('errorMsg')}")
+        response = self._send_and_check(cmd)
         return self.to_radians_cartesian(response["tcp_pos"])
 
     def stop_motion(self) -> None:
-        self.send_command(str({"cmdName": "stop_program"}))
+        self._send_and_check({"cmdName": "stop_program"})
 
-    def get_robot_state(self) -> dict:
+    def get_robot_state(self) -> Dict[str, Any]:
         """
         Get the current state of the robot.
 
         Returns
         -------
         dict
-            A dictionary containing the robot's state information:
-            - enable: Whether the robot is enabled. True means enabled, False means not enabled.
-            - power: Whether the robot is powered on. 1 means powered on, 0 means not powered on.
-            - errorCode: The corresponding error code.
-            - errcode: The error code returned by the controller.
-            - errorMsg: The corresponding error message.
-            - msg: The error message returned by the controller.
+            A dictionary containing the robot's state information.
+            - `enable`: Whether the robot is enabled. True means enabled, False means not enabled.
+            - `power`: Whether the robot is powered on. 1 means powered on, 0 means not powered on.
+            - `errorCode`: The corresponding error code.
+            - `errcode`: The error code returned by the controller.
+            - `errorMsg`: The corresponding error message.
+            - `msg`: The error message returned by the controller.
         """
-        return self._response_handler(self.send_command(str({"cmdName": "get_robot_state"})))
+        return self._send_and_check({"cmdName": "get_robot_state"})
