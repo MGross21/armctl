@@ -4,21 +4,23 @@
 
 A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
 
-## Supported Manufacturers & Series
+## Supported Manufacturers & Robot Series
+
+The `armctl` library currently supports the following manufacturers and robot models:
 
 ### [Elephant Robotics](https://www.elephantrobotics.com/en/)
-
-- **Models:** myCobot Pro600  
+- **Supported Models:** myCobot Pro600  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
-### [Universal Robotics](https://www.universal-robots.com)
-
-- **Models:** UR5, UR5e
+### [Universal Robots](https://www.universal-robots.com)
+- **Supported Models:** UR3, UR5, UR5e, UR10, UR16
 
 ### [Vention](https://vention.io)
-
-- **Models:** 7th Axis Plate  
+- **Supported Models:** 7th Axis Plate  
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5_vention.gif" alt="UR5 on Vention Plate" width="400">
+
+> **Want to see your robot supported?**  
+> [Open an issue](https://github.com/MGross21/armctl/issues) or contribute a pull request!
 
 ## Quick Start
 
@@ -191,9 +193,6 @@ flowchart TD
 - [FANUC](https://www.fanucamerica.com)
   - **Models:** LR Mate 200iD Series
 - **More manufacturers and robot series will be supported in future releases.**
-
-> **Contributors wanted!**  
-> Interested in robotics or Python? Join the project and help expand `armctl`!
 
 ## Contributing
 
