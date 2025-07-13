@@ -47,12 +47,12 @@ armctl = {git = "https://github.com/MGross21/armctl.git"}
 
 ### Importing the Library
 
-> [!NOTE]  
-> For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
-
 ```python
 from armctl import *
 ```
+
+> [!NOTE]  
+> For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ### Simple Example with Manufacturer Defaults
 
