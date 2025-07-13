@@ -10,6 +10,7 @@ Supported Manufacturers and Robots:
     - Grippers: OnRobot (Ethernet)
 - Vention (Ethernet)
 - Jaka Robotics: Jaka (Ethernet)
+- DIY/Custom Robots: DIYRobot factory class for custom platforms
 """
 
 # from .dobot import Dobot
@@ -20,6 +21,7 @@ from .universal_robotics import (UniversalRobotics,
 # from .fanuc import Fanuc
 from .vention import Vention
 from .jaka import Jaka
+from .diy_robot import DIYRobot
 
 __all__ = [
     "ElephantRobotics",
@@ -32,4 +34,5 @@ __all__ = [
 
     "Vention",
     "Jaka",
+    "DIYRobot",
 ]
