@@ -4,7 +4,7 @@ from .protocols.rtde import RTDE
 import math
 from time import sleep as _sleep
 
-class UniversalRobotics(SCT, Commands):
+class UniversalRobots(SCT, Commands):
     def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
         super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
         self.JOINT_RANGES = [ 

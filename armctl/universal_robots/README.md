@@ -1,4 +1,4 @@
-# Universal Robotics
+# Universal Robots
 
 This document provides resources and references for interfacing with Universal Robots controllers, with a focus on communication protocols, data exchange, and available software libraries.
 
