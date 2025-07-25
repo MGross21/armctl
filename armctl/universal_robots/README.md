@@ -5,6 +5,8 @@ This document provides resources and references for interfacing with Universal R
 ## Communication and Port Access
 
 - [Remote Control via TCP/IP](https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/): Official guide for accessing and controlling UR robots over TCP/IP.
+- [URScript Programming Language](https://s3-eu-west-1.amazonaws.com/ur-support-site/77327/scriptManual_e-Series_5.9.4.pdf): Variables, types, and flow control statements.
+- [URScript Programming Language for e-Series](https://s3-eu-west-1.amazonaws.com/ur-support-site/115824/scriptManual_SW5.11.pdf)
 - [Socket Script Example Document](https://s3-eu-west-1.amazonaws.com/ur-support-site/29983/Script%20command%20Examples.pdf)
 
 ## Real-Time Data Exchange (RTDE)
