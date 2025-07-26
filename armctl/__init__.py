@@ -32,4 +32,22 @@ __all__ = [
 
     "Vention",
     "Jaka",
+
+    "Logger",
 ]
+
+class Logger:
+    """Global logger utility for armctl."""
+    @staticmethod
+    def disable():
+        """Disables logging."""
+        import logging
+        # Disable all logging at and below the CRITICAL level
+        logging.disable(logging.CRITICAL)
+    
+    @staticmethod
+    def enable():
+        """Enables logging."""
+        import logging
+        # Re-enable logging to its previous state
+        logging.disable(logging.NOTSET)
