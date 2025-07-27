@@ -9,14 +9,17 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 The `armctl` library currently supports the following manufacturers and robot models:
 
 ### [Universal Robots](https://www.universal-robots.com)
+
 - **Supported Models:** UR3, UR5, UR5e, UR10, UR16 <br>
   <img src=https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif alt="UR5" width="400">
 
 ### [Vention](https://vention.io)
+
 - **Supported Models:** 7th Axis Plate <br>
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="400">
 
 ### [Elephant Robotics](https://www.elephantrobotics.com/en/)
+
 - **Supported Models:** myCobot Pro600 <br>
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
@@ -208,7 +211,6 @@ Logger.disable()
 #### Re-Enabling
 
 ```python
-from armctl import *
 Logger.enable()
 ```
 
