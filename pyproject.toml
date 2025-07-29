@@ -10,7 +10,7 @@ packages = [{ include = "armctl" }]
 authors = [{ name = "Michael Gross", email = "MGross21@TODO.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.8,<4.0"
+requires-python = ">=3.9,<4.0"
 dependencies = []
 keywords = ["robotics", "socket", "control", "automation"]
 classifiers = [

@@ -140,9 +140,9 @@ poetry install --with dev
 To ensure consistency and code quality, run the following commands before submitting your changes:
 
 ```bash
-poetry run black . \
-poetry run isort . \
-poetry run ruff . \
+poetry run black . && \
+poetry run isort . && \
+poetry run ruff format . && \
 poetry run mypy armctl
 ```
 

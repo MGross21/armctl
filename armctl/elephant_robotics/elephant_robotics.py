@@ -43,9 +43,9 @@ class ElephantRobotics(SCT, Commands):
             time.sleep(0.25)
 
     def sleep(self, seconds):
-        assert isinstance(seconds, (int, float)), (
-            "Seconds must be a numeric value."
-        )
+        assert isinstance(
+            seconds, (int, float)
+        ), "Seconds must be a numeric value."
         assert seconds >= 0, "Seconds must be a non-negative value."
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
@@ -80,9 +80,9 @@ class ElephantRobotics(SCT, Commands):
         response = self.send_command(
             f"{command}({','.join(map(str, pos))},{speed})"
         )
-        assert response == f"{command}:[ok]", (
-            f"Failed to move joints: {response}"
-        )
+        assert (
+            response == f"{command}:[ok]"
+        ), f"Failed to move joints: {response}"
 
         while any(
             abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)
