@@ -36,6 +36,7 @@ black = { version = ">=23.0" }
 ruff = { version = ">=0.4.0" }
 mypy = { version = ">=1.0.0" }
 isort = { version = ">=5.12.0" }
+pytest = { version = ">=8.4.0"}
 
 [tool.black]
 line-length = 80
@@ -57,6 +58,6 @@ force_grid_wrap = 0
 use_parentheses = true
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 strict = true
 ignore_missing_imports = true
