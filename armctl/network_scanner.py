@@ -48,7 +48,9 @@ class NetworkScanner:
 
         ip_range = [f"{network_prefix}.{i}" for i in range(1, 255)]
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
-            return [ip for ip in executor.map(NetworkScanner.ping, ip_range) if ip]
+            return [
+                ip for ip in executor.map(NetworkScanner.ping, ip_range) if ip
+            ]
 
     @staticmethod
     def scan_ports(ip, ports=None, timeout=1):
@@ -64,7 +66,8 @@ class NetworkScanner:
 
         with ThreadPoolExecutor(max_workers=10) as executor:
             results = executor.map(
-                lambda port: NetworkScanner._check_port(ip, port, timeout), ports
+                lambda port: NetworkScanner._check_port(ip, port, timeout),
+                ports,
             )
 
         return [port for port in results if port]
@@ -98,7 +101,9 @@ class NetworkScanner:
 
                         if scan_ports:
                             ports = NetworkScanner.scan_ports(device)
-                            print(f"   🔍 Open Ports: {ports if ports else 'None'}")
+                            print(
+                                f"   🔍 Open Ports: {ports if ports else 'None'}"
+                            )
 
                 known_devices = current_devices
         except KeyboardInterrupt:

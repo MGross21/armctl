@@ -14,7 +14,15 @@ Supported Manufacturers and Robots:
 
 # from .dobot import Dobot
 from .elephant_robotics import ElephantRobotics, Pro600
-from .universal_robotics import UniversalRobotics, UR3, UR5, UR5e, UR10, UR16, OnRobot
+from .universal_robotics import (
+    UniversalRobotics,
+    UR3,
+    UR5,
+    UR5e,
+    UR10,
+    UR16,
+    OnRobot,
+)
 
 # from .fanuc import Fanuc
 from .vention import Vention

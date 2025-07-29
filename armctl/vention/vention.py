@@ -27,7 +27,10 @@ class Vention(SCT, Commands):
             )
         # Check E-Stop status. Attempt to Release if engaged.
         estop_status = self.send_command(
-            "estop/status;", timeout=10, suppress_input=True, suppress_output=True
+            "estop/status;",
+            timeout=10,
+            suppress_input=True,
+            suppress_output=True,
         )
         if "true" in estop_status:
             release_response = self.send_command(
@@ -74,7 +77,8 @@ class Vention(SCT, Commands):
         if isinstance(pos, (float, int)):
             pos = [pos]
         elif not (
-            isinstance(pos, list) and all(isinstance(p, (int, float)) for p in pos)
+            isinstance(pos, list)
+            and all(isinstance(p, (int, float)) for p in pos)
         ):
             raise TypeError(
                 "Joint positions must be a list of numeric values, or a single numeric value."
@@ -94,7 +98,9 @@ class Vention(SCT, Commands):
             current_positions = self.get_joint_positions()
             for curr_pos, rel_pos in zip(current_positions, pos):
                 new_pos = curr_pos + rel_pos
-                if not (self.MIN_JOINT_RANGE <= new_pos <= self.MAX_JOINT_RANGE):
+                if not (
+                    self.MIN_JOINT_RANGE <= new_pos <= self.MAX_JOINT_RANGE
+                ):
                     raise ValueError(
                         f"Relative joint positions must result in positions within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm."
                     )
@@ -109,12 +115,16 @@ class Vention(SCT, Commands):
                 raise ValueError(
                     f"Invalid axis: {axis}. Must be one of {self.VALID_AXES}."
                 )
-            ack = self.send_command(f"SET im_move_{move_type}_{axis}/{p}/;", timeout=30)
+            ack = self.send_command(
+                f"SET im_move_{move_type}_{axis}/{p}/;", timeout=30
+            )
             if ack != "Ack":
                 raise RuntimeError(f"Failed to set position for axis {axis}.")
         self._wait_for_finish()
 
-    def _wait_for_finish(self, delay: float = 1.0, timeout: float = 120.0) -> None:
+    def _wait_for_finish(
+        self, delay: float = 1.0, timeout: float = 120.0
+    ) -> None:
         """Waits for the robot to finish its current task, with a timeout."""
         logger.info("Waiting for motion to complete...")
         start_time = time.time()
@@ -127,7 +137,9 @@ class Vention(SCT, Commands):
             ):
                 break
             if (time.time() - start_time) > timeout:
-                raise TimeoutError("Motion did not complete within the expected time.")
+                raise TimeoutError(
+                    "Motion did not complete within the expected time."
+                )
             time.sleep(delay)
         logger.info("Motion completed.")
 
@@ -148,7 +160,9 @@ class Vention(SCT, Commands):
     def _get_axis_position(self, axis: int) -> float:
         """Fetches the position of a specific axis."""
         response = self.send_command(
-            f"GET im_get_controller_pos_axis_{axis};", timeout=10, suppress_output=True
+            f"GET im_get_controller_pos_axis_{axis};",
+            timeout=10,
+            suppress_output=True,
         )
         try:
             stripped_response = response.strip("()")
@@ -160,7 +174,9 @@ class Vention(SCT, Commands):
                 )
             return float(stripped_response)
         except ValueError:
-            raise RuntimeError(f"Failed to parse position from response: '{response}'")
+            raise RuntimeError(
+                f"Failed to parse position from response: '{response}'"
+            )
 
     def stop_motion(self) -> None:
         """Stops all robot motion."""

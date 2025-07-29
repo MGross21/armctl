@@ -3,12 +3,16 @@ import warnings
 
 
 class OnRobot(SCT):
-    def __init__(self, ip: str = "192.168.1.111", port: int | tuple[int, int] = 30_002):
+    def __init__(
+        self, ip: str = "192.168.1.111", port: int | tuple[int, int] = 30_002
+    ):
         super().__init__(ip, port)
 
     def connect(self):
         super().connect()
-        self.send_command("rg2_activate()\n", suppress_output=True)  # activate Gripper
+        self.send_command(
+            "rg2_activate()\n", suppress_output=True
+        )  # activate Gripper
         # self.send_command("write_register(1000, 0x0100, unit=9)\n") # activate Gripper
 
     def disconnect(self):
@@ -36,14 +40,20 @@ class OnRobot(SCT):
 
         valid_grippers = ["rg2", "rg6", "vgc10"]
         if name not in valid_grippers:
-            raise ValueError(f"Gripper name must be one of {','.join(valid_grippers)}.")
+            raise ValueError(
+                f"Gripper name must be one of {','.join(valid_grippers)}."
+            )
 
         if isinstance(position, float):
             position = int(position)
-            warnings.warn(f"Position converted to int: {position}", UserWarning, 2)
+            warnings.warn(
+                f"Position converted to int: {position}", UserWarning, 2
+            )
 
         self.send_command(f"{name}_set_force({force})\n", suppress_output=True)
-        self.send_command(f"{name}_set_width({position})\n", suppress_output=True)
+        self.send_command(
+            f"{name}_set_width({position})\n", suppress_output=True
+        )
 
     def get_position(self, name: str = "rg2") -> float:
         """Get the current position of the gripper."""
@@ -57,7 +67,9 @@ class OnRobot(SCT):
         response = self.send_command(
             "rg2_get_status()\n", suppress_output=True, raw_response=True
         )
-        return response.strip() == "1"  # 1 means gripper is closed, 0 means open
+        return (
+            response.strip() == "1"
+        )  # 1 means gripper is closed, 0 means open
 
     def open(self, force: float = 20) -> None:
         self.send_command("rg2_open()\n", suppress_output=True)

@@ -63,16 +63,18 @@ class UniversalRobotics(SCT, Commands):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        assert speed < self.MAX_JOINT_VELOCITY, (
-            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        )
+        assert (
+            speed < self.MAX_JOINT_VELOCITY
+        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
 
-        assert acceleration <= self.MAX_ACCELERATION, (
-            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
-        )
+        assert (
+            acceleration <= self.MAX_ACCELERATION
+        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
 
         for idx, pos in enumerate(pos):
-            if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
+            if not (
+                self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]
+            ):
                 raise ValueError(
                     f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}"
                 )
@@ -113,19 +115,24 @@ class UniversalRobotics(SCT, Commands):
         radius : float, optional
             Blend radius in meters.
         """
-        assert move_type in ["movel", "movep"], "Unsupported move type: movel or movep"
+        assert move_type in [
+            "movel",
+            "movep",
+        ], "Unsupported move type: movel or movep"
 
-        assert speed < self.MAX_JOINT_VELOCITY, (
-            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        )
+        assert (
+            speed < self.MAX_JOINT_VELOCITY
+        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
 
-        assert acceleration <= self.MAX_ACCELERATION, (
-            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
-        )
+        assert (
+            acceleration <= self.MAX_ACCELERATION
+        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
 
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
-                raise ValueError(f"Joint position {p} out of range: 0 ~ {math.pi * 2}")
+                raise ValueError(
+                    f"Joint position {p} out of range: 0 ~ {math.pi * 2}"
+                )
 
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
@@ -177,7 +184,9 @@ class UniversalRobotics(SCT, Commands):
 
     def stop_motion(self) -> None:
         deceleration = 2.0  # rad/s^2
-        self.send_command("stopj({})\n".format(deceleration), suppress_output=True)
+        self.send_command(
+            "stopj({})\n".format(deceleration), suppress_output=True
+        )
 
     def get_robot_state(self):
         return self.send_command("get_robot_status()\n")

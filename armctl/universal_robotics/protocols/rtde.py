@@ -25,7 +25,9 @@ class RTDE:
     MSG_HEADER_SIZE = 5  # bytes for message header
 
     @staticmethod
-    def joint_angles(data: bytes) -> Tuple[float, float, float, float, float, float]:
+    def joint_angles(
+        data: bytes,
+    ) -> Tuple[float, float, float, float, float, float]:
         """
         Extract joint angles from the raw socket response data.
 
@@ -43,7 +45,9 @@ class RTDE:
         return RTDE._parse_message(data, RTDE.JOINT_ANGLES_MSG, RTDE.NUM_JOINTS)
 
     @staticmethod
-    def tcp_pose(data: bytes) -> Tuple[float, float, float, float, float, float]:
+    def tcp_pose(
+        data: bytes,
+    ) -> Tuple[float, float, float, float, float, float]:
         """
         Extract TCP pose (X, Y, Z, RX, RY, RZ) from the raw socket response data.
 
@@ -105,7 +109,10 @@ class RTDE:
                 msg_type = struct.unpack("!B", data[offset + 4 : offset + 5])[0]
 
                 # Validate message length
-                if msg_len < RTDE.MSG_HEADER_SIZE or offset + msg_len > packet_length:
+                if (
+                    msg_len < RTDE.MSG_HEADER_SIZE
+                    or offset + msg_len > packet_length
+                ):
                     break
 
                 # Check if this is the target message type
@@ -115,7 +122,9 @@ class RTDE:
 
                     # Ensure we have enough data for the expected values
                     if data_end <= len(data) and data_end <= offset + msg_len:
-                        values = struct.unpack(f"!{count}d", data[data_start:data_end])
+                        values = struct.unpack(
+                            f"!{count}d", data[data_start:data_end]
+                        )
                         return values
                     else:
                         # Insufficient data for complete message
@@ -147,7 +156,9 @@ class RTDE:
 
         try:
             packet_length = struct.unpack("!I", data[: RTDE.HEADER_SIZE])[0]
-            return packet_length >= RTDE.HEADER_SIZE and packet_length <= len(data)
+            return packet_length >= RTDE.HEADER_SIZE and packet_length <= len(
+                data
+            )
         except struct.error:
             return False
 
@@ -193,7 +204,9 @@ class RTDE:
         return message_types
 
     @staticmethod
-    def parse_all_available(data: bytes) -> dict[str, Optional[Tuple[float, ...]]]:
+    def parse_all_available(
+        data: bytes,
+    ) -> dict[str, Optional[Tuple[float, ...]]]:
         """
         Parse all available known message types from RTDE data.
 

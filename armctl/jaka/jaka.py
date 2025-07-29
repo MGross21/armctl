@@ -9,9 +9,11 @@ import time
 # - Commands are sent as JSON strings.
 # - Command units are degrees & meters.
 
+# Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
+
 
 class Jaka(SCT, Commands, AngleUtils):
-    JOINT_RANGES = [  # Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
+    JOINT_RANGES = [
         (-math.pi, math.pi),
         (math.radians(-85), math.radians(265)),
         (math.radians(-175), math.radians(175)),
@@ -23,7 +25,9 @@ class Jaka(SCT, Commands, AngleUtils):
     MAX_JOINT_VELOCITY = math.radians(180)  # rad/s
     MAX_JOINT_ACCELERATION = math.radians(720)  # rad/s^2
 
-    def __init__(self, ip: str, port: Union[int, tuple[int, int]] = (10_001, 10_000)):
+    def __init__(
+        self, ip: str, port: Union[int, tuple[int, int]] = (10_001, 10_000)
+    ):
         super().__init__(ip, port)
 
     def _response_handler(self, response: str) -> Any:
@@ -86,7 +90,9 @@ class Jaka(SCT, Commands, AngleUtils):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
         if not (0 < speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
+            raise ValueError(
+                f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+            )
         if not (0 < acceleration <= self.MAX_JOINT_ACCELERATION):
             raise ValueError(
                 f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
@@ -121,7 +127,9 @@ class Jaka(SCT, Commands, AngleUtils):
             Acceleration of the movement in radians/sec²
         """
         if not (0 < speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
+            raise ValueError(
+                f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+            )
         if not (0 <= acceleration <= self.MAX_JOINT_ACCELERATION):
             raise ValueError(
                 f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
