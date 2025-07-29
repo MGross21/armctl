@@ -45,8 +45,8 @@ skip-string-normalization = false
 [tool.ruff]
 line-length = 80
 target-version = "py38"
-select = ["E", "F", "W", "I", "B"]
-ignore = []
+lint.select = ["E", "F", "W", "I", "B"]
+lint.ignore = []
 
 [tool.isort]
 profile = "black"
