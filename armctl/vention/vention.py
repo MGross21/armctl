@@ -1,6 +1,8 @@
 import time
-from typing import Union, List, Optional
-from armctl.templates import SocketController as SCT, Commands
+from typing import List, Optional, Union
+
+from armctl.templates import Commands
+from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 
 

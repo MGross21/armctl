@@ -1,5 +1,7 @@
-from armctl.templates import SocketController as SCT, Commands
 import time
+
+from armctl.templates import Commands
+from armctl.templates import SocketController as SCT
 
 
 class ElephantRobotics(SCT, Commands):

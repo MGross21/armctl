@@ -1,9 +1,11 @@
-from armctl.templates import SocketController as SCT, Commands
-from armctl.angle_utils import AngleUtils
-from typing import Union, List, Dict, Any
-import math
 import ast
+import math
 import time
+from typing import Any, Dict, List, Union
+
+from armctl.angle_utils import AngleUtils
+from armctl.templates import Commands
+from armctl.templates import SocketController as SCT
 
 ### Notes ###
 # - Commands are sent as JSON strings.

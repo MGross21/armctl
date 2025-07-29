@@ -9,7 +9,7 @@ Commands : ABC
     Abstract base class for defining robot commands.
 """
 
-from .socket_controller import SocketController
-from .serial_controller import SerialController
-from .plc_controller import PLCController
 from .commands import Commands
+from .plc_controller import PLCController
+from .serial_controller import SerialController
+from .socket_controller import SocketController

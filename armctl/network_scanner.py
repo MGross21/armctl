@@ -1,6 +1,6 @@
+import platform
 import socket
 import subprocess
-import platform
 import time
 from concurrent.futures import ThreadPoolExecutor
 

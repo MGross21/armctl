@@ -5,8 +5,9 @@ commands, and handling responses with enhanced debugging features.
 """
 
 import socket
-from .logger import logger
+
 from .communication import Communication
+from .logger import logger
 
 
 class SocketController(Communication):

@@ -1,5 +1,6 @@
-from armctl.templates import SocketController as SCT
 import warnings
+
+from armctl.templates import SocketController as SCT
 
 
 class OnRobot(SCT):

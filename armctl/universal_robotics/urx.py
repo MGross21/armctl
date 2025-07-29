@@ -1,5 +1,6 @@
-from .universal_robotics import UniversalRobotics as UR
 import math
+
+from .universal_robotics import UniversalRobotics as UR
 
 
 class UR3(UR):

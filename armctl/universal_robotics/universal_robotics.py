@@ -1,8 +1,11 @@
-from armctl.templates import SocketController as SCT, Commands
-from armctl.templates.logger import logger
-from .protocols.rtde import RTDE
 import math
 from time import sleep as _sleep
+
+from armctl.templates import Commands
+from armctl.templates import SocketController as SCT
+from armctl.templates.logger import logger
+
+from .protocols.rtde import RTDE
 
 # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
 # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands

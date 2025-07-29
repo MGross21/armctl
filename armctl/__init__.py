@@ -14,19 +14,19 @@ Supported Manufacturers and Robots:
 
 # from .dobot import Dobot
 from .elephant_robotics import ElephantRobotics, Pro600
+from .jaka import Jaka
 from .universal_robotics import (
-    UniversalRobotics,
     UR3,
     UR5,
-    UR5e,
     UR10,
     UR16,
     OnRobot,
+    UniversalRobotics,
+    UR5e,
 )
 
 # from .fanuc import Fanuc
 from .vention import Vention
-from .jaka import Jaka
 
 __all__ = [
     "ElephantRobotics",

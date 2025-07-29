@@ -1,4 +1,5 @@
-from armctl.templates import PLCController as PLC, Commands
+from armctl.templates import Commands
+from armctl.templates import PLCController as PLC
 
 
 # Non-Operational (1/31/2025)
