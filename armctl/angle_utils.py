@@ -1,5 +1,6 @@
 import math
 
+
 class AngleUtils:
     @staticmethod
     def to_degrees_joint(joint_positions):
