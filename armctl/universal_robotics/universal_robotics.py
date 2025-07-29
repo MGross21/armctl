@@ -4,37 +4,42 @@ from .protocols.rtde import RTDE
 import math
 from time import sleep as _sleep
 
+# https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
+# 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
+
+
 class UniversalRobotics(SCT, Commands):
-    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
-        super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
-        self.JOINT_RANGES = [ 
+    def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
+        super().__init__(ip, port)
+        self.JOINT_RANGES = [
             (-math.pi, math.pi),
             (-math.pi, math.pi),
             (-math.pi, math.pi),
             (-math.pi, math.pi),
             (-math.pi, math.pi),
-            (-math.pi, math.pi)
+            (-math.pi, math.pi),
         ]
         self.DOF = len(self.JOINT_RANGES)
         self.MAX_JOINT_VELOCITY = 2.0  # rad/s
         self.MAX_ACCELERATION = 10.0  # rad/s^2
 
-    
-    def connect(self): 
+    def connect(self):
         super().connect()
-    
+
     def disconnect(self):
         super().disconnect()
 
     def sleep(self, seconds):
         self.send_command(f"sleep({seconds})\n")
 
-    def move_joints(self, 
-                    pos: list[float], 
-                    speed: float = 0.1, 
-                    acceleration: float = 0.05, 
-                    t: float = 0.0, 
-                    radius: float = 0.0) -> None:
+    def move_joints(
+        self,
+        pos: list[float],
+        speed: float = 0.1,
+        acceleration: float = 0.05,
+        t: float = 0.0,
+        radius: float = 0.0,
+    ) -> None:
         """
         MoveJ
         --------
@@ -56,28 +61,38 @@ class UniversalRobotics(SCT, Commands):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
-        
-        assert acceleration <= self.MAX_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
+        assert (
+            speed < self.MAX_JOINT_VELOCITY
+        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+
+        assert (
+            acceleration <= self.MAX_ACCELERATION
+        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
         for idx, pos in enumerate(pos):
             if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
-                raise ValueError(f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}")
-            
+                raise ValueError(
+                    f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}"
+                )
+
         command = f"movej([{','.join(map(str, pos))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
-        self.send_command(command, timeout=t+10, suppress_output=True, raw_response=False)
+        self.send_command(
+            command, timeout=t + 10, suppress_output=True, raw_response=False
+        )
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_joint_positions(), joint_positions)):
         #     _sleep(2)
         # return
 
-    def move_cartesian(self, 
-                       pose: list[float], 
-                        move_type: str = "movel",
-                        speed: float = 0.1,
-                        acceleration: float = 0.1,
-                        time: float = 0.0,
-                        radius: float = 0.0)->None:
+    def move_cartesian(
+        self,
+        pose: list[float],
+        move_type: str = "movel",
+        speed: float = 0.1,
+        acceleration: float = 0.1,
+        time: float = 0.0,
+        radius: float = 0.0,
+    ) -> None:
         """
         Move the robot to the specified cartesian position. (`movel` or `movep`)
 
@@ -98,14 +113,18 @@ class UniversalRobotics(SCT, Commands):
         """
         assert move_type in ["movel", "movep"], "Unsupported move type: movel or movep"
 
-        assert speed < self.MAX_JOINT_VELOCITY, f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
-        
-        assert acceleration <= self.MAX_ACCELERATION, f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}" # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
+        assert (
+            speed < self.MAX_JOINT_VELOCITY
+        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+
+        assert (
+            acceleration <= self.MAX_ACCELERATION
+        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
 
         for p in pose[3:]:
-            if not (0 <= p <= math.pi*2):
+            if not (0 <= p <= math.pi * 2):
                 raise ValueError(f"Joint position {p} out of range: 0 ~ {math.pi*2}")
-            
+
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
 
@@ -125,7 +144,12 @@ class UniversalRobotics(SCT, Commands):
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
-        response = self.send_command("get_actual_joint_positions()\n", suppress_output=True, raw_response=True, suppress_input=kwargs.get('suppress_input', False))
+        response = self.send_command(
+            "get_actual_joint_positions()\n",
+            suppress_output=True,
+            raw_response=True,
+            suppress_input=kwargs.get("suppress_input", False),
+        )
         angles = RTDE.joint_angles(response)
         logger.receive(f"Received response: {angles}")
         return angles
@@ -142,7 +166,9 @@ class UniversalRobotics(SCT, Commands):
                   [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are the position coordinates in meters,
                   and Rx, Ry, Rz are the rotation vector components in radians.
         """
-        response = self.send_command("get_actual_tcp_pose()\n", suppress_output=True, raw_response=True)
+        response = self.send_command(
+            "get_actual_tcp_pose()\n", suppress_output=True, raw_response=True
+        )
         pose = RTDE.tcp_pose(response)
         logger.receive(f"Received response: {pose}")
         return pose

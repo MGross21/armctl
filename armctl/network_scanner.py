@@ -4,6 +4,7 @@ import platform
 import time
 from concurrent.futures import ThreadPoolExecutor
 
+
 class NetworkScanner:
     """A network listener that scans for active devices and detects new ones appearing on the network."""
 
@@ -24,8 +25,19 @@ class NetworkScanner:
     @staticmethod
     def ping(ip):
         """Pings an IP and returns True if it's online."""
-        cmd = ["ping", "-c", "1", "-W", "1", ip] if platform.system() != "Windows" else ["ping", "-n", "1", "-w", "500", ip]
-        return ip if subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE).returncode == 0 else None
+        cmd = (
+            ["ping", "-c", "1", "-W", "1", ip]
+            if platform.system() != "Windows"
+            else ["ping", "-n", "1", "-w", "500", ip]
+        )
+        return (
+            ip
+            if subprocess.run(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            ).returncode
+            == 0
+            else None
+        )
 
     @staticmethod
     def scan_network(num_threads=20):
@@ -42,10 +54,18 @@ class NetworkScanner:
     def scan_ports(ip, ports=None, timeout=1):
         """Scans specified ports on a device to check if they are open."""
         open_ports = []
-        ports = ports or [22, 80, 443, 8080, 3389]  # Default common ports (SSH, HTTP, HTTPS, RDP)
+        ports = ports or [
+            22,
+            80,
+            443,
+            8080,
+            3389,
+        ]  # Default common ports (SSH, HTTP, HTTPS, RDP)
 
         with ThreadPoolExecutor(max_workers=10) as executor:
-            results = executor.map(lambda port: NetworkScanner._check_port(ip, port, timeout), ports)
+            results = executor.map(
+                lambda port: NetworkScanner._check_port(ip, port, timeout), ports
+            )
 
         return [port for port in results if port]
 
@@ -62,7 +82,7 @@ class NetworkScanner:
     def listen_for_changes(interval=10, scan_ports=False):
         """Continuously monitors the network for new devices and optionally scans ports."""
         print("Listening for new devices... Press Ctrl+C to stop.")
-        
+
         try:
             known_devices = set(NetworkScanner.scan_network())
 
@@ -85,6 +105,7 @@ class NetworkScanner:
             print("\nExiting...", end=" ")
         finally:
             print("Done!")
+
 
 # Run directly
 if __name__ == "__main__":

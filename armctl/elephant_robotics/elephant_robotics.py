@@ -1,6 +1,7 @@
 from armctl.templates import SocketController as SCT, Commands
 import time
 
+
 class ElephantRobotics(SCT, Commands):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
@@ -10,7 +11,7 @@ class ElephantRobotics(SCT, Commands):
             (-150.00, 150.00),
             (-260.00, 80.00),
             (-168.00, 168.00),
-            (-174.00, 174.00)
+            (-174.00, 174.00),
         ]
         self.DOF = len(self.JOINT_RANGES)
 
@@ -28,7 +29,10 @@ class ElephantRobotics(SCT, Commands):
 
     def _waitforfinish(self):
         while True:
-            if self.send_command("wait_command_done()", timeout=60) == "wait_command_done:0":
+            if (
+                self.send_command("wait_command_done()", timeout=60)
+                == "wait_command_done:0"
+            ):
                 break
             time.sleep(0.25)
 
@@ -38,9 +42,7 @@ class ElephantRobotics(SCT, Commands):
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
-    def move_joints(self, 
-                    pos:list[float],
-                    speed:int=500) -> None:
+    def move_joints(self, pos: list[float], speed: int = 500) -> None:
         """
         Move the robot to the specified joint positions.
 
@@ -71,9 +73,9 @@ class ElephantRobotics(SCT, Commands):
         while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)):
             time.sleep(1)
 
-    def move_cartesian(self, 
-                       pose:tuple[float,float,float,float,float,float], 
-                       speed:int=500) -> None:
+    def move_cartesian(
+        self, pose: tuple[float, float, float, float, float, float], speed: int = 500
+    ) -> None:
         """
         Move the robot to the specified Cartesian coordinates.
 
@@ -94,21 +96,33 @@ class ElephantRobotics(SCT, Commands):
 
         assert self.send_command(command) == "set_coords:[ok]"
 
-        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)):
+        while not all(
+            abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)
+        ):
             time.sleep(1)
 
     def get_joint_positions(self):
         response = self.send_command("get_angles()")
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid joint positions response from robot")
-        joint_positions = list(map(float, response[response.index("[")+1:response.index("]")].split(",")))  # From string list to float list
+        joint_positions = list(
+            map(
+                float,
+                response[response.index("[") + 1 : response.index("]")].split(","),
+            )
+        )  # From string list to float list
         return [round(x, 2) for x in joint_positions]
 
     def get_cartesian_position(self):
         response = self.send_command("get_coords()")  # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid cartesian position response from robot")
-        cartesian_position = list(map(float, response[response.index("[")+1:response.index("]")].split(",")))  # From string list to float list
+        cartesian_position = list(
+            map(
+                float,
+                response[response.index("[") + 1 : response.index("]")].split(","),
+            )
+        )  # From string list to float list
         return [round(x, 2) for x in cartesian_position]
 
     def stop_motion(self):
