@@ -26,7 +26,7 @@ class Dobot(SCT):
 
         for j, (lower, upper) in enumerate(self.JOINT_RANGES):
             if not (lower <= pos[j] <= upper):
-                raise ValueError(f"Joint {j+1} angle out of range: {lower} ~ {upper}")
+                raise ValueError(f"Joint {j + 1} angle out of range: {lower} ~ {upper}")
 
         command = "MOVJ({})".format(",".join(map(str, pos)))
         return self.send_command(command)

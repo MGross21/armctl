@@ -20,7 +20,9 @@ class UniversalRobotics(SCT, Commands):
             (-math.pi, math.pi),
         ]
         self.DOF = len(self.JOINT_RANGES)
+        # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
         self.MAX_JOINT_VELOCITY = 2.0  # rad/s
+        # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
         self.MAX_ACCELERATION = 10.0  # rad/s^2
 
     def connect(self):
@@ -61,13 +63,13 @@ class UniversalRobotics(SCT, Commands):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for idx, pos in enumerate(pos):
             if not (self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]):
@@ -113,17 +115,17 @@ class UniversalRobotics(SCT, Commands):
         """
         assert move_type in ["movel", "movep"], "Unsupported move type: movel or movep"
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"  # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
-                raise ValueError(f"Joint position {p} out of range: 0 ~ {math.pi*2}")
+                raise ValueError(f"Joint position {p} out of range: 0 ~ {math.pi * 2}")
 
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")

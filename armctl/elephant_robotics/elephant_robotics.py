@@ -61,7 +61,7 @@ class ElephantRobotics(SCT, Commands):
 
         for i, (low, high) in enumerate(self.JOINT_RANGES):
             if not (low <= pos[i] <= high):
-                raise ValueError(f"Joint {i+1} angle out of range: {low} ~ {high}")
+                raise ValueError(f"Joint {i + 1} angle out of range: {low} ~ {high}")
 
         if not (0 <= speed <= 2000):
             raise ValueError("Speed out of range: 0 ~ 2000")
