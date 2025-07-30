@@ -1,17 +1,14 @@
-import pytest
 import time
 
-from tests._mock_robot import MockRobot, TEST_STRING_PREFIX
+import pytest
 
+from tests._mock_robot import TEST_STRING_PREFIX, MockSocketRobot
 
 
 @pytest.fixture
 def mock_robot():
-    class PatchedMockRobot(MockRobot):
-        def send_command(self, cmd):
-            return cmd
-
-    return PatchedMockRobot()
+    with MockSocketRobot() as robot:
+        yield robot
 
 
 def test_move_joints(mock_robot):
