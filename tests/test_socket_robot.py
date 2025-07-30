@@ -1,12 +1,14 @@
-import pytest
 import time
 
-from tests._mock_robot import MockSerialRobot, TEST_STRING_PREFIX
+import pytest
+
+from tests._mock_robot import TEST_STRING_PREFIX, MockSocketRobot
 
 
 @pytest.fixture
 def mock_robot():
-    return MockSerialRobot() # singleton instance for all tests
+    with MockSocketRobot() as robot:
+        yield robot
 
 
 def test_move_joints(mock_robot):
