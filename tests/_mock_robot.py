@@ -55,14 +55,24 @@ def _start_echo_server(host, port):
     return stop_event, server
 
 
+def _get_free_port():
+    """Find a free port on localhost."""
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(("127.0.0.1", 0))
+        return s.getsockname()[1]
+
+
 class MockSocketRobot(Socket, Commands):
     """
     Mock robot using real SocketController logic with an integrated echo server.
-    Starts a background echo server on the given port for the lifetime of the object.
+    Starts a background echo server on a random free port for the lifetime of the object.
     All commands are sent over a real socket and echoed back for test verification.
     """
 
-    def __init__(self, ip: str = "127.0.0.1", port: int = 50000):
+    def __init__(self, ip: str = "127.0.0.1", port: int = None):
+        if port is None:
+            port = _get_free_port()
+        self._echo_port = port
         self._echo_stop_event, self._echo_server = _start_echo_server(ip, port)
         time.sleep(0.1)  # Give server time to start
         super().__init__(ip, port)
