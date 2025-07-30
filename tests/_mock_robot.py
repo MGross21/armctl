@@ -9,7 +9,7 @@ def _format_mock_command(method_name: str, arg=None):
         return f"{TEST_STRING_PREFIX} {method_name.upper()}: {arg}"
     return f"{TEST_STRING_PREFIX} {method_name.upper()}"
 
-class MockRobot(Socket, Commands):
+class MockSerialRobot(Socket, Commands):
     def __init__(self, ip: str = "127.0.0.1", port: int = 8_000):
         super().__init__(ip, port)
 
