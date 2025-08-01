@@ -1,10 +1,18 @@
-**/__pycache__/
-*notes*
+# Caching
+**/__pycache__
+.*_cache/
 
+# Python Package Management
 *egg-info/
 *venv/
 
+# Internal Usage
 local/
+*notes*
+
+# IDE and Editor Configurations
+.idea/
+.vscode/
 
 # Builds
 dist/

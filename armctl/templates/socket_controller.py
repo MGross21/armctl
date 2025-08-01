@@ -1,11 +1,14 @@
 """
-This module provides a base class `SocketController` for implementing socket-based 
-robot controllers. It provides methods for connecting, disconnecting, sending 
+This module provides a base class `SocketController` for implementing socket-based
+robot controllers. It provides methods for connecting, disconnecting, sending
 commands, and handling responses with enhanced debugging features.
 """
+
 import socket
-from .logger import logger
+
 from .communication import Communication
+from .logger import logger
+
 
 class SocketController(Communication):
     def __init__(self, ip: str, port: int | tuple[int, int]):
@@ -43,13 +46,26 @@ class SocketController(Communication):
         """Connect to the robot using sockets for sending and receiving"""
         try:
             # Create and connect send socket
-            self.send_socket = socket.create_connection((self.ip, self.send_port))
-            logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})" + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)"))
+            self.send_socket = socket.create_connection(
+                (self.ip, self.send_port)
+            )
+            logger.info(
+                f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})"
+                + (
+                    "(SEND/RECV)"
+                    if self.send_port == self.recv_port
+                    else "(SEND)"
+                )
+            )
 
             # Create and connect separate receive socket only if needed
             if self.recv_port != self.send_port:
-                self.recv_socket = socket.create_connection((self.ip, self.recv_port))
-                logger.info(f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)")
+                self.recv_socket = socket.create_connection(
+                    (self.ip, self.recv_port)
+                )
+                logger.info(
+                    f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)"
+                )
             else:
                 self.recv_socket = self.send_socket
 
@@ -71,7 +87,9 @@ class SocketController(Communication):
             if self.recv_socket and self.recv_socket is not self.send_socket:
                 self.recv_socket.close()
             self.send_socket = self.recv_socket = None
-            raise ConnectionError(f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}") from e
+            raise ConnectionError(
+                f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}"
+            ) from e
 
     def disconnect(self):
         """Disconnect from the robot by closing sockets."""
@@ -84,12 +102,14 @@ class SocketController(Communication):
         self.send_socket = self.recv_socket = None
         logger.info(f"Disconnected from {self.__class__.__name__}")
 
-    def send_command(self, 
-                     command: str, 
-                     timeout: float = 5.0,
-                     suppress_input: bool = False,
-                     suppress_output: bool = False, 
-                     raw_response: bool = False) -> str | bytes:
+    def send_command(
+        self,
+        command: str,
+        timeout: float = 5.0,
+        suppress_input: bool = False,
+        suppress_output: bool = False,
+        raw_response: bool = False,
+    ) -> str | bytes:
         """
         Send a command to the robot and return the response.
 
@@ -120,21 +140,25 @@ class SocketController(Communication):
         """
         if not self.send_socket or not self.recv_socket:
             raise ConnectionError("Robot is not connected.")
-        
+
         if not suppress_input:
-            logger.send(f"Sending command: {command.strip().replace(chr(10), '//n')}")  # Explicitly show newline char in logger
+            logger.send(
+                f"Sending command: {command.strip().replace(chr(10), '//n')}"
+            )  # Explicitly show newline char in logger
 
         try:
             self.send_socket.sendall(command.encode())  # Send Command
-            self.recv_socket.settimeout(timeout)        # Set timeout for receiving response
-            response = self.recv_socket.recv(4096)      # Receive response
-           
+            self.recv_socket.settimeout(
+                timeout
+            )  # Set timeout for receiving response
+            response = self.recv_socket.recv(4096)  # Receive response
+
         except socket.timeout:
             raise TimeoutError("Command timed out")
 
         except Exception as e:
             raise ConnectionError(f"Failed to send command: {command}") from e
-        
+
         if raw_response:
             if not suppress_output:
                 logger.receive(f"Received raw response: {response}")

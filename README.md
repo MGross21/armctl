@@ -9,14 +9,17 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 The `armctl` library currently supports the following manufacturers and robot models:
 
 ### [Universal Robots](https://www.universal-robots.com)
+
 - **Supported Models:** UR3, UR5, UR5e, UR10, UR16 <br>
   <img src=https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif alt="UR5" width="400">
 
 ### [Vention](https://vention.io)
+
 - **Supported Models:** 7th Axis Plate <br>
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="400">
 
 ### [Elephant Robotics](https://www.elephantrobotics.com/en/)
+
 - **Supported Models:** myCobot Pro600 <br>
   <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
 
@@ -175,13 +178,40 @@ flowchart TD
     Manufacturer2 --> Series2["Robot Series"]
     Manufacturer3 --> Series3["Robot Series"]
     Manufacturer1 --> n3["Robot Series"]
-    style CommTemplate color:#D50000
-    style SocketController stroke:#000000
-    style PLCController stroke:#000000
-    style SerialController stroke:#000000
-    style CtrlTemplate color:#D50000
-    style Manufacturer2 stroke:#000000
-    style Manufacturer3 stroke:#000000
+```
+
+### System Logging
+
+By default, the library will show the outgoing commands and incoming data. An example can be seen below:
+
+```console
+2025-02-12 13:18:11,350 - INFO - Connected to ElephantRobotics(192.168.1.159:5001)(SEND/RECV)
+2025-02-12 13:18:11,351 - SEND - Sending command:   power_on()
+2025-02-12 13:18:11,954 - RECV - Received response: [ok]
+2025-02-12 13:18:11,954 - SEND - Sending command:   state_on()
+2025-02-12 13:18:12,647 - RECV - Received response: [ok]
+2025-02-12 13:18:12,647 - SEND - Sending command:   get_angles()
+2025-02-12 13:18:12,663 - RECV - Received response: get_angles:[0.290562,-95.891321,-74.804509,-162.949219,1.845703,12.041016]
+2025-02-12 13:18:12,663 - SEND - Sending command:   task_stop()
+2025-02-12 13:18:13,466 - RECV - Received response: [ok]
+2025-02-12 13:18:13,466 - SEND - Sending command:   state_off()
+2025-02-12 13:18:14,176 - RECV - Received response: [ok]
+2025-02-12 13:18:14,176 - SEND - Sending command:   power_off()
+2025-02-12 13:18:14,176 - RECV - Received response: [ok]
+2025-02-12 13:18:14,176 - INFO - Disconnected from ElephantRobotics
+```
+
+#### Disabling
+
+```python
+from armctl import *
+Logger.disable()
+```
+
+#### Re-Enabling
+
+```python
+Logger.enable()
 ```
 
 ## Under Development

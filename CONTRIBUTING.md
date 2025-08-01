@@ -121,3 +121,39 @@ Always test new motion commands on virtual or low-power modes first.
 
 ✅ **Docs:**  
 Update this guide or relevant docstrings if you change command interfaces. Additionally, when adding a new manufacturer integration, include links to relevant source documentation in in-line comments and/or the README inside the added manufacturer folder. This helps future contributors understand implementation details and reference official resources easily.
+
+✅ **Linting and Code Quality:**
+
+Please ensure your code adheres to the project's formatting and quality standards before submitting a pull request.
+
+**Setup:**
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install poetry
+poetry install --with dev
+```
+
+**Formatting Code:**
+
+To ensure consistency and code quality, run the following commands before submitting your changes:
+
+```bash
+poetry run black . && \
+poetry run isort . && \
+poetry run ruff format . && \
+poetry run mypy armctl
+```
+
+> All code must be properly formatted and pass type checks. Please resolve any issues reported by these tools prior to opening a pull request.
+
+✅ **(Optional) Running Tests Locally:**
+
+While CI/CD automation will run tests on your pull request, you can speed up debugging by running the test suite locally:
+
+```bash
+poetry run pytest tests
+```
+
+This is optional, but helps catch issues before submitting your pull request.

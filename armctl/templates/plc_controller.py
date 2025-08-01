@@ -1,12 +1,13 @@
 """
-This module provides a base class `PLCController` for implementing plc-based 
-robot controllers. It provides methods for connecting, disconnecting, sending 
+This module provides a base class `PLCController` for implementing plc-based
+robot controllers. It provides methods for connecting, disconnecting, sending
 commands, and handling responses with enhanced debugging features.
 
 THIS CLASS IS NOT IMPLEMENTED YET.
 """
-from .logger import logger
+
 from .communication import Communication
+from .logger import logger
 
 
 class PLCController(Communication):
@@ -35,10 +36,10 @@ class PLCController(Communication):
 
     def connect(self):
         raise NotImplementedError("PLC connection not implemented yet.")
-    
+
     def disconnect(self):
         raise NotImplementedError("PLC disconnection not implemented yet.")
-    
+
     def send_command(self, command, timeout=5, **kwargs):
         """
         Send a command to the PLC with an optional timeout.
