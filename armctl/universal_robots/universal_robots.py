@@ -1,6 +1,13 @@
 from armctl.templates import SocketController as SCT, Commands
 from armctl.templates.logger import logger
-from .protocols.rtde import RTDE
+
+try:
+    # Attempt to import official rtde module
+    from rtde.rtde import RTDE
+except ImportError:
+    # Fallback import if the rtde module is not available
+    from armctl.universal_robots.protocols.rtde import RTDE
+    
 import math
 from time import sleep as _sleep
 
