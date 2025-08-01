@@ -9,6 +9,9 @@ This document provides resources and references for interfacing with Universal R
 - [URScript Programming Language for e-Series](https://s3-eu-west-1.amazonaws.com/ur-support-site/115824/scriptManual_SW5.11.pdf)
 - [Socket Script Example Document](https://s3-eu-west-1.amazonaws.com/ur-support-site/29983/Script%20command%20Examples.pdf)
 
+- [Full Port List Overview](https://forum.universal-robots.com/t/overview-of-used-ports-on-local-host/8889)
+
+
 ## Real-Time Data Exchange (RTDE)
 
 RTDE is a proprietary protocol for real-time data synchronization with Universal Robots controllers.

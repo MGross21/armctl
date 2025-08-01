@@ -1,104 +1,85 @@
 """
-Real-Time Data Exchange (RTDE) Protocol
+RTDE Protocol Parser for Universal Robots
 
-This module provides utilities for parsing RTDE protocol messages from Universal Robots.
-For more information, see:
+This module provides utilities to parse RTDE protocol messages received from a Universal Robots controller.
+For detailed information, see:
 https://www.universal-robots.com/developer/communication-protocol/rtde/
 """
 
 import struct
-from typing import Tuple, Optional
+from typing import Tuple, Optional, List, Dict
+from pathlib import Path
 
 
 class RTDE:
-    """RTDE protocol parser for Universal Robots."""
-    
-    # Message type constants
+    """Parser for RTDE protocol messages from Universal Robots."""
+
+    # Message type identifiers
     JOINT_ANGLES_MSG = 1
     TCP_POSE_MSG = 4
-    
-    # Protocol constants
+
+    # Constants for message sizes and data layout
     NUM_JOINTS = 6
     POSE_DOF = 6
-    DOUBLE_SIZE = 8  # bytes
-    HEADER_SIZE = 4  # bytes for packet length
-    MSG_HEADER_SIZE = 5  # bytes for message header
+    DOUBLE_SIZE = 8           # bytes in a double precision float
+    PACKET_HEADER_SIZE = 4    # bytes for RTDE packet length header
+    MSG_HEADER_SIZE = 5       # bytes for each message’s header (4 bytes length + 1 byte type)
+
+    # Static XML recipe defining the output fields requested from the robot
+    OUTPUT_RECIPE_XML = (Path(__file__).parent / 'config.xml').read_text()
 
     @staticmethod
-    def joint_angles(data: bytes) -> Tuple[float, float, float, float, float, float]:
+    def joint_angles(data: bytes) -> Optional[Tuple[float, float, float, float, float, float]]:
         """
-        Extract joint angles from the raw socket response data.
+        Extract joint angles (radians) from raw RTDE binary data.
 
-        Args:
-            data: Raw response data from the socket.
-
-        Returns:
-            A tuple of 6 joint angles in radians.
-            Returns zeros if parsing fails.
-            
-        Example:
-            >>> angles = RTDE.joint_angles(data)
-            >>> print(f"Joint 1: {angles[0]:.3f} rad")
+        Returns a tuple of 6 floats representing joint angles in radians,
+        or None if parsing fails or data is invalid.
         """
         return RTDE._parse_message(data, RTDE.JOINT_ANGLES_MSG, RTDE.NUM_JOINTS)
 
     @staticmethod
-    def tcp_pose(data: bytes) -> Tuple[float, float, float, float, float, float]:
+    def tcp_pose(data: bytes) -> Optional[Tuple[float, float, float, float, float, float]]:
         """
-        Extract TCP pose (X, Y, Z, RX, RY, RZ) from the raw socket response data.
+        Extract TCP pose from raw RTDE binary data.
 
-        Args:
-            data: Raw response data from the socket.
-
-        Returns:
-            A tuple of 6 floats representing pose:
-            - X, Y, Z: Position in meters
-            - RX, RY, RZ: Rotation vector in radians
-            Returns zeros if parsing fails.
-            
-        Example:
-            >>> pose = RTDE.tcp_pose(data)
-            >>> x, y, z, rx, ry, rz = pose
-            >>> print(f"Position: ({x:.3f}, {y:.3f}, {z:.3f})")
+        Returns a tuple of 6 floats representing:
+          X, Y, Z (meters) and RX, RY, RZ (rotation vector in radians),
+        or None if parsing fails or data is invalid.
         """
         return RTDE._parse_message(data, RTDE.TCP_POSE_MSG, RTDE.POSE_DOF)
 
     @staticmethod
-    def _parse_message(data: bytes, target_msg_type: int, count: int) -> Tuple[float, ...]:
+    def _parse_message(
+        data: bytes,
+        target_msg_type: int,
+        count: int
+    ) -> Optional[Tuple[float, ...]]:
         """
-        Generic parser for RTDE messages with improved error handling.
+        Generic parser for RTDE data messages.
 
-        Args:
-            data: Raw response data from the socket.
-            target_msg_type: Message type to extract.
-            count: Number of doubles to extract.
+        Parses the packet, finds the target message type, and extracts 'count' doubles.
 
-        Returns:
-            Parsed values as a tuple of floats.
-            Returns zeros if parsing fails or data is corrupted.
+        Returns a tuple of floats if found, otherwise None.
         """
-        # Input validation
-        if not data or len(data) < RTDE.HEADER_SIZE:
-            return tuple(0.0 for _ in range(count))
+        if not data or len(data) < RTDE.PACKET_HEADER_SIZE:
+            return None
 
         try:
-            # Parse packet length with proper format specifier
-            packet_length = struct.unpack('!I', data[:RTDE.HEADER_SIZE])[0]
-            
-            # Validate packet length
-            if packet_length > len(data) or packet_length < RTDE.HEADER_SIZE:
-                return tuple(0.0 for _ in range(count))
+            # Packet length: 4-byte unsigned int (big-endian)
+            packet_length = struct.unpack('!I', data[:RTDE.PACKET_HEADER_SIZE])[0]
+            if packet_length > len(data) or packet_length < RTDE.PACKET_HEADER_SIZE:
+                return None
 
-            offset = RTDE.HEADER_SIZE
-            expected_data_size = count * RTDE.DOUBLE_SIZE
+            offset = RTDE.PACKET_HEADER_SIZE
+            expected_payload_size = count * RTDE.DOUBLE_SIZE
 
-            # Parse messages within packet
+            # Iterate through messages inside the packet
             while offset + RTDE.MSG_HEADER_SIZE <= packet_length:
-                # Ensure we don't read beyond data bounds
+                # Prevent reading beyond actual data length
                 if offset + RTDE.MSG_HEADER_SIZE > len(data):
                     break
 
-                # Parse message length and type
                 msg_len = struct.unpack('!I', data[offset:offset + 4])[0]
                 msg_type = struct.unpack('!B', data[offset + 4:offset + 5])[0]
 
@@ -106,117 +87,95 @@ class RTDE:
                 if msg_len < RTDE.MSG_HEADER_SIZE or offset + msg_len > packet_length:
                     break
 
-                # Check if this is the target message type
                 if msg_type == target_msg_type:
-                    data_start = offset + RTDE.MSG_HEADER_SIZE
-                    data_end = data_start + expected_data_size
+                    start = offset + RTDE.MSG_HEADER_SIZE
+                    end = start + expected_payload_size
 
-                    # Ensure we have enough data for the expected values
-                    if (data_end <= len(data) and 
-                        data_end <= offset + msg_len):
-                        values = struct.unpack(f'!{count}d', data[data_start:data_end])
+                    if end <= len(data) and end <= offset + msg_len:
+                        values = struct.unpack(f'!{count}d', data[start:end])
                         return values
                     else:
-                        # Insufficient data for complete message
-                        break
+                        break  # Insufficient data
 
-                # Move to next message
                 offset += msg_len
 
         except (struct.error, IndexError, ValueError):
-            # Handle any parsing errors gracefully
             pass
 
-        # Return zeros if message not found or parsing failed
-        return tuple(0.0 for _ in range(count))
+        # Return None if parsing fails or message not found
+        return None
 
     @staticmethod
     def is_valid_packet(data: bytes) -> bool:
         """
-        Check if the data appears to be a valid RTDE packet.
-        
-        Args:
-            data: Raw data to validate.
-            
-        Returns:
-            True if data appears to be a valid RTDE packet, False otherwise.
+        Validates if the data appears to be a valid RTDE packet.
+
+        Returns True if the length header is consistent with data length.
         """
-        if not data or len(data) < RTDE.HEADER_SIZE:
+        if not data or len(data) < RTDE.PACKET_HEADER_SIZE:
             return False
-            
+
         try:
-            packet_length = struct.unpack('!I', data[:RTDE.HEADER_SIZE])[0]
-            return (packet_length >= RTDE.HEADER_SIZE and 
-                    packet_length <= len(data))
+            packet_length = struct.unpack('!I', data[:RTDE.PACKET_HEADER_SIZE])[0]
+            return RTDE.PACKET_HEADER_SIZE <= packet_length <= len(data)
         except struct.error:
             return False
-    
+
     @staticmethod
-    def get_available_message_types(data: bytes) -> list[int]:
+    def get_available_message_types(data: bytes) -> List[int]:
         """
-        Get a list of available message types in the RTDE packet.
-        
-        Args:
-            data: Raw RTDE data.
-            
-        Returns:
-            List of message type integers found in the packet.
+        Returns a list of message types found in an RTDE packet.
+
+        Useful for inspecting which data messages are present.
         """
-        message_types = []
-        
+        message_types: List[int] = []
+
         if not RTDE.is_valid_packet(data):
             return message_types
-            
+
         try:
-            packet_length = struct.unpack('!I', data[:RTDE.HEADER_SIZE])[0]
-            offset = RTDE.HEADER_SIZE
-            
+            packet_length = struct.unpack('!I', data[:RTDE.PACKET_HEADER_SIZE])[0]
+            offset = RTDE.PACKET_HEADER_SIZE
+
             while offset + RTDE.MSG_HEADER_SIZE <= packet_length:
                 if offset + RTDE.MSG_HEADER_SIZE > len(data):
                     break
-                    
+
                 msg_len = struct.unpack('!I', data[offset:offset + 4])[0]
                 msg_type = struct.unpack('!B', data[offset + 4:offset + 5])[0]
-                
+
                 if msg_len >= RTDE.MSG_HEADER_SIZE and offset + msg_len <= packet_length:
                     message_types.append(msg_type)
                     offset += msg_len
                 else:
                     break
-                    
+
         except (struct.error, IndexError):
             pass
-            
+
         return message_types
 
     @staticmethod
-    def parse_all_available(data: bytes) -> dict[str, Optional[Tuple[float, ...]]]:
+    def parse_all_available(data: bytes) -> Dict[str, Optional[Tuple[float, ...]]]:
         """
-        Parse all available known message types from RTDE data.
-        
-        Args:
-            data: Raw RTDE data.
-            
-        Returns:
-            Dictionary with keys 'joint_angles' and 'tcp_pose' containing
-            the parsed data, or None if not available.
+        Parses all recognized message types (joint angles and TCP pose) from RTDE data.
+
+        Returns a dictionary with keys:
+          'joint_angles' and 'tcp_pose', each containing a tuple of floats or None.
         """
-        available_types = RTDE.get_available_message_types(data)
-        result = {
-            'joint_angles': None,
-            'tcp_pose': None
-        }
-        
-        if RTDE.JOINT_ANGLES_MSG in available_types:
+        result = {'joint_angles': None, 'tcp_pose': None}
+
+        types = RTDE.get_available_message_types(data)
+
+        if RTDE.JOINT_ANGLES_MSG in types:
             angles = RTDE.joint_angles(data)
-            # Only include if we got actual data (not all zeros)
-            if any(angle != 0.0 for angle in angles):
+            if angles is not None:
+                # Accept angles even if they include zeros (zeros might be valid)
                 result['joint_angles'] = angles
-                
-        if RTDE.TCP_POSE_MSG in available_types:
+
+        if RTDE.TCP_POSE_MSG in types:
             pose = RTDE.tcp_pose(data)
-            # Only include if we got actual data (not all zeros)
-            if any(val != 0.0 for val in pose):
+            if pose is not None:
                 result['tcp_pose'] = pose
-                
+
         return result

@@ -1,4 +1,4 @@
-__pycache__/
+**/__pycache__/
 *notes*
 
 *egg-info/
@@ -8,3 +8,7 @@ local/
 
 # Builds
 dist/
+
+# IDE and Editor files
+.idea/
+.vscode/
