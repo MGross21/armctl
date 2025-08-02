@@ -59,17 +59,3 @@ class Dobot(SCT):
 
     def get_robot_state(self):
         pass
-
-    def move_arc(self, command):
-        """The trajectory of ARC mode is an arc, which is determined by three points (the current point, any point and the end point on the arc)"""
-        if len(command) != 3:
-            raise ValueError("Invalid ARC command. Must have 3 points")
-
-        self.send_command(f"ARC({','.join(map(str, command))})")
-
-    def move_jump(self, command):
-        """If the movement of two points is required to lift upwards by amount of height, such as sucking up, grabbing, you can choose JUMP"""
-        if len(command) != 2:
-            raise ValueError("Invalid JUMP command. Must have 2 points")
-
-        self.send_command(f"JUMP({','.join(map(str, command))})")
