@@ -1,5 +1,5 @@
 # Caching
-__pycache__/
+**/__pycache__
 .*_cache/
 
 # Python Package Management
@@ -16,3 +16,7 @@ local/
 
 # Builds
 dist/
+
+# IDE and Editor files
+.idea/
+.vscode/

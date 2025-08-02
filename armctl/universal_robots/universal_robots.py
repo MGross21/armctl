@@ -1,17 +1,13 @@
-import math
-from time import sleep as _sleep
-
 from armctl.templates import Commands
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
-
 from .protocols.rtde import RTDE
 
-# https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
-# 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
+import math
+from time import sleep as _sleep
 
 
-class UniversalRobotics(SCT, Commands):
+class UniversalRobots(SCT, Commands):
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
@@ -30,8 +26,10 @@ class UniversalRobotics(SCT, Commands):
 
     def connect(self):
         super().connect()
+        self.rtde = RTDE(self.ip)  # Initialize RTDE connection
 
     def disconnect(self):
+        self.rtde.c.disconnect()  # Disconnect RTDE connection
         super().disconnect()
 
     def sleep(self, seconds):
@@ -66,13 +64,13 @@ class UniversalRobotics(SCT, Commands):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for idx, pos in enumerate(pos):
             if not (
@@ -123,13 +121,13 @@ class UniversalRobotics(SCT, Commands):
             "movep",
         ], "Unsupported move type: movel or movep"
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
@@ -156,13 +154,7 @@ class UniversalRobotics(SCT, Commands):
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
-        response = self.send_command(
-            "get_actual_joint_positions()\n",
-            suppress_output=True,
-            raw_response=True,
-            suppress_input=kwargs.get("suppress_input", False),
-        )
-        angles = RTDE.joint_angles(response)
+        angles = self.rtde.joint_angles()
         logger.receive(f"Received response: {angles}")
         return angles
 
@@ -178,10 +170,7 @@ class UniversalRobotics(SCT, Commands):
                   [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are the position coordinates in meters,
                   and Rx, Ry, Rz are the rotation vector components in radians.
         """
-        response = self.send_command(
-            "get_actual_tcp_pose()\n", suppress_output=True, raw_response=True
-        )
-        pose = RTDE.tcp_pose(response)
+        pose = self.rtde.tcp_pose()
         logger.receive(f"Received response: {pose}")
         return pose
 
