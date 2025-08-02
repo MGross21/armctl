@@ -11,13 +11,13 @@ This document provides resources and references for interfacing with Universal R
 
 - [Full Port List Overview](https://forum.universal-robots.com/t/overview-of-used-ports-on-local-host/8889)
 
-
 ## Real-Time Data Exchange (RTDE)
 
 RTDE is a proprietary protocol for real-time data synchronization with Universal Robots controllers.
 
 - [RTDE Overview](https://www.universal-robots.com/developer/communication-protocol/rtde/)
 - [Complete I/O Documentation](https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/)
+- [Python Documentation](https://docs.universal-robots.com/tutorials/communication-protocol-tutorials/rtde-python-client-guide.html)
 
 > [!Note]
 > The following libraries are not currently used in this project but are provided for reference:
