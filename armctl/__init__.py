@@ -40,6 +40,7 @@ __all__ = [
     "Logger",
 ]
 
+__version__ = "0.3.0"
 
 class Logger:
     """Global logger utility for armctl."""
@@ -59,3 +60,8 @@ class Logger:
 
         # Re-enable logging to its previous state
         logging.disable(logging.NOTSET)
+
+import os
+
+if os.environ.get("ARMCTL_LOG") == "DISABLE":
+    Logger.disable()
