@@ -29,6 +29,7 @@ RTDE is a proprietary protocol for real-time data synchronization with Universal
 
 > [!Note]  
 > The following libraries are not currently used in this project but are provided for reference:
+>
 > - [UR DH Parameters for Kinematics and Dynamics](https://www.universal-robots.com/articles/ur/application-installation/dh-parameters-for-calculations-of-kinematics-and-dynamics/)
 > - `urx`: 3rd Party Python Library ([GitHub](https://github.com/SintefManufacturing/python-urx))
 > - `.NET SDK`: 3rd Party Licensed ([Website](https://underautomation.com/universal-robots)) ([GitHub](https://github.com/underautomation/UniversalRobots.NET))
