@@ -10,8 +10,6 @@ packages = [{ include = "armctl" }]
 authors = [{ name = "Michael Gross", email = "MGross21@TODO.com" }]
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.9,<4.0"
-dependencies = []
 keywords = ["robotics", "socket", "control", "automation"]
 classifiers = [
     "Programming Language :: Python :: 3",
@@ -23,10 +21,13 @@ classifiers = [
 Homepage = "https://github.com/MGross21/armctl"
 Tracker = "https://github.com/MGross21/armctl/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["armctl*"]
-exclude = ["tests*"]
+[tool.poetry.dependencies]
+python = "^3.9"
+urrtde = {git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git"}
+
+[tool.poetry.urls]
+Homepage = "https://github.com/MGross21/armctl"
+Tracker = "https://github.com/MGross21/armctl/issues"
 
 [tool.poetry.group.dev]
 optional = true

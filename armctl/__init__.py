@@ -6,7 +6,7 @@ A unified interface for controlling robotic arms from multiple manufacturers.
 
 Supported Manufacturers and Robots:
 - Elephant Robotics: myCobot Pro600 (Ethernet)
-- Universal Robotics: UR3, UR5, UR5e, UR10, UR16 (Ethernet)
+- Universal Robots: UR3, UR5, UR5e, UR10, UR16 (Ethernet)
     - Grippers: OnRobot (Ethernet)
 - Vention (Ethernet)
 - Jaka Robotics: Jaka (Ethernet)
@@ -15,13 +15,13 @@ Supported Manufacturers and Robots:
 # from .dobot import Dobot
 from .elephant_robotics import ElephantRobotics, Pro600
 from .jaka import Jaka
-from .universal_robotics import (
+from .universal_robots import (
     UR3,
     UR5,
     UR10,
     UR16,
     OnRobot,
-    UniversalRobotics,
+    UniversalRobots,
     UR5e,
 )
 
@@ -31,7 +31,7 @@ from .vention import Vention
 __all__ = [
     "ElephantRobotics",
     "Pro600",
-    "UniversalRobotics",
+    "UniversalRobots",
     "UR5",
     "UR5e",
     "OnRobot",
