@@ -1,4 +1,5 @@
-from armctl.templates import SocketController as SCT, Commands
+from armctl.templates import Commands
+from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 
 try:
@@ -10,7 +11,7 @@ except ImportError:
     raise ImportError(
         "Please reinstall the armctl package to use RTDE functionality."
     )
-    
+
 import math
 from time import sleep as _sleep
 
@@ -23,7 +24,7 @@ class UniversalRobots(SCT, Commands):
             (-math.pi, math.pi),
             (-math.pi, math.pi),
             (-math.pi, math.pi),
-            (-math.pi, math.pi)
+            (-math.pi, math.pi),
         ]
         self.DOF = len(self.JOINT_RANGES)
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
@@ -36,7 +37,7 @@ class UniversalRobots(SCT, Commands):
         self.rtde = RTDE(self.ip)  # Initialize RTDE connection
 
     def disconnect(self):
-        self.rtde.c.disconnect() # Disconnect RTDE connection
+        self.rtde.c.disconnect()  # Disconnect RTDE connection
         super().disconnect()
 
     def sleep(self, seconds):

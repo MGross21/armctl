@@ -1,30 +1,31 @@
+from pathlib import Path
+
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
-from pathlib import Path
 
 # Documentation: https://docs.universal-robots.com/tutorials/communication-protocol-tutorials/rtde-python-client-guide.html
 
-class RTDE():
-    
+
+class RTDE:
     def __init__(self, ip: str):
         self.config_file = Path(__file__).parent / "config.xml"
         self.config = rtde_config.ConfigFile(str(self.config_file))
 
-
         state_names, state_types = self.config.get_recipe("out")
 
         self.c = rtde.RTDE(ip)  # Initialize RTDE connection
-        self.c.connect() # Documentation says should return boolean. Code returns none
+        self.c.connect()  # Documentation says should return boolean. Code returns none
 
         self.c.send_output_setup(state_names, state_types)
 
-        _v = self.c.get_controller_version()  # Software version of the controller
+        # Software version of the controller
+        _v = self.c.get_controller_version()
         version_str = ".".join(str(part) for part in _v[:3])
 
         self.c.send_start()
 
         # TODO: Add assertion check to ensure xml is setup with minimums (joint and TCP pose)
-        # Can use RTDE functions or xml parsing to check this      
+        # Can use RTDE functions or xml parsing to check this
 
     def _get_data(self):
         if not self.c.is_connected():
@@ -41,10 +42,10 @@ class RTDE():
         list of float
             The joint angles in radians.
         """
-        
+
         data = self._get_data()
-        return list(data.actual_q) if hasattr(data, 'actual_q') else []
-    
+        return list(data.actual_q)
+
     def tcp_pose(self) -> list[float]:
         """
         Extract TCP pose from the RTDE data.
@@ -55,5 +56,4 @@ class RTDE():
             The TCP pose in the format [x, y, z, rx, ry, rz].
         """
         data = self._get_data()
-
-        return list(data.actual_TCP_pose) if hasattr(data, 'actual_TCP_pose') else []
+        return list(data.actual_TCP_pose)

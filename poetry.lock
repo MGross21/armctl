@@ -372,7 +372,23 @@ files = [
     {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
 ]
 
+[[package]]
+name = "UrRtde"
+version = "2.7.12"
+description = "Real-Time Data Exchange (RTDE) python client + examples"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = []
+develop = false
+
+[package.source]
+type = "git"
+url = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git"
+reference = "HEAD"
+resolved_reference = "647788cc3474d7088d6aebdd9edde3bffa7f17ef"
+
 [metadata]
 lock-version = "2.1"
-python-versions = ">=3.9,<4.0"
-content-hash = "636cb716ee92f9b3c3d6c357dba30804026e4c7f8cf2210e327ca536a822e44b"
+python-versions = "^3.9"
+content-hash = "e9b7c8252d9932ac820c50540fe29ac9330b9df4a6b4bca5e783db0ca5efedda"
