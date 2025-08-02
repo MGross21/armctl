@@ -4,7 +4,7 @@ from armctl.templates.logger import logger
 
 try:
     # Attempt to import official rtde module
-    from .protocols.rtde_official import RTDE
+    from .protocols.rtde import RTDE
 except ImportError:
     # Fallback import if the rtde module is not available
     # from .protocols.rtde_custom import RTDE
