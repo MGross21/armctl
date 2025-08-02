@@ -8,6 +8,9 @@ THIS CLASS IS NOT IMPLEMENTED YET.
 
 from .communication import Communication
 from .logger import logger
+import serial
+import threading
+import time
 
 
 class SerialController(Communication):
@@ -24,6 +27,8 @@ class SerialController(Communication):
         """
         self.port = port
         self.baudrate = baudrate
+        self._serial = None
+        self._lock = threading.Lock()
 
     def __enter__(self):
         """Context manager for automatic connection management."""
@@ -35,10 +40,20 @@ class SerialController(Communication):
         self.disconnect()
 
     def connect(self):
-        raise NotImplementedError("Serial connection not implemented yet.")
+        """Establishes the serial connection to the robot."""
+        if self._serial and self._serial.is_open:
+            return
+        try:
+            self._serial = serial.Serial(self.port, self.baudrate, timeout=5)
+            logger.info(f"Connected to {self.__class__.__name__}({self.port}:{self.baudrate})")
+        except serial.SerialException:
+            raise
 
     def disconnect(self):
-        raise NotImplementedError("Serial disconnection not implemented yet.")
+        """Closes the serial connection to the robot."""
+        if self._serial and self._serial.is_open:
+            self._serial.close()
+            logger.info(f"Disconnected from {self.__class__.__name__}")
 
     def send_command(self, command, timeout=5, **kwargs):
         """
@@ -52,5 +67,30 @@ class SerialController(Communication):
             The timeout for the command in seconds.
         **kwargs : dict
             Additional arguments for the command.
+
+        Returns
+        -------
+        str
+            The response from the robot.
         """
-        raise NotImplementedError("Serial command sending not implemented yet.")
+        if not self._serial or not self._serial.is_open:
+            raise ConnectionError(f"Robot is not connected. Call {self.connect.__name__} first.")
+        with self._lock:
+            try:
+                logger.send(f"Sending command: {command}")
+                self._serial.write((command + '\n').encode())
+                self._serial.flush()
+                start_time = time.time()
+                response = b''
+                while True:
+                    if self._serial.in_waiting > 0:
+                        response += self._serial.read(self._serial.in_waiting)
+                        if response.endswith(b'\n'):
+                            break
+                    if (time.time() - start_time) > timeout:
+                        raise TimeoutError("Command timed out.")
+                    time.sleep(0.01)
+                logger.receive(f"Received response: {response}")
+                return response.decode(errors='ignore').strip()
+            except serial.SerialException as e:
+                raise
