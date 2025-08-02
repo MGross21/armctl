@@ -168,17 +168,9 @@ The following methods facilitate explicit connection management and low-level co
 
 Below is a high-level diagram illustrating the architecture of the `armctl` library. This design emphasizes the careful templatization of connection and control APIs, ensuring a consistent and extensible interface across different manufacturers and robot series.
 
-```mermaid
-flowchart TD
-    CommTemplate["Communication Template"] --> SocketController["Socket Controller"] & PLCController["PLC Controller"] & SerialController["Serial Controller"]
-    CtrlTemplate["Control Template"] --> Manufacturer1["Manufacturer (Socket-based)"] & Manufacturer2["Manufacturer (PLC-based)"] & Manufacturer3["Manufacturer (Serial-based)"]
-    SocketController --> Manufacturer1
-    PLCController --> Manufacturer2
-    SerialController --> Manufacturer3
-    Manufacturer2 --> Series2["Robot Series"]
-    Manufacturer3 --> Series3["Robot Series"]
-    Manufacturer1 --> n3["Robot Series"]
-```
+<p align="center">
+  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/images/template_overview_mermaid.png" alt="Template Overview" width="800">
+</p>
 
 ### System Logging
 
