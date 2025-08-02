@@ -2,6 +2,7 @@ from pathlib import Path
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
 
+
 class RTDE:
     def __init__(self, ip: str):
         config_file = Path(__file__).parent / "config.xml"

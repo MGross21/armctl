@@ -6,10 +6,11 @@ from .protocols.rtde import RTDE
 import math
 from time import sleep as _sleep
 
+
 class UniversalRobots(SCT, Commands):
-    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):
+    def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
         super().__init__(ip, port)
-        self.JOINT_RANGES = [ 
+        self.JOINT_RANGES = [
             (-math.pi, math.pi),
             (-math.pi, math.pi),
             (-math.pi, math.pi),
@@ -63,13 +64,13 @@ class UniversalRobots(SCT, Commands):
         if len(pos) != self.DOF:
             raise ValueError(f"Joint positions must have {self.DOF} elements")
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for idx, pos in enumerate(pos):
             if not (
@@ -120,13 +121,13 @@ class UniversalRobots(SCT, Commands):
             "movep",
         ], "Unsupported move type: movel or movep"
 
-        assert (
-            speed < self.MAX_JOINT_VELOCITY
-        ), f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        assert speed < self.MAX_JOINT_VELOCITY, (
+            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
+        )
 
-        assert (
-            acceleration <= self.MAX_ACCELERATION
-        ), f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        assert acceleration <= self.MAX_ACCELERATION, (
+            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
+        )
 
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
