@@ -3,16 +3,19 @@ from armctl.templates.logger import logger
 
 try:
     # Attempt to import official rtde module
-    from rtde.rtde import RTDE
+    from .protocols.rtde_official import RTDE
 except ImportError:
     # Fallback import if the rtde module is not available
-    from armctl.universal_robots.protocols.rtde import RTDE
+    # from .protocols.rtde_custom import RTDE
+    raise ImportError(
+        "Please reinstall the armctl package to use RTDE functionality."
+    )
     
 import math
 from time import sleep as _sleep
 
 class UniversalRobots(SCT, Commands):
-    def __init__(self, ip:str, port:int | tuple[int, int] = (30_002, 30_004)):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
+    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
         super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
         self.JOINT_RANGES = [ 
             (-math.pi, math.pi),
@@ -30,8 +33,10 @@ class UniversalRobots(SCT, Commands):
 
     def connect(self):
         super().connect()
+        self.rtde = RTDE(self.ip)  # Initialize RTDE connection
 
     def disconnect(self):
+        self.rtde.c.disconnect() # Disconnect RTDE connection
         super().disconnect()
 
     def sleep(self, seconds):
@@ -156,13 +161,7 @@ class UniversalRobots(SCT, Commands):
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
-        response = self.send_command(
-            "get_actual_joint_positions()\n",
-            suppress_output=True,
-            raw_response=True,
-            suppress_input=kwargs.get("suppress_input", False),
-        )
-        angles = RTDE.joint_angles(response)
+        angles = self.rtde.joint_angles()
         logger.receive(f"Received response: {angles}")
         return angles
 
@@ -178,10 +177,7 @@ class UniversalRobots(SCT, Commands):
                   [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are the position coordinates in meters,
                   and Rx, Ry, Rz are the rotation vector components in radians.
         """
-        response = self.send_command(
-            "get_actual_tcp_pose()\n", suppress_output=True, raw_response=True
-        )
-        pose = RTDE.tcp_pose(response)
+        pose = self.rtde.tcp_pose()
         logger.receive(f"Received response: {pose}")
         return pose
 
