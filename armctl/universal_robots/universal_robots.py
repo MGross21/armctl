@@ -1,23 +1,14 @@
 from armctl.templates import Commands
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
-
-try:
-    # Attempt to import official rtde module
-    from .protocols.rtde import RTDE
-except ImportError:
-    # Fallback import if the rtde module is not available
-    # from .protocols.rtde_custom import RTDE
-    raise ImportError(
-        "Please reinstall the armctl package to use RTDE functionality."
-    )
+from .protocols.rtde import RTDE
 
 import math
 from time import sleep as _sleep
 
 class UniversalRobots(SCT, Commands):
-    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):  # 30002: Port for Sending URScript commands / 30003: Port for Receiving URScript commands
-        super().__init__(ip, port)                                              # https://www.universal-robots.com/articles/ur/interface-communication/remote-control-via-tcpip/
+    def __init__(self, ip:str, port:int | tuple[int, int] = 30_002):
+        super().__init__(ip, port)
         self.JOINT_RANGES = [ 
             (-math.pi, math.pi),
             (-math.pi, math.pi),
