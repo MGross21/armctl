@@ -29,6 +29,9 @@ jobs:
         run: |
           poetry install --no-interaction --with dev
 
+      - name: Check Docker version
+        run: docker --version
+
       - name: Run tests
         run: |
           poetry run pytest tests --maxfail=1 --disable-warnings --tb=short  -v
