@@ -3,7 +3,6 @@ This module provides a base class `SerialController` for implementing serial-bas
 robot controllers. It provides methods for connecting, disconnecting, sending
 commands, and handling responses with enhanced debugging features.
 
-THIS CLASS IS NOT IMPLEMENTED YET.
 """
 
 from .communication import Communication
@@ -45,7 +44,9 @@ class SerialController(Communication):
             return
         try:
             self._serial = serial.Serial(self.port, self.baudrate, timeout=5)
-            logger.info(f"Connected to {self.__class__.__name__}({self.port}:{self.baudrate})")
+            logger.info(
+                f"Connected to {self.__class__.__name__}({self.port}:{self.baudrate})"
+            )
         except serial.SerialException:
             raise
 
@@ -74,23 +75,25 @@ class SerialController(Communication):
             The response from the robot.
         """
         if not self._serial or not self._serial.is_open:
-            raise ConnectionError(f"Robot is not connected. Call {self.connect.__name__} first.")
+            raise ConnectionError(
+                f"Robot is not connected. Call {self.connect.__name__} first."
+            )
         with self._lock:
             try:
                 logger.send(f"Sending command: {command}")
-                self._serial.write((command + '\n').encode())
+                self._serial.write((command + "\n").encode())
                 self._serial.flush()
                 start_time = time.time()
-                response = b''
+                response = b""
                 while True:
                     if self._serial.in_waiting > 0:
                         response += self._serial.read(self._serial.in_waiting)
-                        if response.endswith(b'\n'):
+                        if response.endswith(b"\n"):
                             break
                     if (time.time() - start_time) > timeout:
                         raise TimeoutError("Command timed out.")
                     time.sleep(0.01)
                 logger.receive(f"Received response: {response}")
-                return response.decode(errors='ignore').strip()
-            except serial.SerialException as e:
+                return response.decode(errors="ignore").strip()
+            except serial.SerialException:
                 raise
