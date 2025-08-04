@@ -22,7 +22,11 @@ Tracker = "https://github.com/MGross21/armctl/issues"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-urrtde = {git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"}
+
+[project.optional-dependencies]
+ur = [
+    "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+]
 
 [tool.poetry.urls]
 Homepage = "https://github.com/MGross21/armctl"

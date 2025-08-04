@@ -226,3 +226,8 @@ Please feel free to submit a pull request or open an issue for any enhancements 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/MGross21/armctl/blob/main/LICENSE) file for more details.
+
+### Notice
+
+> This package automatically installs the [Universal Robots RTDE Python Client Library](https://github.com/UniversalRobots/RTDE_Python_Client_Library) when needed.  
+> The RTDE library is provided by Universal Robots and is subject to their licensing terms.

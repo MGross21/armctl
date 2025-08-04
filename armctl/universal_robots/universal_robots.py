@@ -1,7 +1,28 @@
 from armctl.templates import Commands
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
-from .protocols.rtde import RTDE
+
+try:
+    from armctl.universal_robots.protocols.rtde import RTDE
+except ImportError:
+    from subprocess import run
+    import sys
+
+    logger.warning(
+        "RTDE Python Client Library not found. Installing from GitHub..."
+    )
+    run(
+        [
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "--quiet",
+            "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+        ],
+        check=True,
+    )
+    from armctl.universal_robots.protocols.rtde import RTDE
 
 import math
 from time import sleep as _sleep
