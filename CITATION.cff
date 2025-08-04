@@ -4,8 +4,8 @@ message: "If you use this software in your research, please cite it using the fo
 authors:
   - family-names: "Gross"
     given-names: "Michael"
-    email: "your@email.com"
-version: "0.3.0"
+    email: "MGross21@users.noreply.github.com"
+version: "0.3.1"
 date-released: "2025-03-09"
 license: "MIT"
 url: "https://github.com/MGross21/armctl"
