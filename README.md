@@ -219,7 +219,7 @@ Logger.enable()
 - [JAKA](https://www.jaka.com/en)
   - **Models:** Zu 5
 - [Dobot](https://www.dobot-robots.com)
-  - **Models:** Magician Lite
+  - **Models:** Magician Lite, M1 Pro
 
 ## Future Development
 
