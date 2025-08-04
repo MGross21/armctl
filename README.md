@@ -1,5 +1,5 @@
 <div align="center">
-    <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
+    <h1><img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
 </div>
 
 <p align="center">
@@ -54,7 +54,7 @@ pip install git+https://github.com/MGross21/armctl.git
 from armctl import *
 ```
 
-> [!NOTE]  
+> **Note:**  
 > For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ### Simple Example with Manufacturer Defaults
