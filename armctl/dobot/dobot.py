@@ -2,8 +2,6 @@ from armctl.templates import SerialController as Serial
 from armctl.templates import SocketController as Socket
 from armctl.templates import Commands
 
-from time import sleep as _sleep
-
 
 class DobotSerial(Serial, Commands):
     def __init__(self, ip: str, port: int):
@@ -62,7 +60,6 @@ class DobotSerial(Serial, Commands):
         pass
 
 
-
 class Codes:
     COMMAND = {
         0: "No error: Delivered successfully",
@@ -103,6 +100,7 @@ class Codes:
     def get_state_message(cls, code: int) -> str:
         return cls.STATE.get(code, f"Unknown state code: {code}")
 
+
 class DobotSocket(Socket, Commands):
     def __init__(self, ip: str, port: int | tuple[int, int] = (30_003, 30_004)):
         super().__init__(ip, port)
@@ -112,24 +110,28 @@ class DobotSocket(Socket, Commands):
         Message Response Format:
         "ErrorID,{value,...,valueN},Message name(Param1,Param2,Param3……ParamN);"
 
-        - If ErrorID is 0, the command is received successfully. 
+        - If ErrorID is 0, the command is received successfully.
         - {value,...,valueN} refers to the return value. {} means no return value.
         - Message name(Param1,Param2,Param3……ParamN) refers to the content delivered.
         """
-        c,r,m = self.send_command(f"{s}\n").strip().split(sep=",")
+        c, r, m = self.send_command(f"{s}\n").strip().split(sep=",")
         code = int(c)
         response = r.strip("{}")
         message = m.strip(";")
-        return  code, response, message
+        return code, response, message
 
-    def _send_and_check(self, cmd: str, motion: bool = False) -> list[float] | None:
+    def _send_and_check(
+        self, cmd: str, motion: bool = False
+    ) -> list[float] | None:
         """Send a command to the robot and check for errors in the response."""
 
-        code, response, _ = self._send(cmd) # Queue Command
+        code, response, _ = self._send(cmd)  # Queue Command
 
         if 0 == code and response == "":
             # Return the values inside the curly braces as a list, or None if empty
-            result = [float(x) for x in response.split(",")] if response else None
+            result = (
+                [float(x) for x in response.split(",")] if response else None
+            )
 
             if motion:
                 self._send("Sync()")
@@ -143,10 +145,8 @@ class DobotSocket(Socket, Commands):
                 #     )
             return result
         else:
-            raise RuntimeError(
-                f"Error {code}: {Codes.get_cmd_message(code)}"
-            )
-        
+            raise RuntimeError(f"Error {code}: {Codes.get_cmd_message(code)}")
+
     def connect(self):
         super().connect()
         # 0, 1, or all 4 parameters can be set to enable the robot.
@@ -156,12 +156,14 @@ class DobotSocket(Socket, Commands):
             "centerY": 0.0,  # Center Y in mm (-500 to 500)
             "centerZ": 0.0,  # Center Z in mm (-500 to 500)
         }
-        self._send_and_check("EnableRobot({},{},{},{})".format(
-            enable["load"],
-            enable["centerX"],
-            enable["centerY"],
-            enable["centerZ"]
-        ))
+        self._send_and_check(
+            "EnableRobot({},{},{},{})".format(
+                enable["load"],
+                enable["centerX"],
+                enable["centerY"],
+                enable["centerZ"],
+            )
+        )
 
         # Clear the alarms of the robot
         self._send_and_check("ClearError()")
@@ -179,19 +181,17 @@ class DobotSocket(Socket, Commands):
         """Get the current state of the robot."""
         code, _, _ = self._send("RobotMode()")
         return Codes.get_state_message(code)
-    
+
     def get_joint_positions(self):
         """Get the joint coordinates of current posture"""
         return self._send_and_check("GetAngle()")
-    
+
     def get_cartesian_position(self):
         """Get the Cartesian coordinates of current posture"""
         return self._send_and_check("GetPose()")
-    
+
     def move_cartesian(self, pose):
-        self._send_and_check(
-            "MoveJ({},{},{},{})".format(*pose), motion=True
-        )
+        self._send_and_check("MoveJ({},{},{},{})".format(*pose), motion=True)
 
     def move_joints(self, pos):
         self._send_and_check(
@@ -199,4 +199,4 @@ class DobotSocket(Socket, Commands):
         )
 
     def sleep(self, seconds):
-        _sleep(seconds)
+        self._send_and_check(f"wait({seconds})")
