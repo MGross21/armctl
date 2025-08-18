@@ -128,6 +128,11 @@ class UniversalRobots(SCT, Commands):
             f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
         )
 
+        if len(pose) != 6:
+            raise ValueError(
+                "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
+            )
+
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
                 raise ValueError(
