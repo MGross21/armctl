@@ -32,15 +32,18 @@ __all__ = [
     "ElephantRobotics",
     "Pro600",
     "UniversalRobots",
+    "UR3",
     "UR5",
     "UR5e",
-    "OnRobot",
+    "UR10",
+    "UR16",
+    # "OnRobot",
     "Vention",
     "Jaka",
     "Logger",
 ]
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"
 
 class Logger:
     """Global logger utility for armctl."""

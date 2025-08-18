@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "armctl"
-version = "0.3.0"
+version = "0.3.1"
 description = "Agnostic Robotic Manipulator Controller"
 authors = [{ name = "Michael Gross", email = "MGross21@TODO.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
