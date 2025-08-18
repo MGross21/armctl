@@ -1,7 +1,7 @@
 import math
 
 
-class AngleUtils:
+class Angle:
     @staticmethod
     def to_degrees_joint(joint_positions):
         return [math.degrees(j) for j in joint_positions]
