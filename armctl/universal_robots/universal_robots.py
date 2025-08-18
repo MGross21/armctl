@@ -72,12 +72,11 @@ class UniversalRobots(SCT, Commands):
             f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
         )
 
-        for idx, pos in enumerate(pos):
-            if not (
-                self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]
-            ):
+        for idx, p in enumerate(pos):
+            low, high = self.JOINT_RANGES[idx]
+            if not (low <= p <= high):
                 raise ValueError(
-                    f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}"
+                    f"Joint {idx + 1} position {p} is out of range: {low} ~ {high}"
                 )
 
         command = f"movej([{','.join(map(str, pos))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
