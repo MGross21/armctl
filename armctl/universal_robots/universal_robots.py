@@ -187,10 +187,15 @@ class UniversalRobots(SCT, Commands):
     def get_robot_state(self) -> dict[str, bool]:
         status = self.rtde.robot_status()
 
-        key_out = ["Power On", "Program Running", "Emergency Stopped", "Stopped Due to Safety"]
+        key_out = [
+            "Power On",
+            "Program Running",
+            "Emergency Stopped",
+            "Stopped Due to Safety",
+        ]
         logger.receive(
-            "Received response: " +
-            ", ".join(f"{k}: {status[k]}" for k in key_out) +
-            " ..."
+            "Received response: "
+            + ", ".join(f"{k}: {status[k]}" for k in key_out)
+            + " ..."
         )
         return status
