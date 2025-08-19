@@ -184,5 +184,13 @@ class UniversalRobots(SCT, Commands):
             "stopj({})\n".format(deceleration), suppress_output=True
         )
 
-    def get_robot_state(self):
-        return self.send_command("get_robot_status()\n")
+    def get_robot_state(self) -> dict[str, bool]:
+        status = self.rtde.robot_status()
+
+        key_out = ["Power On", "Program Running", "Emergency Stopped", "Stopped Due to Safety"]
+        logger.receive(
+            "Received response: " +
+            ", ".join(f"{k}: {status[k]}" for k in key_out) +
+            " ..."
+        )
+        return status
