@@ -1,7 +1,7 @@
-from armctl.templates import SerialController as SCT
+from armctl.templates import SerialController as SCT, Commands
 
 
-class Dobot(SCT):
+class Dobot(SCT, Commands):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
