@@ -2,34 +2,35 @@ from armctl.templates import Commands
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 
-try:
-    from armctl.universal_robots.protocols.rtde import RTDE
-except ImportError:
-    from subprocess import run
-    import sys
-
-    logger.warning(
-        "RTDE Python Client Library not found. Installing from GitHub..."
-    )
-    run(
-        [
-            sys.executable,
-            "-m",
-            "pip",
-            "install",
-            "--quiet",
-            "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
-        ],
-        check=True,
-    )
-    from armctl.universal_robots.protocols.rtde import RTDE
-
 import math
 from time import sleep as _sleep
 
-
 class UniversalRobots(SCT, Commands):
+    def _check_rtde(self):
+        try:
+            from .protocols.rtde import RTDE
+        except ImportError:
+            from subprocess import run
+            import sys
+
+            logger.warning(
+                "RTDE Python Client Library not found. Installing from GitHub..."
+            )
+            run(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "--quiet",
+                    "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ],
+                check=True,
+            )
+            from .protocols.rtde import RTDE
+
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
+        self._check_rtde()
         super().__init__(ip, port)
         self.JOINT_RANGES = [
             (-math.pi, math.pi),
@@ -47,6 +48,7 @@ class UniversalRobots(SCT, Commands):
 
     def connect(self):
         super().connect()
+        from .protocols.rtde import RTDE
         self.rtde = RTDE(self.ip)  # Initialize RTDE connection
 
     def disconnect(self):
