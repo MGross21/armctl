@@ -4,10 +4,10 @@ message: "If you use this software in your research, please cite it using the fo
 authors:
   - family-names: "Gross"
     given-names: "Michael"
-    email: "your@email.com"
-version: "0.3.1"
+    email: "MGross21@users.noreply.github.com"
+version: "0.3.2"
 date-released: "2025-03-09"
 license: "MIT"
 url: "https://github.com/MGross21/armctl"
 abstract: |
-  armctl is a Python library for controlling various robotic arms, providing utilities and templates for communication, motion, and integration with different robot brands.
+  armctl is a unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.

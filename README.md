@@ -1,6 +1,13 @@
 <div align="center">
-    <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
+    <h1><img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
 </div>
+
+<p align="center">
+  <!-- <img src="https://github.com/MGross21/armctl/actions/workflows/ci.yml/badge.svg" alt="Build Status"> -->
+  <img src="https://img.shields.io/badge/python-3-orange.svg" alt="Python Version">
+  <img src="https://img.shields.io/github/license/MGross21/armctl?color=orange" alt="License">
+  <a href="https://pypi.org/project/armctl/"><img src="https://static.pepy.tech/personalized-badge/armctl?period=total&left_color=gray&right_color=orange&left_text=downloads" alt="Downloads"></a>
+</p>
 
 A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
 
@@ -30,22 +37,16 @@ The `armctl` library currently supports the following manufacturers and robot mo
 
 ### Installation
 
-```text
+*From PyPI:*
+
+```bash
+pip install armctl
+```
+
+*From GitHub:*
+
+```bash
 pip install git+https://github.com/MGross21/armctl.git
-```
-
-#### Adding to Project Dependencies
-
-*`requirements.txt`*
-
-```text
-git+https://github.com/MGross21/armctl.git
-```
-
-*`pyproject.toml`*
-
-```toml
-armctl = {git = "https://github.com/MGross21/armctl.git"}
 ```
 
 ### Importing the Library
@@ -54,7 +55,7 @@ armctl = {git = "https://github.com/MGross21/armctl.git"}
 from armctl import *
 ```
 
-> [!NOTE]  
+> **Note:**  
 > For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ### Simple Example with Manufacturer Defaults
@@ -98,7 +99,7 @@ with (
     r2.move_joints([...])
 ```
 
-> [!TIP]  
+> **Tip:**  
 > For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
 
 #### Multithread Control
@@ -126,7 +127,7 @@ for t in threads:
 
 ## API Reference
 
-> [!NOTE]  
+> **Note:**  
 > The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are planned for future releases to further expand functionality.
 
 ### Control Template
@@ -226,3 +227,8 @@ Please feel free to submit a pull request or open an issue for any enhancements 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/MGross21/armctl/blob/main/LICENSE) file for more details.
+
+### Notice
+
+> This package automatically installs the [Universal Robots RTDE Python Client Library](https://github.com/UniversalRobots/RTDE_Python_Client_Library) when needed.  
+> The RTDE library is provided by Universal Robots and is subject to their licensing terms.
