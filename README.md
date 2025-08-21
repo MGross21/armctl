@@ -169,7 +169,7 @@ The following methods facilitate explicit connection management and low-level co
 Below is a high-level diagram illustrating the architecture of the `armctl` library. This design emphasizes the careful templatization of connection and control APIs, ensuring a consistent and extensible interface across different manufacturers and robot series.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/images/template_overview_mermaid.png" alt="Template Overview" width="800">
+  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/diagrams/structure.svg" alt="Template Overview" width="800">
 </p>
 
 ### System Logging
