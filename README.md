@@ -6,6 +6,7 @@
   <!-- <img src="https://github.com/MGross21/armctl/actions/workflows/ci.yml/badge.svg" alt="Build Status"> -->
   <img src="https://img.shields.io/badge/python-3-orange.svg" alt="Python Version">
   <img src="https://img.shields.io/github/license/MGross21/armctl?color=orange" alt="License">
+  <a href="https://pypi.org/project/armctl/"><img src="https://static.pepy.tech/personalized-badge/armctl?period=total&left_color=gray&right_color=orange&left_text=downloads" alt="Downloads"></a>
 </p>
 
 A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
