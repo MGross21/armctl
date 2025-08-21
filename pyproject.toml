@@ -4,9 +4,9 @@ build-backend = "poetry.core.masonry.api"
 
 [project]
 name = "armctl"
-version = "0.3.0"
-description = "Agnostic Robotic Manipulator Controller"
-authors = [{ name = "Michael Gross", email = "MGross21@TODO.com" }]
+version = "0.3.2"
+description = "Agnostic Robotic Manipulator Controller (armctl)"
+authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
 license = { file = "LICENSE" }
 keywords = ["robotics", "socket", "control", "automation"]
@@ -22,7 +22,7 @@ Tracker = "https://github.com/MGross21/armctl/issues"
 
 [tool.poetry.dependencies]
 python = "^3.9"
-urrtde = {git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git"}
+# urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", branch = "main" }
 
 [tool.poetry.urls]
 Homepage = "https://github.com/MGross21/armctl"
@@ -58,6 +58,6 @@ force_grid_wrap = 0
 use_parentheses = true
 
 [tool.mypy]
-python_version = 3.9
+python_version = "3.9"
 strict = true
 ignore_missing_imports = true
