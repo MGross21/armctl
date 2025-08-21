@@ -1,10 +1,11 @@
 import time
 
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 
 
-class ElephantRobotics(SCT, Commands):
+class ElephantRobotics(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
@@ -15,7 +16,8 @@ class ElephantRobotics(SCT, Commands):
             (-168.00, 168.00),
             (-174.00, 174.00),
         ]
-        self.DOF = len(self.JOINT_RANGES)
+        self.MAX_JOINT_VELOCITY = 2000
+        self.MAX_JOINT_ACCELERATION = None
 
     def connect(self):
         super().connect()  # Socket Connection
@@ -73,8 +75,8 @@ class ElephantRobotics(SCT, Commands):
                     f"Joint {i + 1} angle out of range: {low} ~ {high}"
                 )
 
-        if not (0 <= speed <= 2000):
-            raise ValueError("Speed out of range: 0 ~ 2000")
+        if not (0 <= speed <= self.MAX_JOINT_VELOCITY):
+            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
 
         command = "set_angles"
         response = self.send_command(
@@ -105,8 +107,8 @@ class ElephantRobotics(SCT, Commands):
             Speed of the movement, range 0 ~ 2000 (default: 500).
         """
 
-        if not (0 <= speed <= 2000):
-            raise ValueError("Speed out of range: 0 ~ 2000")
+        if not (0 <= speed <= self.MAX_JOINT_VELOCITY):
+            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
         if len(pose) != 6:
             raise ValueError(
                 "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"

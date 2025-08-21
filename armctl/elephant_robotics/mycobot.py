@@ -14,9 +14,6 @@ class Pro600(ElephantRobotics):
             (-168.00, 168.00),
             (-174.00, 174.00),
         ]
-        self.DOF = len(self.JOINT_RANGES)
-
-        self.__class__.__name__ = f"{self.__class__.__bases__[0].__name__} {__name__.split('.')[-1]} {self.__class__.__name__}"
 
     def home(self):
         """

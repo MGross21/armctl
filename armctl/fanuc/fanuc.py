@@ -1,9 +1,10 @@
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import PLCController as PLC
 
 
 # Non-Operational (1/31/2025)
-class Fanuc(PLC, Commands):
+class Fanuc(PLC, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         raise NotImplementedError(

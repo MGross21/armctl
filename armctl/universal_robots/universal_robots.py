@@ -1,4 +1,5 @@
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 from .protocols.rtde import RTDE
@@ -7,7 +8,7 @@ import math
 from time import sleep as _sleep
 
 
-class UniversalRobots(SCT, Commands):
+class UniversalRobots(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
@@ -18,7 +19,6 @@ class UniversalRobots(SCT, Commands):
             (-math.pi, math.pi),
             (-math.pi, math.pi),
         ]
-        self.DOF = len(self.JOINT_RANGES)
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
         self.MAX_JOINT_VELOCITY = 2.0  # rad/s
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4

@@ -1,7 +1,7 @@
-from armctl.templates import SerialController as SCT, Commands
+from armctl.templates import SerialController as SCT, Commands, Properties
 
 
-class Dobot(SCT, Commands):
+class Dobot(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
@@ -10,7 +10,9 @@ class Dobot(SCT, Commands):
             (-10.00, 85.00),
             (-145.00, 145.00),
         ]
-        self.DOF = len(self.JOINT_RANGES)
+        self.MAX_JOINT_VELOCITY = None
+        self.MAX_JOINT_ACCELERATION = None
+
         raise NotImplementedError(
             f"{self.__class__.__name__.upper()} is not yet supported."
         )

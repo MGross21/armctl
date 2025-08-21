@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Union
 
 from armctl.utils.angle import Angle as au
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 
 ### Notes ###
@@ -14,7 +15,7 @@ from armctl.templates import SocketController as SCT
 # Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
 
 
-class Jaka(SCT, Commands):
+class Jaka(SCT, Commands, Properties):
     JOINT_RANGES = [
         (-math.pi, math.pi),
         (math.radians(-85), math.radians(265)),
