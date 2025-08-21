@@ -1,4 +1,5 @@
 from armctl.templates import SerialController as SCT, Commands, Properties
+from armctl.utils import CommandCheck as cc
 
 
 class Dobot(SCT, Commands, Properties):
@@ -23,14 +24,7 @@ class Dobot(SCT, Commands, Properties):
     def move_joints(self, pos, *args, **kwargs) -> str:
         "MovJ"
 
-        if len(pos) != kwargs.get("DOF", 4):
-            raise ValueError("Joint positions must have 4 elements")
-
-        for j, (lower, upper) in enumerate(self.JOINT_RANGES):
-            if not (lower <= pos[j] <= upper):
-                raise ValueError(
-                    f"Joint {j + 1} angle out of range: {lower} ~ {upper}"
-                )
+        cc.move_joints(self, pos)
 
         command = "MOVJ({})".format(",".join(map(str, pos)))
         return self.send_command(command)

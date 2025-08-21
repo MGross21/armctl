@@ -14,7 +14,7 @@ class CommandCheck(Commands):
             raise ValueError(f"Sleep duration must be non-negative, got {seconds}")
 
     @staticmethod
-    def move_joints(robot_instance: Properties, positions: List[float]) -> None:
+    def move_joints(robot_instance: Properties, positions: List[float], velocity: float = None, acceleration: float = None) -> None:
         """Validate joint positions against robot ranges."""
         # Basic type validation
         if not isinstance(positions, list):
@@ -30,7 +30,9 @@ class CommandCheck(Commands):
         # Robot-specific validation using guaranteed Properties interface
         joint_ranges = robot_instance.JOINT_RANGES
         dof = robot_instance.DOF
-        
+        v = robot_instance.MAX_JOINT_VELOCITY
+        a = robot_instance.MAX_JOINT_ACCELERATION
+
         if len(positions) != dof:
             raise ValueError(
                 f"Expected {dof} joint positions for {robot_instance.__class__.__name__}, "
@@ -45,6 +47,12 @@ class CommandCheck(Commands):
                     f"[{min_limit:.3f}, {max_limit:.3f}]"
                 )
 
+        if velocity is not None and velocity > v:
+            raise ValueError(f"Velocity {velocity} exceeds max {v}")
+
+        if acceleration is not None and acceleration > a:
+            raise ValueError(f"Acceleration {acceleration} exceeds max {a}")
+
     @staticmethod
     def get_joint_positions() -> None:
         """No validation required for joint position getter."""
@@ -57,7 +65,6 @@ class CommandCheck(Commands):
             raise TypeError(f"Cartesian pose must be a list, got {type(pose).__name__}")
 
         dof = robot_instance.DOF
-        
         if len(pose) != dof:
             raise ValueError(f"Cartesian pose must have {dof} elements (x,y,z,rx,ry,rz), got {len(pose)}")
 

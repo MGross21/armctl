@@ -3,7 +3,7 @@ import math
 import time
 from typing import Any, Dict, List, Union
 
-from armctl.utils.angle import Angle as au
+from armctl.utils import Angle as au
 from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
