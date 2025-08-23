@@ -95,12 +95,11 @@ class UniversalRobots(SCT, Commands, Properties):
             f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
         )
 
-        for idx, pos in enumerate(pos):
-            if not (
-                self.JOINT_RANGES[idx][0] <= pos <= self.JOINT_RANGES[idx][1]
-            ):
+        for idx, p in enumerate(pos):
+            low, high = self.JOINT_RANGES[idx]
+            if not (low <= p <= high):
                 raise ValueError(
-                    f"Joint {idx + 1} position {pos} is out of range: {self.JOINT_RANGES[idx]}"
+                    f"Joint {idx + 1} position {p} is out of range: {low} ~ {high}"
                 )
 
         command = f"movej([{','.join(map(str, pos))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
@@ -151,6 +150,11 @@ class UniversalRobots(SCT, Commands, Properties):
         assert acceleration <= self.MAX_ACCELERATION, (
             f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
         )
+
+        if len(pose) != 6:
+            raise ValueError(
+                "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
+            )
 
         for p in pose[3:]:
             if not (0 <= p <= math.pi * 2):
@@ -203,5 +207,18 @@ class UniversalRobots(SCT, Commands, Properties):
             "stopj({})\n".format(deceleration), suppress_output=True
         )
 
-    def get_robot_state(self):
-        return self.send_command("get_robot_status()\n")
+    def get_robot_state(self) -> dict[str, bool]:
+        status = self.rtde.robot_status()
+
+        key_out = [
+            "Power On",
+            "Program Running",
+            "Emergency Stopped",
+            "Stopped Due to Safety",
+        ]
+        logger.receive(
+            "Received response: "
+            + ", ".join(f"{k}: {status[k]}" for k in key_out)
+            + " ..."
+        )
+        return status
