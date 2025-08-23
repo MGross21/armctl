@@ -7,6 +7,9 @@ from armctl.templates import PLCController as PLC
 class Fanuc(PLC, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
+        self.JOINT_RANGES = None
+        self.MAX_JOINT_VELOCITY = None
+        self.MAX_JOINT_ACCELERATION = None
         raise NotImplementedError(
             f"{self.__class__.__name__.upper()} is not yet supported."
         )

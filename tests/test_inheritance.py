@@ -23,7 +23,7 @@ ROBOTS = [
 ]
 
 # Required base classes
-REQUIRED_BASES = (Commands,)  # Properties
+REQUIRED_BASES = (Commands, Properties)
 CONTROLLER_BASES = (SerialController, SocketController, PLCController)
 
 
