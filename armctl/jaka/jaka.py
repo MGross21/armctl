@@ -4,6 +4,7 @@ import time
 from typing import Any, Dict, List, Union
 
 from armctl.utils import Angle as au
+from armctl.utils import CommandCheck as cc
 from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
@@ -24,7 +25,6 @@ class Jaka(SCT, Commands, Properties):
         (math.radians(-300), math.radians(300)),
         (-math.pi, math.pi),
     ]
-    DOF = len(JOINT_RANGES)
     MAX_JOINT_VELOCITY = math.radians(180)  # rad/s
     MAX_JOINT_ACCELERATION = math.radians(720)  # rad/s^2
 
@@ -70,10 +70,7 @@ class Jaka(SCT, Commands, Properties):
         super().disconnect()
 
     def sleep(self, seconds: float) -> None:
-        if not isinstance(seconds, (int, float)):
-            raise TypeError("Seconds must be a numeric value.")
-        if seconds < 0:
-            raise ValueError("Seconds must be a non-negative value.")
+        cc.sleep(seconds)
         time.sleep(seconds)
 
     def move_joints(
@@ -90,22 +87,8 @@ class Jaka(SCT, Commands, Properties):
         acceleration : float
             Joint acceleration in radians/sec²
         """
-        if len(pos) != self.DOF:
-            raise ValueError(f"Joint positions must have {self.DOF} elements")
-        if not (0 < speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(
-                f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-            )
-        if not (0 < acceleration <= self.MAX_JOINT_ACCELERATION):
-            raise ValueError(
-                f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
-            )
-        for idx, p in enumerate(pos):
-            min_j, max_j = self.JOINT_RANGES[idx]
-            if not (min_j <= p <= max_j):
-                raise ValueError(
-                    f"Joint {idx + 1} position {p} is out of range: {self.JOINT_RANGES[idx]}"
-                )
+        cc.move_joints(self, pos, speed, acceleration)
+        
         cmd = {
             "cmdName": "joint_move",
             "relFlag": 0,  # 0 for absolute motion, 1 for relative motion.
@@ -129,6 +112,16 @@ class Jaka(SCT, Commands, Properties):
         acceleration : float, optional
             Acceleration of the movement in radians/sec²
         """
+        cc.move_cartesian(self, pose)
+        
+        # Additional Jaka-specific validation for orientation range
+        for p in pose[3:]:
+            if not (0 <= p <= math.pi * 2):
+                raise ValueError(
+                    f"Orientation value {p} out of range: 0 ~ {math.pi * 2}"
+                )
+        
+        # Validate speed and acceleration against joint limits (Jaka-specific)
         if not (0 < speed <= self.MAX_JOINT_VELOCITY):
             raise ValueError(
                 f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
@@ -137,11 +130,7 @@ class Jaka(SCT, Commands, Properties):
             raise ValueError(
                 f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
             )
-        for p in pose[3:]:
-            if not (0 <= p <= math.pi * 2):
-                raise ValueError(
-                    f"Orientation value {p} out of range: 0 ~ {math.pi * 2}"
-                )
+        
         cmd = {
             "cmdName": "end_move",
             "end_position": self.to_degrees_cartesian(pose),
@@ -158,6 +147,7 @@ class Jaka(SCT, Commands, Properties):
         list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
         """
+        cc.get_joint_positions()
         cmd = {"cmdName": "get_joint_pos"}
         response = self._send_and_check(cmd)
         return [math.radians(angle) for angle in response["joint_pos"]]
@@ -170,11 +160,13 @@ class Jaka(SCT, Commands, Properties):
         list of float
             Cartesian position [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are in meters and Rx, Ry, Rz are in radians.
         """
+        cc.get_cartesian_position()
         cmd = {"cmdName": "get_tcp_pos"}
         response = self._send_and_check(cmd)
         return self.to_radians_cartesian(response["tcp_pos"])
 
     def stop_motion(self) -> None:
+        cc.stop_motion()
         self._send_and_check({"cmdName": "stop_program"})
 
     def get_robot_state(self) -> Dict[str, Any]:
@@ -192,4 +184,5 @@ class Jaka(SCT, Commands, Properties):
             - `errorMsg`: The corresponding error message.
             - `msg`: The error message returned by the controller.
         """
+        cc.get_robot_state()
         return self._send_and_check({"cmdName": "get_robot_state"})
