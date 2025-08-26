@@ -5,6 +5,7 @@ from armctl.templates.logger import logger
 import math
 from time import sleep as _sleep
 
+
 class UniversalRobots(SCT, Commands):
     def _check_rtde(self):
         try:
@@ -33,12 +34,12 @@ class UniversalRobots(SCT, Commands):
         self._check_rtde()
         super().__init__(ip, port)
         self.JOINT_RANGES = [
-            (-math.pi, math.pi),
-            (-math.pi, math.pi),
-            (-math.pi, math.pi),
-            (-math.pi, math.pi),
-            (-math.pi, math.pi),
-            (-math.pi, math.pi),
+            (-2 * math.pi, 2 * math.pi),
+            (-2 * math.pi, 2 * math.pi),
+            (-2 * math.pi, 2 * math.pi),
+            (-2 * math.pi, 2 * math.pi),
+            (-2 * math.pi, 2 * math.pi),
+            (-2 * math.pi, 2 * math.pi),
         ]
         self.DOF = len(self.JOINT_RANGES)
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
@@ -49,6 +50,7 @@ class UniversalRobots(SCT, Commands):
     def connect(self):
         super().connect()
         from .protocols.rtde import RTDE
+
         self.rtde = RTDE(self.ip)  # Initialize RTDE connection
 
     def disconnect(self):
@@ -155,12 +157,6 @@ class UniversalRobots(SCT, Commands):
             raise ValueError(
                 "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
             )
-
-        for p in pose[3:]:
-            if not (0 <= p <= math.pi * 2):
-                raise ValueError(
-                    f"Joint position {p} out of range: 0 ~ {math.pi * 2}"
-                )
 
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
