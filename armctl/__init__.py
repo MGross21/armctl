@@ -31,7 +31,6 @@ __all__ = [
     "OnRobot",
     "Vention",
     "Jaka",
-    "Logger",
 ]
 
 __version__ = "0.3.2"
@@ -57,5 +56,5 @@ class Logger:
 
 import os
 
-if os.environ.get("ARMCTL_LOG") == "DISABLE":
+if os.environ.get("ARMCTL_LOG", "").lower() in {"0", "false", "disable"}:
     Logger.disable()
