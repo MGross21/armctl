@@ -194,17 +194,33 @@ By default, the library will show the outgoing commands and incoming data. An ex
 2025-02-12 13:18:14,176 - INFO - Disconnected from ElephantRobotics
 ```
 
-#### Disabling
+#### Disabling Logging
+
+To disable logging in your Python code:
 
 ```python
-from armctl import *
+from armctl import Logger
 Logger.disable()
 ```
 
-#### Re-Enabling
+Or, set the environment variable before running your script:
+
+```bash
+export ARMCTL_LOG=0
+```
+
+#### Re-Enabling Logging
+
+To re-enable logging in your code:
 
 ```python
 Logger.enable()
+```
+
+Or, remove the environment variable in your shell:
+
+```bash
+unset ARMCTL_LOG
 ```
 
 ## Under Development
