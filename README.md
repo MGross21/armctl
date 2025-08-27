@@ -15,20 +15,25 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 
 The `armctl` library currently supports the following manufacturers and robot models:
 
-### [Universal Robots](https://www.universal-robots.com)
-
-- **Supported Models:** UR3, UR5, UR5e, UR10, UR16 <br>
-  <img src=https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif alt="UR5" width="400">
-
-### [Vention](https://vention.io)
-
-- **Supported Models:** 7th Axis Plate <br>
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="400">
-
-### [Elephant Robotics](https://www.elephantrobotics.com/en/)
-
-- **Supported Models:** myCobot Pro600 <br>
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
+<table>
+  <tr>
+    <td valign="top" align="center" width="33%">
+      <a href="https://www.universal-robots.com"><b>Universal Robots</b></a><br>
+      <sub>Supported Models: UR3, UR5, UR5e, UR10, UR16</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif" alt="UR5" width="250">
+    </td>
+    <td valign="top" align="center" width="33%">
+      <a href="https://vention.io"><b>Vention</b></a><br>
+      <sub>Supported Models: 7th Axis Plate</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="250">
+    </td>
+    <td valign="top" align="center" width="33%">
+      <a href="https://www.elephantrobotics.com/en/"><b>Elephant Robotics</b></a><br>
+      <sub>Supported Models: myCobot Pro600</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
+    </td>
+  </tr>
+</table>
 
 > **Want to see your robot supported?**  
 > [Open an issue](https://github.com/MGross21/armctl/issues) or contribute a pull request!
@@ -136,14 +141,72 @@ The following methods are available to users of the library to control various s
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| `move_joints(pos)` | Move the robot to specified joint positions.             |
-| `get_joint_positions()` | Retrieve the current joint positions of the robot.                |
-| `move_cartesian(pose)` | Move the robot to a specified Cartesian pose.              |
-| `get_cartesian_position()` | Retrieve the current Cartesian position of the robot.          |
+| `move_joints(pos)`           | Move the robot to specified joint positions.                   <table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://www.universal-robots.com"><b>Universal Robots</b></a><br>
+      <sub>Supported Models: UR3, UR5, UR5e, UR10, UR16</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif" alt="UR5" width="250">
+    </td>
+    <td align="center" width="33%">
+      <a href="https://vention.io"><b>Vention</b></a><br>
+      <sub>Supported Models: 7th Axis Plate</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="250">
+    </td>
+    <td align="center" width="33%">
+      <a href="https://www.elephantrobotics.com/en/"><b>Elephant Robotics</b></a><br>
+      <sub>Supported Models: myCobot Pro600</sub><br>
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
+    </td>
+  </tr>
+</table>             |
+| `get_joint_positions()`      | Retrieve the current joint positions of the robot.                          |
+| `move_cartesian(pose)`       | Move the robot to a specified Cartesian pose.                               |
+| `get_cartesian_position()`   | Retrieve the current Cartesian position of the robot.                       |
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
 | `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
+
+<details><summary>Robot Homing Behavior</summary>
+
+The "home" position refers to a predefined, manufacturer-specific pose that is safe and repeatable for initialization and calibration. Homing is available for certain robot series and is typically used to:
+
+- Reset the robot to a known reference pose
+- Prepare the robot for operation or shutdown
+- Ensure consistent starting conditions for automated tasks
+
+```txt
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⡟⡏⡟⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⢟⢫⢪⢣⢣⢣⢣⢣⢫⢻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⠋⠀⠄⡐⢘⠜⡜⡜⡜⡜⡜⡜⡜⡜⡝⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⡂⠨⢂⠀⢂⢘⠔⡑⡱⢱⢱⢱⢱⢱⢱⢱⢱⢹⢻⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⠀⠠⠀⢄⠎⡌⡪⠰⡡⠕⡱⠱⡱⡱⡱⡱⡱⠑⠡⠈⡙⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠁⠐⠀⢸⡎⢐⠪⢨⢂⢇⠐⢈⠰⡡⡃⠡⠀⠌⡀⠂⡀⠂⠄⠉⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠐⠀⡁⢸⡇⡀⠈⡈⢴⣑⠔⡀⡨⡂⡇⠀⠂⠄⡀⠂⢀⠁⠂⡨⡰⡹⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠀⠠⠀⢸⡇⠀⠄⠀⣻⣿⣿⣧⣎⢔⠅⠂⠨⢨⠠⡁⢀⢆⢇⢇⢇⢇⢇⢇⢏⢟⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠈⠀⠂⢸⡇⠂⡀⠁⢾⣿⣿⣿⣿⣿⣾⣴⣀⠁⠪⠀⠄⠨⢘⠸⡸⡸⡸⡸⡸⡸⡸⡸⡹⡻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⢀⠈⡀⢸⡇⠀⠠⠀⣻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣤⣴⣠⠀⠐⠀⡑⠱⢱⢱⢱⢱⢱⢱⢱⢱⠹⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠀⠀⠄⢸⡅⠁⠂⠄⣽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣷⣠⡀⠡⠀⠡⠑⢕⠕⠕⢁⠂⢨⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⡧⠈⠀⠂⠸⡱⡰⡠⡀⢾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣬⡀⠂⠄⢈⠐⠀⠂⢐⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⢏⠈⠀⠁⢊⡕⡕⡕⡕⡝⡝⡿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡯⢀⠀⠄⠠⡂⡇⢐⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⡧⠃⢀⠁⠈⠄⡇⡇⡇⡇⡇⡇⡇⡇⡟⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣗⠀⡀⠐⢸⠰⢁⠐⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⠛⠩⠀⠄⡌⠀⠡⠸⢨⢊⢎⢎⢎⢎⢎⢎⢆⠙⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡗⢀⠀⠁⠂⠄⠠⢀⠙⢿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⠃⠐⢀⠑⠠⠀⠁⡈⡬⢡⠃⡪⢸⢸⢸⢸⢸⢸⠐⠀⢿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣟⠂⠠⠈⡀⠁⠂⠄⠀⢂⠈⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⠠⠁⠄⠐⠨⢈⠊⡪⢸⢘⠄⡢⡡⢣⢣⢣⠣⠃⠌⡀⣹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠅⠠⢁⠂⣠⣴⣿⠅⢁⠠⠀⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⡄⠐⠀⡁⠂⡀⠂⠄⠡⠘⠜⡰⡑⠕⠁⡁⠂⡐⠀⠀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⢈⠐⠀⣸⣿⣿⣿⡁⠄⡐⠀⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣷⢌⢀⠀⠂⡀⠁⠄⡁⠂⡐⠀⡐⠀⡁⠐⠀⡀⢁⢼⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠄⢈⠀⢼⣿⣿⣿⣶⣤⣐⣠⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⡿⢂⢕⢰⠠⡀⡂⠄⠀⠄⠀⠂⡀⠄⡀⡡⢰⢐⠕⡹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡇⠂⠄⡐⢸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⠐⠜⡰⡡⢕⢱⢘⠜⡸⢘⠜⡸⢐⠕⡱⢡⠣⡪⢸⠀⢽⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⣄⠠⢀⣹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⠐⠈⡊⡔⡱⢡⢊⠎⡪⢊⡪⢊⠎⡜⢌⠎⡜⡰⠁⠄⣹⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣌⠐⠀⠠⢁⠃⠕⠱⠡⠣⢊⠎⠪⠊⠜⢈⠐⡀⠐⢠⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣷⣌⢀⠀⠂⢈⠀⠅⡈⠐⠠⢁⠈⠐⠠⠀⣠⣴⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣾⣦⣦⣤⣄⣄⣢⣠⣤⣴⣴⣶⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+```
+
+</details>
 
 #### Standard Units
 
