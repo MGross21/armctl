@@ -25,7 +25,7 @@ Each robot implementation should adhere to the following interface and checks to
 
 Typical sequence to prepare a robot for motion:
 
-1. Establish Python or network connection (**Super Connect**)
+1. Establish Python or network connection (`super().connect`)
 2. Power on the robot
 3. Check and reset emergency stop status if needed
 4. Enable robot drives
@@ -38,42 +38,23 @@ Sequence to safely disconnect:
 1. Stop any ongoing motion (preferably with a controlled deceleration)
 2. Optionally disable robot drives (use with caution)
 3. Optionally power off the robot (use with caution)
-4. Close Python/network connection (**Super Disconnect**)
+4. Close Python/network connection (`super().disconnect`)
 
 ### Move Joints
 
-#### Checks
-
-* Ensure provided joint positions array matches robot DOF:  
-    `len(joint_positions) == len(joint_min) == len(joint_max)`
-* Confirm velocities and accelerations are within robot limits
-* Validate joint limits:  
-    `joint_min[i] <= joint_positions[i] <= joint_max[i]`
-
-#### Execution
-
-1. Format and send the command
-2. Receive and parse response (if applicable)
-3. Assert valid or expected response
-4. Return response (or confirmation)
+1. Check validitiy of command (formatting and ranges)
+2. Format and send the command
+3. Receive and parse response (if applicable)
+4. Assert valid or expected response
+5. Return response (or confirmation)
 
 ### Move Cartesian
 
-#### Checks
-
-* Ensure pose is a 6-element list or array:  
-    `[x, y, z, rx, ry, rz]`
-* Verify rotation values:  
-    `abs(rx), abs(ry), abs(rz) <= 2π`
-* Validate speed and acceleration constraints
-* Ensure pose is within the robot's reachable workspace (via internal IK or explicit robot checks)
-
-#### Execution
-
-1. Format and send the Cartesian move command
-2. Receive and parse response
-3. Assert validity
-4. Return response
+1. Check validitiy of command (formatting and ranges)
+2. Format and send the Cartesian move command
+3. Receive and parse response
+4. Assert validity
+5. Return response
 
 ### Get Joint Position
 
@@ -104,15 +85,40 @@ Sequence to safely disconnect:
 
 ### Sleep
 
-#### If Robot Supports Native Sleep:
+#### If Robot Supports Native Sleep
 
 1. Send sleep command (e.g. to enter idle or low-power state)
 2. Parse acknowledgement
 3. Return confirmation
 
-#### If Not Supported:
+#### If Not Supported
 
 * Use Python's `time.sleep(seconds)` to pause execution.
+
+## Adding a New Robot
+
+To add support for a new robot, follow these steps:
+
+1. **Start with the Template:**  
+    Use the [`BlankRobot`](armctl/_blank/robot.py) class as a starting point. This template outlines the required interface and structure for robot integration.
+
+2. **Implement Required Methods:**  
+    Ensure your robot class implements all core methods described in the [Robot Control Commands](#robot-control-commands) section above. These include connection handling, motion commands, state queries, and safety checks.
+
+3. **Unit Consistency:**  
+    All inputs and outputs must use the standard units defined in this guide (radians for joints, meters/radians for Cartesian positions).
+
+4. **Document Manufacturer-Specific Details:**  
+    Add in-line comments and README documentation for any manufacturer-specific logic, quirks, or references to official documentation. This helps future contributors understand your implementation.
+
+5. **Testing:**  
+    Test your integration using virtual or low-power modes first. Validate all commands and error handling before submitting.
+
+6. **Code Quality:**  
+    Run formatting and type checks as described in the [Linting and Code Quality](#notes-for-contributors) section.
+
+> For a minimal working example, see [`BlankRobot`](armctl/_blank/robot.py).  
+> When adding a new robot, include links to relevant documentation and clearly comment any non-standard behavior.
 
 ## Notes for Contributors
 
