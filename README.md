@@ -17,19 +17,35 @@ The `armctl` library currently supports the following manufacturers and robot mo
 
 <table>
   <tr>
-    <td valign="top" align="center" width="33%">
-      <a href="https://www.universal-robots.com"><b>Universal Robots</b></a><br>
-      <sub>Supported Models: UR3, UR5, UR5e, UR10, UR16</sub><br>
+    <td align="center" width="33%">
+      <a href="https://www.universal-robots.com"><b>Universal Robots</b></a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://vention.io"><b>Vention</b></a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://www.elephantrobotics.com/en/"><b>Elephant Robotics</b></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <sub>UR3, UR5, UR5e, UR10, UR16</sub>
+    </td>
+    <td align="center">
+      <sub>7th Axis Plate</sub>
+    </td>
+    <td align="center">
+      <sub>myCobot Pro600</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
       <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif" alt="UR5" width="250">
     </td>
-    <td valign="top" align="center" width="33%">
-      <a href="https://vention.io"><b>Vention</b></a><br>
-      <sub>Supported Models: 7th Axis Plate</sub><br>
+    <td align="center">
       <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="250">
     </td>
-    <td valign="top" align="center" width="33%">
-      <a href="https://www.elephantrobotics.com/en/"><b>Elephant Robotics</b></a><br>
-      <sub>Supported Models: myCobot Pro600</sub><br>
+    <td align="center">
       <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
     </td>
   </tr>
@@ -153,11 +169,7 @@ The following methods are available to users of the library to control various s
 
 <details><summary><strong>Robot Homing Behavior</strong></summary>
 
-The "home" position refers to a predefined, manufacturer-specific pose that is safe and repeatable for initialization and calibration. Homing is available for certain robot series and is typically used to:
-
-- Reset the robot to a known reference pose
-- Prepare the robot for operation or shutdown
-- Ensure consistent starting conditions for automated tasks
+The "home" position refers to a predefined, manufacturer-specific pose that is safe and repeatable for initialization and calibration.
 
 ```txt⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⢀⢠⢰⢡⢣⢢⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
