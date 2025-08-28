@@ -7,6 +7,10 @@ from armctl.utils import CommandCheck as cc
 import math
 from time import sleep as _sleep
 
+### Notes ###
+# Command Format: CMD(args)\n
+# Output Units: radians, meters
+
 
 class UniversalRobots(SCT, Commands, Properties):
     def _check_rtde(self):

@@ -2,19 +2,26 @@ from armctl.templates import SerialController as SCT
 from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.utils import CommandCheck as cc
-
+from armctl.utils import units as uu
 import math
+
+### Notes ###
+# - Command Format: CMD(arg)
+# - Command units are degrees & mm.
 
 
 class Dobot(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
-        self.JOINT_RANGES = [
-            (-math.radians(135.00), math.radians(135.00)),
-            (-math.radians(5.00), math.radians(80.00)),
-            (-math.radians(10.00), math.radians(85.00)),
-            (-math.radians(145.00), math.radians(145.00)),
-        ]
+        self.JOINT_RANGES = uu.joints2rad(
+            [
+                (-135.00, 135.00),
+                (-5.00, 80.00),
+                (-10.00, 85.00),
+                (-145.00, 145.00),
+            ]
+        )
+        self.JOINT_RANGES = uu.joints2rad()
         self.MAX_JOINT_VELOCITY = None
         self.MAX_JOINT_ACCELERATION = None
 
@@ -39,7 +46,7 @@ class Dobot(SCT, Commands, Properties):
         Moves the robot arm to a specified Cartesian position.
 
         Parameters:
-            pose (list or tuple): Target position as [x, y, z, r].
+            pose (list or tuple): Target position as [x, y, z, r]. x, y, z are in meters and r is in radians.
 
         Returns:
             str: The response from the robot after executing the MOVEL command.
@@ -49,8 +56,21 @@ class Dobot(SCT, Commands, Properties):
             - The pose is expected in m for x, y, z and radians for r.
         """
         cc.move_cartesian(self, pose)
+        # Convert x, y, z from meters to millimeters, r from radians to degrees
 
-        command = "MOVEL({})".format(",".join(map(str, pose)))
+        command = "MOVEL({})".format(
+            ",".join(
+                map(
+                    str,
+                    [
+                        pose[0] * 1000,  # x in mm
+                        pose[1] * 1000,  # y in mm
+                        pose[2] * 1000,  # z in mm
+                        math.degrees(pose[3]),  # r in degrees
+                    ],
+                )
+            )
+        )
         return self.send_command(command)
 
     def get_joint_positions(self):
@@ -64,17 +84,3 @@ class Dobot(SCT, Commands, Properties):
 
     def get_robot_state(self):
         pass
-
-    def move_arc(self, command):
-        """The trajectory of ARC mode is an arc, which is determined by three points (the current point, any point and the end point on the arc)"""
-        if len(command) != 3:
-            raise ValueError("Invalid ARC command. Must have 3 points")
-
-        self.send_command(f"ARC({','.join(map(str, command))})")
-
-    def move_jump(self, command):
-        """If the movement of two points is required to lift upwards by amount of height, such as sucking up, grabbing, you can choose JUMP"""
-        if len(command) != 2:
-            raise ValueError("Invalid JUMP command. Must have 2 points")
-
-        self.send_command(f"JUMP({','.join(map(str, command))})")

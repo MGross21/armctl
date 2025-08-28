@@ -1,11 +1,12 @@
-from .elephant_robotics import ElephantRobotics
+from .elephant_robotics import ElephantRobotics, uu
+import math
 
 
 class Pro600(ElephantRobotics):
     def __init__(self, ip: str = "192.168.1.159", port: int = 5001):
         """Elephant Robotics myCobot Pro600"""
         super().__init__(ip, port)
-        self.HOME_POSITION = [0, -90, 90, -90, -90, 0]
+        self.HOME_POSITION = uu.joints2rad([0, -90, 90, -90, -90, 0])
 
     def home(self):
         """

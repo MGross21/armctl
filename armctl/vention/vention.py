@@ -7,7 +7,11 @@ from armctl.templates import Properties
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
 
-from armctl.utils.units import UnitConverter as uc
+from armctl.utils import units as uu
+
+### Notes ###
+# Command Format: CMD/args/;
+# Output Units: mm
 
 
 class Vention(SCT, Commands, Properties):
@@ -72,8 +76,8 @@ class Vention(SCT, Commands, Properties):
     def move_joints(
         self,
         pos: Union[List[float], float, int],
-        speed: float = 2.000,
-        acceleration: float = 0.500,
+        speed: float = 2.000,  # m/s
+        acceleration: float = 0.500,  # m/s^2
         move_type: str = "abs",
     ) -> None:
         """Moves the axes to specified positions."""
@@ -103,8 +107,9 @@ class Vention(SCT, Commands, Properties):
                 raise ValueError(
                     f"Invalid axis: {axis}. Robot has {self.DOF} axes."
                 )
+            p_mm = uu.m2mm(p)  # Convert m to mm
             ack = self.send_command(
-                f"SET im_move_{move_type}_{axis}/{p}/;", timeout=30
+                f"SET im_move_{move_type}_{axis}/{p_mm}/;", timeout=30
             )
             if ack != "Ack":
                 raise RuntimeError(f"Failed to set position for axis {axis}.")
@@ -142,13 +147,13 @@ class Vention(SCT, Commands, Properties):
                 raise ValueError(
                     f"Invalid axis: {axis}. Must be between 1 and {self.DOF}."
                 )
-            return self._get_axis_position(axis)
+            return uu.mm2m(self._get_axis_position(axis))
 
         axis_positions = [
             self._get_axis_position(ax) for ax in range(1, self.DOF + 1)
         ]
         logger.receive(f"Received Response: {axis_positions}")
-        return axis_positions
+        return [uu.mm2m(pos) for pos in axis_positions]
 
     def _get_axis_position(self, axis: int) -> float:
         """Fetches the position of a specific axis."""

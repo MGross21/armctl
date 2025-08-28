@@ -1,142 +1,91 @@
 """
-Unit conversion utilities with enum-based type safety.
+Minimal unit conversion utilities for robotics.
 """
 
+from __future__ import annotations
 import math
-from enum import Enum
-from typing import List, Union
+
+__all__ = [
+    "deg2rad",
+    "rad2deg",
+    "mm2m",
+    "m2mm",
+    "joints2deg",
+    "joints2rad",
+    "pose2deg",
+    "pose2rad",
+]
 
 
-class Units:
-    class Length(Enum):
-        """Length units with conversion factors to meters."""
-
-        MM = 1e-3
-        CM = 1e-2
-        M = 1.0
-        KM = 1e3
-        INCH = 0.0254
-        FEET = 0.3048
-        YARD = 0.9144
-
-    class Angle(Enum):
-        """Angle units with conversion factors to radians."""
-
-        DEGREE = math.pi / 180
-        RADIAN = 1.0
-        REVOLUTION = 2 * math.pi
+def deg2rad(degrees: float) -> float:
+    """Convert degrees to radians."""
+    return math.radians(degrees)
 
 
-class UnitConverter:
-    """Generic unit converter for any enum-based unit system."""
+def rad2deg(radians: float) -> float:
+    """Convert radians to degrees."""
+    return math.degrees(radians)
 
-    @staticmethod
-    def _resolve_unit(unit: Union[Enum, str], unit_enum: type) -> Enum:
-        """Convert string to enum if needed."""
-        return unit_enum[unit.upper()] if isinstance(unit, str) else unit
 
-    @staticmethod
-    def convert(
-        value: float,
-        from_unit: Union[Enum, str],
-        to_unit: Union[Enum, str],
-        unit_enum: type,
-    ) -> float:
-        """Convert between any two units of the same type."""
-        from_unit = UnitConverter._resolve_unit(from_unit, unit_enum)
-        to_unit = UnitConverter._resolve_unit(to_unit, unit_enum)
-        return value * from_unit.value / to_unit.value
+def mm2m(mm: float) -> float:
+    """Convert millimeters to meters."""
+    return mm * 1e-3
 
-    @staticmethod
-    def convert_list(
-        values: List[float],
-        from_unit: Union[Enum, str],
-        to_unit: Union[Enum, str],
-        unit_enum: type,
-    ) -> List[float]:
-        """Convert a list of values between units."""
-        if (
-            isinstance(from_unit, str)
-            and isinstance(to_unit, str)
-            and from_unit.upper() == to_unit.upper()
-        ) or from_unit == to_unit:
-            return values.copy()
+
+def m2mm(meters: float) -> float:
+    """Convert meters to millimeters."""
+    return meters * 1e3
+
+
+def joints2deg(
+    joint_positions: list[float] | list[tuple[float, float]],
+) -> list[float] | list[tuple[float, float]]:
+    """
+    Convert joint positions from radians to degrees.
+    Accepts either a list of floats or a list of (min, max) tuples.
+    """
+    if not joint_positions:
+        return []
+
+    if isinstance(joint_positions[0], (tuple, list)):
         return [
-            UnitConverter.convert(v, from_unit, to_unit, unit_enum)
-            for v in values
+            (math.degrees(jmin), math.degrees(jmax))
+            for jmin, jmax in joint_positions
         ]
+    return [math.degrees(j) for j in joint_positions]
 
 
-class Length:
-    """Length conversion utilities."""
+def joints2rad(
+    joint_positions: list[float] | list[tuple[float, float]],
+) -> list[float] | list[tuple[float, float]]:
+    """
+    Convert joint positions from degrees to radians.
+    Accepts either a list of floats or a list of (min, max) tuples.
+    """
+    if not joint_positions:
+        return []
 
-    @staticmethod
-    def to_meters(value: float, unit: Union[Units.Length, str]) -> float:
-        """Convert to meters."""
-        return UnitConverter.convert(value, unit, Units.Length.M, Units.Length)
-
-    @staticmethod
-    def from_meters(value: float, unit: Union[Units.Length, str]) -> float:
-        """Convert from meters."""
-        return UnitConverter.convert(value, Units.Length.M, unit, Units.Length)
+    if isinstance(joint_positions[0], (tuple, list)):
+        return [
+            (math.radians(jmin), math.radians(jmax))
+            for jmin, jmax in joint_positions
+        ]
+    return [math.radians(j) for j in joint_positions]
 
 
-class Angle:
-    """Angle conversion utilities."""
-
-    @staticmethod
-    def to_radians(value: float, unit: Union[Units.Angle, str]) -> float:
-        """Convert to radians."""
-        return UnitConverter.convert(
-            value, unit, Units.Angle.RADIAN, Units.Angle
+def pose2deg(pose: list[float]) -> list[float]:
+    """Convert pose orientation (last 3 elements) from radians to degrees."""
+    if len(pose) < 6:
+        raise ValueError(
+            "Pose must have at least 6 elements (x, y, z, rx, ry, rz)"
         )
+    return pose[:3] + [math.degrees(a) for a in pose[3:]]
 
-    @staticmethod
-    def from_radians(value: float, unit: Union[Units.Angle, str]) -> float:
-        """Convert from radians."""
-        return UnitConverter.convert(
-            value, Units.Angle.RADIAN, unit, Units.Angle
+
+def pose2rad(pose: list[float]) -> list[float]:
+    """Convert pose orientation (last 3 elements) from degrees to radians."""
+    if len(pose) < 6:
+        raise ValueError(
+            "Pose must have at least 6 elements (x, y, z, rx, ry, rz)"
         )
-
-    @staticmethod
-    def convert_list(
-        values: List[float],
-        from_unit: Union[Units.Angle, str],
-        to_unit: Union[Units.Angle, str],
-    ) -> List[float]:
-        """Convert a list of angle values between units."""
-        return UnitConverter.convert_list(
-            values, from_unit, to_unit, Units.Angle
-        )
-
-
-class Pose:
-    """Pose conversion utilities for joint positions and Cartesian poses."""
-
-    @staticmethod
-    def joints_to_degrees(joint_positions: List[float]) -> List[float]:
-        """Convert joint positions from radians to degrees."""
-        return [math.degrees(j) for j in joint_positions]
-
-    @staticmethod
-    def joints_to_radians(joint_positions: List[float]) -> List[float]:
-        """Convert joint positions from degrees to radians."""
-        return [math.radians(j) for j in joint_positions]
-
-    @staticmethod
-    def cartesian_to_degrees(pose: List[float]) -> List[float]:
-        """Convert Cartesian pose orientation from radians to degrees."""
-        if len(pose) < 6:
-            raise ValueError(
-                "Cartesian pose must have at least 6 elements (x, y, z, rx, ry, rz)"
-            )
-        return pose[:3] + [math.degrees(a) for a in pose[3:]]
-
-    @staticmethod
-    def cartesian_to_radians(pose: List[float]) -> List[float]:
-        """Convert Cartesian pose orientation from degrees to radians."""
-        if len(pose) < 6:
-            raise ValueError(
-                "Cartesian pose must have at least 6 elements (x, y, z, rx, ry, rz)"
-            )
-        return pose[:3] + [math.radians(a) for a in pose[3:]]
+    return pose[:3] + [math.radians(a) for a in pose[3:]]

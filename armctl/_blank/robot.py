@@ -19,7 +19,7 @@ import atexit
 import math
 from armctl.templates import Commands
 from armctl.templates import Properties
-from armctl.utils import Angle as au
+from armctl.utils import units as uu
 from armctl.utils import CommandCheck as cc
 
 # Choose one of the following Communication Methods

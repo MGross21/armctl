@@ -3,30 +3,32 @@ import math
 import time
 from typing import Any, Dict, List, Union
 
-from armctl.utils import Angle as au
 from armctl.utils import CommandCheck as cc
+from armctl.utils import units as uu
 from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 
 ### Notes ###
-# - Commands are sent as JSON strings.
-# - Command units are degrees & meters.
+# Command Format: dictionaries/json strings.
+# Output Units: degrees & meters.
 
 # Source: https://www.inrobots.shop/products/jaka-zu-5-cobot
 
 
 class Jaka(SCT, Commands, Properties):
-    JOINT_RANGES = [
-        (-math.pi, math.pi),
-        (math.radians(-85), math.radians(265)),
-        (math.radians(-175), math.radians(175)),
-        (math.radians(-85), math.radians(265)),
-        (math.radians(-300), math.radians(300)),
-        (-math.pi, math.pi),
-    ]
-    MAX_JOINT_VELOCITY = math.radians(180)  # rad/s
-    MAX_JOINT_ACCELERATION = math.radians(720)  # rad/s^2
+    JOINT_RANGES = uu.joints2rad(
+        [
+            (-180, 180),
+            (-85, 265),
+            (-175, 175),
+            (-85, 265),
+            (-300, 300),
+            (-180, 180),
+        ]
+    )
+    MAX_JOINT_VELOCITY = uu.deg2rad(180)  # rad/s
+    MAX_JOINT_ACCELERATION = uu.deg2rad(720)  # rad/s^2
 
     def __init__(
         self, ip: str, port: Union[int, tuple[int, int]] = (10_001, 10_000)
@@ -92,9 +94,9 @@ class Jaka(SCT, Commands, Properties):
         cmd = {
             "cmdName": "joint_move",
             "relFlag": 0,  # 0 for absolute motion, 1 for relative motion.
-            "jointPosition": self.to_degrees_joint(pos),
-            "speed": math.degrees(speed),
-            "accel": math.degrees(acceleration),
+            "jointPosition": uu.joints2deg(pos),
+            "speed": uu.rad2deg(speed),
+            "accel": uu.rad2deg(acceleration),
         }
         self._send_and_check(cmd)
 
@@ -116,9 +118,9 @@ class Jaka(SCT, Commands, Properties):
 
         cmd = {
             "cmdName": "end_move",
-            "end_position": self.to_degrees_cartesian(pose),
-            "speed": math.degrees(speed),
-            "accel": math.degrees(acceleration),
+            "end_position": uu.pose2deg(pose),
+            "speed": uu.rad2deg(speed),
+            "accel": uu.rad2deg(acceleration),
         }
         self._send_and_check(cmd)
 
