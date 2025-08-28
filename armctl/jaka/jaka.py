@@ -88,7 +88,7 @@ class Jaka(SCT, Commands, Properties):
             Joint acceleration in radians/sec²
         """
         cc.move_joints(self, pos, speed, acceleration)
-        
+
         cmd = {
             "cmdName": "joint_move",
             "relFlag": 0,  # 0 for absolute motion, 1 for relative motion.
@@ -113,24 +113,7 @@ class Jaka(SCT, Commands, Properties):
             Acceleration of the movement in radians/sec²
         """
         cc.move_cartesian(self, pose)
-        
-        # Additional Jaka-specific validation for orientation range
-        for p in pose[3:]:
-            if not (0 <= p <= math.pi * 2):
-                raise ValueError(
-                    f"Orientation value {p} out of range: 0 ~ {math.pi * 2}"
-                )
-        
-        # Validate speed and acceleration against joint limits (Jaka-specific)
-        if not (0 < speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(
-                f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-            )
-        if not (0 <= acceleration <= self.MAX_JOINT_ACCELERATION):
-            raise ValueError(
-                f"Acceleration out of range: 0 ~ {self.MAX_JOINT_ACCELERATION}"
-            )
-        
+
         cmd = {
             "cmdName": "end_move",
             "end_position": self.to_degrees_cartesian(pose),

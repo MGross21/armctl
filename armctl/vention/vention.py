@@ -7,19 +7,19 @@ from armctl.templates import Properties
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
 
+from armctl.utils.units import UnitConverter as uc
+
 
 class Vention(SCT, Commands, Properties):
-  
-
     def __init__(self, ip: str = "192.168.7.2", port: int = 9999):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
-            (0, 1250),  # Axis 1 range in mm
-            (0, 1250),  # Axis 2 range in mm
-            (0, 1250),  # Axis 3 range in mm
+            (0, 1250 * 1e-3),  # Axis 1 range in m
+            (0, 1250 * 1e-3),  # Axis 2 range in m
+            (0, 1250 * 1e-3),  # Axis 3 range in m
         ]
-        self.MAX_JOINT_VELOCITY = 3000  # mm/s
-        self.MAX_JOINT_ACCELERATION = 1000  # mm/s^2
+        self.MAX_JOINT_VELOCITY = 3000 * 1e-3  # m/s
+        self.MAX_JOINT_ACCELERATION = 1000 * 1e-3  # m/s^2
 
     def connect(self) -> None:
         """Establishes connection to the Vention controller and checks readiness."""
@@ -72,32 +72,32 @@ class Vention(SCT, Commands, Properties):
     def move_joints(
         self,
         pos: Union[List[float], float, int],
-        speed: int = 2500,
-        acceleration: int = 500,
+        speed: float = 2.000,
+        acceleration: float = 0.500,
         move_type: str = "abs",
     ) -> None:
         """Moves the axes to specified positions."""
         if move_type not in ("abs", "rel"):
             raise ValueError("Invalid move type. Must be 'abs' or 'rel'.")
-        
+
         # Normalize input to a list
         if isinstance(pos, (float, int)):
             pos = [pos]
-        
+
         # Validate using command checks
         cc.move_joints(self, pos, speed, acceleration)
-        
+
         # Handle relative moves by adding to current positions
         if move_type == "rel":
             current_positions = self.get_joint_positions()
             pos = [curr + rel for curr, rel in zip(current_positions, pos)]
             # Re-validate the absolute positions after relative calculation
             cc.move_joints(self, pos, speed, acceleration)
-        
+
         # Send commands to robot
         self.send_command(f"SET speed/{speed}/;")
         self.send_command(f"SET acceleration/{acceleration}/;")
-        
+
         for axis, p in enumerate(pos, start=1):
             if axis > self.DOF:
                 raise ValueError(
@@ -136,15 +136,17 @@ class Vention(SCT, Commands, Properties):
     ) -> Union[List[float], float]:
         """Gets the current position of an axis or all axes."""
         cc.get_joint_positions()
-        
+
         if axis is not None:
             if axis < 1 or axis > self.DOF:
                 raise ValueError(
                     f"Invalid axis: {axis}. Must be between 1 and {self.DOF}."
                 )
             return self._get_axis_position(axis)
-        
-        axis_positions = [self._get_axis_position(ax) for ax in range(1, self.DOF + 1)]
+
+        axis_positions = [
+            self._get_axis_position(ax) for ax in range(1, self.DOF + 1)
+        ]
         logger.receive(f"Received Response: {axis_positions}")
         return axis_positions
 

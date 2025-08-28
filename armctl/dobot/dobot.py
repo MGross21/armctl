@@ -1,15 +1,19 @@
-from armctl.templates import SerialController as SCT, Commands, Properties
+from armctl.templates import SerialController as SCT
+from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.utils import CommandCheck as cc
+
+import math
 
 
 class Dobot(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
-            (-135.00, 135.00),
-            (-5.00, 80.00),
-            (-10.00, 85.00),
-            (-145.00, 145.00),
+            (-math.radians(135.00), math.radians(135.00)),
+            (-math.radians(5.00), math.radians(80.00)),
+            (-math.radians(10.00), math.radians(85.00)),
+            (-math.radians(145.00), math.radians(145.00)),
         ]
         self.MAX_JOINT_VELOCITY = None
         self.MAX_JOINT_ACCELERATION = None
@@ -19,9 +23,10 @@ class Dobot(SCT, Commands, Properties):
         )
 
     def sleep(self, seconds):
+        cc.sleep(seconds)
         self.send_command(f"sleep({seconds})")
 
-    def move_joints(self, pos, *args, **kwargs) -> str:
+    def move_joints(self, pos) -> str:
         "MovJ"
 
         cc.move_joints(self, pos)
@@ -30,16 +35,20 @@ class Dobot(SCT, Commands, Properties):
         return self.send_command(command)
 
     def move_cartesian(self, pose) -> str:
-        "MOVEL"
+        """
+        Moves the robot arm to a specified Cartesian position.
 
-        if len(pose) == 3:
-            pose.append(0)
+        Parameters:
+            pose (list or tuple): Target position as [x, y, z, r].
 
-        # Now check again if the robot pose has 4 elements
-        if len(pose) != 4:
-            raise ValueError(
-                "Robot pose must have 3 ([x, y, z]) or 4 elements: [x, y, z, rz]"
-            )
+        Returns:
+            str: The response from the robot after executing the MOVEL command.
+
+        Notes:
+            - The method sends a MOVEL command to the robot controller.
+            - The pose is expected in m for x, y, z and radians for r.
+        """
+        cc.move_cartesian(self, pose)
 
         command = "MOVEL({})".format(",".join(map(str, pose)))
         return self.send_command(command)

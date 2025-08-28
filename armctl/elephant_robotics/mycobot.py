@@ -6,14 +6,6 @@ class Pro600(ElephantRobotics):
         """Elephant Robotics myCobot Pro600"""
         super().__init__(ip, port)
         self.HOME_POSITION = [0, -90, 90, -90, -90, 0]
-        self.JOINT_RANGES = [
-            (-180.00, 180.00),
-            (-270.00, 90.00),
-            (-150.00, 150.00),
-            (-260.00, 80.00),
-            (-168.00, 168.00),
-            (-174.00, 174.00),
-        ]
 
     def home(self):
         """

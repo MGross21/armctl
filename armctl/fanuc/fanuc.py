@@ -2,6 +2,8 @@ from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.templates import PLCController as PLC
 
+from armctl.utils import CommandCheck as cc
+
 
 # Non-Operational (1/31/2025)
 class Fanuc(PLC, Commands, Properties):
@@ -15,11 +17,13 @@ class Fanuc(PLC, Commands, Properties):
         )
 
     def move_joints(self, pos, speed=1.0):
+        cc.move_joints(self, pos, speed)
         return self.send_command(
             {"type": "move_joints", "positions": pos, "speed": speed}
         )
 
     def move_cartesian(self, pose, speed=1.0):
+        cc.move_cartesian(self, pose)
         return self.send_command(
             {"type": "move_cartesian", "position": pose, "speed": speed}
         )

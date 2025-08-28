@@ -2,7 +2,13 @@ from armctl.dobot import Dobot
 from armctl.elephant_robotics import ElephantRobotics, Pro600
 from armctl.fanuc import Fanuc
 from armctl.jaka import Jaka
-from armctl.templates import Commands, Properties, PLCController, SerialController, SocketController
+from armctl.templates import (
+    Commands,
+    Properties,
+    PLCController,
+    SerialController,
+    SocketController,
+)
 from armctl.universal_robots import UR3, UR5, UR5e, UR10, UR16, UniversalRobots
 from armctl.vention import Vention
 
@@ -33,7 +39,7 @@ def test_robot_subclass_inheritance():
         # Check required base class inheritance
         for base in REQUIRED_BASES:
             assert issubclass(robot, base), (
-            f"{robot.__name__} must inherit from {base.__name__}"
+                f"{robot.__name__} must inherit from {base.__name__}"
             )
 
         # Check controller inheritance

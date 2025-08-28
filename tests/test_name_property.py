@@ -15,15 +15,21 @@ class TestRobotNameProperty:
         """Test that manufacturer classes return just their class name."""
         # These require instantiation since __name__ is now a property
         try:
-            assert ElephantRobotics("192.168.1.1", 5001).__name__ == "ElephantRobotics"
+            assert (
+                ElephantRobotics("192.168.1.1", 5001).__name__
+                == "ElephantRobotics"
+            )
         except NotImplementedError:
             pass  # ElephantRobotics might not be fully implemented
-        
+
         try:
-            assert UniversalRobots("192.168.1.1", 30002).__name__ == "UniversalRobots"
+            assert (
+                UniversalRobots("192.168.1.1", 30002).__name__
+                == "UniversalRobots"
+            )
         except NotImplementedError:
             pass  # UniversalRobots might not be fully implemented
-            
+
         try:
             assert Dobot("192.168.1.1", 5001).__name__ == "Dobot"
         except NotImplementedError:
@@ -35,26 +41,31 @@ class TestRobotNameProperty:
             assert Pro600().__name__ == "ElephantRobotics Pro600"
         except NotImplementedError:
             pass
-            
+
         try:
             assert UR5().__name__ == "UniversalRobots UR5"
         except NotImplementedError:
             pass
-            
+
         try:
             assert UR3("192.168.1.1", 30002).__name__ == "UniversalRobots UR3"
         except NotImplementedError:
             pass
 
-    @pytest.mark.parametrize("robot_class,expected_name,init_args", [
-        (ElephantRobotics, "ElephantRobotics", ("192.168.1.1", 5001)),
-        (UniversalRobots, "UniversalRobots", ("192.168.1.1", 30002)),
-        (Dobot, "Dobot", ("192.168.1.1", 5001)),
-        (Pro600, "ElephantRobotics Pro600", ()),
-        (UR5, "UniversalRobots UR5", ()),
-        (UR3, "UniversalRobots UR3", ("192.168.1.1", 30002)),
-    ])
-    def test_name_property_parametrized(self, robot_class, expected_name, init_args):
+    @pytest.mark.parametrize(
+        "robot_class,expected_name,init_args",
+        [
+            (ElephantRobotics, "ElephantRobotics", ("192.168.1.1", 5001)),
+            (UniversalRobots, "UniversalRobots", ("192.168.1.1", 30002)),
+            (Dobot, "Dobot", ("192.168.1.1", 5001)),
+            (Pro600, "ElephantRobotics Pro600", ()),
+            (UR5, "UniversalRobots UR5", ()),
+            (UR3, "UniversalRobots UR3", ("192.168.1.1", 30002)),
+        ],
+    )
+    def test_name_property_parametrized(
+        self, robot_class, expected_name, init_args
+    ):
         """Parametrized test for all robot classes."""
         try:
             instance = robot_class(*init_args)

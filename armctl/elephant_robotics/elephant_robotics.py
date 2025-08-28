@@ -4,19 +4,22 @@ from armctl.templates import Commands
 from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 
+from armctl.utils import CommandCheck as cc
+import math
+
 
 class ElephantRobotics(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
         self.JOINT_RANGES = [
-            (-180.00, 180.00),
-            (-270.00, 90.00),
-            (-150.00, 150.00),
-            (-260.00, 80.00),
-            (-168.00, 168.00),
-            (-174.00, 174.00),
+            (-math.radians(180.00), math.radians(180.00)),
+            (-math.radians(270.00), math.radians(90.00)),
+            (-math.radians(150.00), math.radians(150.00)),
+            (-math.radians(260.00), math.radians(80.00)),
+            (-math.radians(168.00), math.radians(168.00)),
+            (-math.radians(174.00), math.radians(174.00)),
         ]
-        self.MAX_JOINT_VELOCITY = 2000
+        self.MAX_JOINT_VELOCITY = math.radians(2000)
         self.MAX_JOINT_ACCELERATION = None
 
     def connect(self):
@@ -45,10 +48,7 @@ class ElephantRobotics(SCT, Commands, Properties):
             time.sleep(0.25)
 
     def sleep(self, seconds):
-        assert isinstance(
-            seconds, (int, float)
-        ), "Seconds must be a numeric value."
-        assert seconds >= 0, "Seconds must be a non-negative value."
+        cc.sleep(seconds)
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
@@ -61,30 +61,18 @@ class ElephantRobotics(SCT, Commands, Properties):
         pos : list of float
             Joint positions in degrees [j1, j2, j3, j4, j5, j6].
         speed : int, optional
-            Speed of the movement, range 0 ~ 2000 (default: 200).
-        DOF : int, optional
-            Degrees of freedom (default: 6).
+            Speed of the movement, range 0 ~ 2000 (default: 500).
         """
 
-        if len(pos) != self.DOF:
-            raise ValueError("Joint positions must have 6 elements")
-
-        for i, (low, high) in enumerate(self.JOINT_RANGES):
-            if not (low <= pos[i] <= high):
-                raise ValueError(
-                    f"Joint {i + 1} angle out of range: {low} ~ {high}"
-                )
-
-        if not (0 <= speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
+        cc.move_joints(self, pos, speed)
 
         command = "set_angles"
         response = self.send_command(
             f"{command}({','.join(map(str, pos))},{speed})"
         )
-        assert (
-            response == f"{command}:[ok]"
-        ), f"Failed to move joints: {response}"
+        assert response == f"{command}:[ok]", (
+            f"Failed to move joints: {response}"
+        )
 
         while any(
             abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)
@@ -107,12 +95,7 @@ class ElephantRobotics(SCT, Commands, Properties):
             Speed of the movement, range 0 ~ 2000 (default: 500).
         """
 
-        if not (0 <= speed <= self.MAX_JOINT_VELOCITY):
-            raise ValueError(f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}")
-        if len(pose) != 6:
-            raise ValueError(
-                "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
-            )
+        cc.move_cartesian(self, pose)
 
         command = f"set_coords({','.join(map(str, pose))},{speed})"
 
