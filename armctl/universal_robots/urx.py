@@ -1,14 +1,14 @@
 """Universal Robots URX series robot implementations."""
 
 import math
-from dataclasses import dataclass
-
 from .universal_robots import UniversalRobots as UR
 
 
-@dataclass
 class URX(UR):
     """Base class for Universal Robots URX series with common functionality."""
+
+    def __init__(self, ip, port=30002):
+        super().__init__(ip, port)
 
     HOME_POSITION: list[float] = (
         math.pi / 2,
@@ -34,14 +34,14 @@ class UR3(URX):
 class UR5(URX):
     """Universal Robots UR5 robot controller."""
 
-    def __init__(self, ip: str = "192.168.1.111", port: int = 30_002):
+    def __init__(self, ip: str, port: int = 30_002):
         super().__init__(ip, port)
 
 
 class UR5e(URX):
     """Universal Robots UR5e robot controller."""
 
-    def __init__(self, ip: str = "192.168.1.111", port: int = 30_002):
+    def __init__(self, ip: str, port: int = 30_002):
         super().__init__(ip, port)
 
 
