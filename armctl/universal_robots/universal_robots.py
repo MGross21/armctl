@@ -17,23 +17,46 @@ class UniversalRobots(SCT, Commands, Properties):
         try:
             from .protocols.rtde import RTDE
         except ImportError:
-            from subprocess import run
             import sys
+            import shutil
+            import os
+            from subprocess import run
 
             logger.warning(
-                "RTDE Python Client Library not found. Installing from GitHub..."
+                "RTDE Python Client Library not found. Attempting installation..."
             )
-            run(
-                [
+
+            # Determine installer
+            if shutil.which("uv") and os.environ.get("VIRTUAL_ENV"):
+                install_cmd = [
+                    "uv",
+                    "add",
+                    "--quiet",
+                    "urrtde@git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            elif shutil.which("poetry") and os.environ.get("POETRY_ACTIVE"):
+                install_cmd = [
+                    "poetry",
+                    "add",
+                    "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            else:
+                install_cmd = [
                     sys.executable,
                     "-m",
                     "pip",
                     "install",
                     "--quiet",
                     "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
-                ],
-                check=True,
-            )
+                ]
+
+            try:
+                run(install_cmd, check=True)
+            except Exception as e:
+                logger.error(f"Failed to install RTDE Python Client Library: {e}")
+                raise ImportError("Could not install RTDE Python Client Library.") from e
+
+            # Try import again
             from .protocols.rtde import RTDE
 
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
