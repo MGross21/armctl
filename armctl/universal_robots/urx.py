@@ -26,7 +26,7 @@ class UR3(UR):
 class UR5(UR):
     """Universal Robots UR5 robot controller."""
 
-    def __init__(self, ip: str = "192.168.1.111", port: int = 30_002):
+    def __init__(self, ip: str, port: int = 30_002):
         super().__init__(ip, port)
         self.HOME_POSITION = [
             math.pi / 2,
@@ -45,7 +45,7 @@ class UR5(UR):
 class UR5e(UR):
     """Universal Robots UR5e robot controller."""
 
-    def __init__(self, ip: str = "192.168.1.111", port: int = 30_002):
+    def __init__(self, ip: str, port: int = 30_002):
         super().__init__(ip, port)
         self.HOME_POSITION = [
             math.pi / 2,

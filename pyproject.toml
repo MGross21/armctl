@@ -1,6 +1,6 @@
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "armctl"
@@ -15,25 +15,20 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent"
 ]
+requires-python = ">=3.9"
+dependencies = [
+    # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
+]
 
 [project.urls]
 Homepage = "https://github.com/MGross21/armctl"
 Tracker = "https://github.com/MGross21/armctl/issues"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-# urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", branch = "main" }
-
-[tool.poetry.urls]
-Homepage = "https://github.com/MGross21/armctl"
-Tracker = "https://github.com/MGross21/armctl/issues"
-
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-ruff = { version = ">=0.4.0" }
-pytest = { version = ">=8.4.0"}
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.4.0",
+    "pytest>=8.4.0",
+]
 
 [tool.ruff]
 line-length = 80
