@@ -38,6 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
+          uv venv --clear
           uv sync --locked --all-extras --all-groups
 
       - name: Run tests
