@@ -23,10 +23,7 @@ class TestRobotNameProperty:
             pass  # ElephantRobotics might not be fully implemented
 
         try:
-            assert (
-                UniversalRobots("192.168.1.1").__name__
-                == "UniversalRobots"
-            )
+            assert UniversalRobots("192.168.1.1").__name__ == "UniversalRobots"
         except NotImplementedError:
             pass  # UniversalRobots might not be fully implemented
 
