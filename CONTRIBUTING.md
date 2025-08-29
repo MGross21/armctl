@@ -134,11 +134,12 @@ Please ensure your code adheres to the project's formatting and quality standard
 
 **Setup:**
 
+Install `uv` python package manager. See install options [`here`](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
+
 ```bash
-python -m venv .venv
+uv venv --clear
 source .venv/bin/activate
-pip install poetry
-poetry install --with dev
+uv sync --dev
 ```
 
 **Formatting Code:**
@@ -149,7 +150,7 @@ To ensure consistency and code quality, run the following commands before submit
 uv run ruff format .
 ```
 
-> All code must be properly formatted and pass type checks. Please resolve any issues reported by these tools prior to opening a pull request.
+> All code must be properly formatted. Please resolve any issues reported by these tools prior to opening a pull request.
 
 ✅ **(Optional) Running Tests Locally:**
 
