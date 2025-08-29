@@ -13,7 +13,7 @@ class NetworkScanner:
         """Returns the local machine's IP address."""
         try:
             return socket.gethostbyname(socket.gethostname())
-        except socket.error:
+        except OSError:
             return None
 
     @staticmethod

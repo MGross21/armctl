@@ -14,6 +14,9 @@ resolution-markers = [
 name = "armctl"
 version = "0.3.2"
 source = { editable = "." }
+dependencies = [
+    { name = "urrtde" },
+]
 
 [package.dev-dependencies]
 dev = [
@@ -34,6 +37,7 @@ test = [
 ]
 
 [package.metadata]
+requires-dist = [{ name = "urrtde", git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git?rev=main" }]
 
 [package.metadata.requires-dev]
 dev = [
@@ -523,6 +527,11 @@ sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
 ]
+
+[[package]]
+name = "urrtde"
+version = "2.7.12"
+source = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git?rev=main#647788cc3474d7088d6aebdd9edde3bffa7f17ef" }
 
 [[package]]
 name = "zipp"

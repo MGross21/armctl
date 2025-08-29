@@ -3,9 +3,10 @@ Test suite for the __name__ property behavior across robot class hierarchy.
 """
 
 import pytest
-from armctl.elephant_robotics import ElephantRobotics, Pro600
-from armctl.universal_robots import UniversalRobots, UR5, UR3
+
 from armctl.dobot import Dobot
+from armctl.elephant_robotics import ElephantRobotics, Pro600
+from armctl.universal_robots import UR3, UR5, UniversalRobots
 
 
 class TestRobotNameProperty:

@@ -142,6 +142,16 @@ source .venv/bin/activate
 uv sync --dev
 ```
 
+**Testing with a Different Python Version:**
+
+To create a virtual environment with a specific Python version, use:
+
+```bash
+uv venv --clear --python 3.X
+```
+
+Replace `3.X` with your desired Python version (e.g., `3.10`).
+
 **Formatting Code:**
 
 To ensure consistency and code quality, run the following commands before submitting your changes:

@@ -1,6 +1,9 @@
 """Universal Robots series robot implementations."""
 
+from __future__ import annotations
+
 import math
+
 from .universal_robots import UniversalRobots as UR
 
 

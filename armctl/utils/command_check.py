@@ -1,12 +1,13 @@
+from __future__ import annotations
+
 from armctl.templates import Commands, Properties
-from typing import List, Union
 
 
 class CommandCheck(Commands):
     """Validates command parameters for robot operations."""
 
     @staticmethod
-    def sleep(seconds: Union[int, float]) -> None:
+    def sleep(seconds: int | float) -> None:
         """Validate sleep duration parameter."""
         if not isinstance(seconds, (int, float)):
             raise TypeError(
@@ -20,7 +21,7 @@ class CommandCheck(Commands):
     @staticmethod
     def move_joints(
         robot_instance: Properties,
-        positions: List[float],
+        positions: list[float],
         velocity: float = None,
         acceleration: float = None,
     ) -> None:
@@ -78,7 +79,7 @@ class CommandCheck(Commands):
         pass
 
     @staticmethod
-    def move_cartesian(robot_instance: Properties, pose: List[float]) -> None:
+    def move_cartesian(robot_instance: Properties, pose: list[float]) -> None:
         """Validate 6DOF cartesian pose (x, y, z, rx, ry, rz)."""
         if not isinstance(pose, list):
             raise TypeError(

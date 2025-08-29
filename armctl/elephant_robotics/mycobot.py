@@ -1,5 +1,4 @@
 from .elephant_robotics import ElephantRobotics, uu
-import math
 
 
 class Pro600(ElephantRobotics):

@@ -6,6 +6,9 @@ build-backend = "uv_build"
 module-name = "armctl"
 module-root = ""
 
+[tool.uv.sources]
+urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", rev = "main" }
+
 [project]
 name = "armctl"
 version = "0.3.2"
@@ -24,6 +27,7 @@ classifiers = [
 requires-python = ">=3.6"
 dependencies = [
     # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
+    "urrtde",
 ]
 
 [project.urls]

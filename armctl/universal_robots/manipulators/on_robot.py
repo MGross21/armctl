@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import warnings
 
 from armctl.templates import SocketController as SCT

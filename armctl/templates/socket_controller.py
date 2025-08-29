@@ -5,6 +5,7 @@ commands, and handling responses with enhanced debugging features.
 """
 
 from __future__ import annotations
+
 import socket
 
 from .communication import Communication
@@ -76,8 +77,8 @@ class SocketController(Communication):
                 response = self.recv_socket.recv(4096)
                 decoded_response = response.decode("utf-8", errors="replace")
                 logger.debug(f"Initial response: {decoded_response}")
-            except Exception as e:
-                logger.warning(f"No initial response")
+            except Exception:
+                logger.warning("No initial response")
             finally:
                 self.recv_socket.settimeout(None)
 

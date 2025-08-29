@@ -1,12 +1,11 @@
-import time
-from typing import List, Optional, Union
+from __future__ import annotations
 
-from armctl.templates import Commands
+import time
+
+from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
-from armctl.templates import Properties
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
-
 from armctl.utils import units as uu
 
 ### Notes ###
@@ -75,7 +74,7 @@ class Vention(SCT, Commands, Properties):
 
     def move_joints(
         self,
-        pos: Union[List[float], float, int],
+        pos: list[float] | float | int,
         speed: float = 2.000,  # m/s
         acceleration: float = 0.500,  # m/s^2
         move_type: str = "abs",
@@ -137,8 +136,8 @@ class Vention(SCT, Commands, Properties):
         logger.info("Motion completed.")
 
     def get_joint_positions(
-        self, axis: Optional[int] = None
-    ) -> Union[List[float], float]:
+        self, axis: int | None = None
+    ) -> list[float] | float:
         """Gets the current position of an axis or all axes."""
         cc.get_joint_positions()
 
@@ -183,12 +182,12 @@ class Vention(SCT, Commands, Properties):
         if "Ack" not in ack:
             raise RuntimeError("Failed to stop motion.")
 
-    def move_cartesian(self, pose: List[float]) -> None:
+    def move_cartesian(self, pose: list[float]) -> None:
         """Moves the robot to a specified Cartesian pose (not implemented)."""
         cc.move_cartesian(self, pose)
         raise NotImplementedError("This method is not implemented yet.")
 
-    def get_cartesian_position(self) -> List[float]:
+    def get_cartesian_position(self) -> list[float]:
         """Gets the current Cartesian position of the robot (not implemented)."""
         cc.get_cartesian_position()
         raise NotImplementedError("This method is not implemented yet.")

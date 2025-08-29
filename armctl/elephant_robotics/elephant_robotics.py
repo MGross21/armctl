@@ -1,9 +1,9 @@
+from __future__ import annotations
+
 import time
 
-from armctl.templates import Commands
-from armctl.templates import Properties
+from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
-
 from armctl.utils import CommandCheck as cc
 from armctl.utils import units as uu
 
