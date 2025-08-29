@@ -21,7 +21,6 @@ class Dobot(SCT, Commands, Properties):
                 (-145.00, 145.00),
             ]
         )
-        self.JOINT_RANGES = uu.joints2rad()
         self.MAX_JOINT_VELOCITY = None
         self.MAX_JOINT_ACCELERATION = None
 
