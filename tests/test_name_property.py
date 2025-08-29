@@ -24,7 +24,7 @@ class TestRobotNameProperty:
 
         try:
             assert (
-                UniversalRobots("192.168.1.1", 30002).__name__
+                UniversalRobots("192.168.1.1").__name__
                 == "UniversalRobots"
             )
         except NotImplementedError:
@@ -43,12 +43,12 @@ class TestRobotNameProperty:
             pass
 
         try:
-            assert UR5().__name__ == "UniversalRobots UR5"
+            assert UR5("192.168.1.1").__name__ == "UniversalRobots UR5"
         except NotImplementedError:
             pass
 
         try:
-            assert UR3("192.168.1.1", 30002).__name__ == "UniversalRobots UR3"
+            assert UR3("192.168.1.1").__name__ == "UniversalRobots UR3"
         except NotImplementedError:
             pass
 
