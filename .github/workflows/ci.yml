@@ -1,36 +1,66 @@
 name: build
+
 permissions:
   contents: read
 
 on:
   push:
     branches: [ main ]
-    paths: [ "**/*.py", "pyproject.toml", ".github/workflows/**"]
+    paths: [ "**/*.py", "pyproject.toml", "uv.lock", ".github/workflows/**"]
   pull_request:
     branches: [ main ]
-    paths: [ "**/*.py", "pyproject.toml", ".github/workflows/**"]
+    paths: [ "**/*.py", "pyproject.toml", "uv.lock", ".github/workflows/**"]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version:
+          - '3.8'
+          - '3.9'
+          - '3.10'
+          - '3.11'
+          - '3.12'
+          - '3.13'
+      fail-fast: false
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Set up uv with Python ${{ matrix.python-version }}
+        uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.11'
-
-      - name: Install Poetry
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          # Cache key will include uv.lock hash automatically
 
       - name: Install dependencies
         run: |
-          poetry install --no-interaction --with dev
+          uv sync --locked --all-extras --all-groups
 
       - name: Run tests
         run: |
-          poetry run pytest tests --maxfail=1 --disable-warnings --tb=short  -v
+          uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
+
+      # Prune cache to optimize storage
+      - name: Minimize uv cache
+        run: uv cache prune --ci
+        if: always()
+
+  # Check if uv.lock is up to date
+  check-lockfile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      
+      - name: Check if uv.lock is up to date
+        run: |
+          uv sync --locked --all-extras --all-groups --dry-run

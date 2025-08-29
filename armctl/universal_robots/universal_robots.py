@@ -1,11 +1,11 @@
-from armctl.templates import Commands
-from armctl.templates import Properties
+from __future__ import annotations
+
+import math
+
+from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
-
-import math
-from time import sleep as _sleep
 
 ### Notes ###
 # Command Format: CMD(args)\n
@@ -17,24 +17,50 @@ class UniversalRobots(SCT, Commands, Properties):
         try:
             from .protocols.rtde import RTDE
         except ImportError:
-            from subprocess import run
+            import os
+            import shutil
             import sys
+            from subprocess import run
 
             logger.warning(
-                "RTDE Python Client Library not found. Installing from GitHub..."
+                "RTDE Python Client Library not found. Attempting installation..."
             )
-            run(
-                [
+
+            # Determine installer
+            if shutil.which("uv") and os.environ.get("VIRTUAL_ENV"):
+                install_cmd = [
+                    "uv",
+                    "add",
+                    "--quiet",
+                    "urrtde@git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            elif shutil.which("poetry") and os.environ.get("POETRY_ACTIVE"):
+                install_cmd = [
+                    "poetry",
+                    "add",
+                    "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            else:
+                install_cmd = [
                     sys.executable,
                     "-m",
                     "pip",
                     "install",
                     "--quiet",
                     "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
-                ],
-                check=True,
-            )
-            from .protocols.rtde import RTDE
+                ]
+
+            try:
+                run(install_cmd, check=True)
+            except Exception as e:
+                logger.error(
+                    f"Failed to install RTDE Python Client Library: {e}"
+                )
+                raise ImportError(
+                    "Could not install RTDE Python Client Library."
+                ) from e
+
+            # Try import again
 
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
         self._check_rtde()
@@ -178,9 +204,7 @@ class UniversalRobots(SCT, Commands, Properties):
 
     def stop_motion(self) -> None:
         deceleration = 2.0  # rad/s^2
-        self.send_command(
-            "stopj({})\n".format(deceleration), suppress_output=True
-        )
+        self.send_command(f"stopj({deceleration})\n", suppress_output=True)
 
     def get_robot_state(self) -> dict[str, bool]:
         status = self.rtde.robot_status()

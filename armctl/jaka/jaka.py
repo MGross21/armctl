@@ -1,13 +1,14 @@
+from __future__ import annotations
+
 import ast
 import math
 import time
-from typing import Any, Dict, List, Union
+from typing import Any
 
+from armctl.templates import Commands, Properties
+from armctl.templates import SocketController as SCT
 from armctl.utils import CommandCheck as cc
 from armctl.utils import units as uu
-from armctl.templates import Commands
-from armctl.templates import Properties
-from armctl.templates import SocketController as SCT
 
 ### Notes ###
 # Command Format: dictionaries/json strings.
@@ -30,9 +31,7 @@ class Jaka(SCT, Commands, Properties):
     MAX_JOINT_VELOCITY = uu.deg2rad(180)  # rad/s
     MAX_JOINT_ACCELERATION = uu.deg2rad(720)  # rad/s^2
 
-    def __init__(
-        self, ip: str, port: Union[int, tuple[int, int]] = (10_001, 10_000)
-    ):
+    def __init__(self, ip: str, port: int | tuple[int, int] = (10_001, 10_000)):
         super().__init__(ip, port)
 
     def _response_handler(self, response: str) -> Any:
@@ -41,7 +40,7 @@ class Jaka(SCT, Commands, Properties):
         except (ValueError, SyntaxError) as e:
             raise RuntimeError(f"Failed to parse response: {response}") from e
 
-    def _send_and_check(self, cmd_dict: Dict[str, Any]) -> Dict[str, Any]:
+    def _send_and_check(self, cmd_dict: dict[str, Any]) -> dict[str, Any]:
         resp = self._response_handler(self.send_command(str(cmd_dict)))
         if not (
             isinstance(resp, dict)
@@ -76,7 +75,7 @@ class Jaka(SCT, Commands, Properties):
         time.sleep(seconds)
 
     def move_joints(
-        self, pos: List[float], speed: float = 0.25, acceleration: float = 0.1
+        self, pos: list[float], speed: float = 0.25, acceleration: float = 0.1
     ) -> None:
         """
         Move the robot to the specified joint positions.
@@ -101,7 +100,7 @@ class Jaka(SCT, Commands, Properties):
         self._send_and_check(cmd)
 
     def move_cartesian(
-        self, pose: List[float], speed: float = 0.25, acceleration: float = 0.0
+        self, pose: list[float], speed: float = 0.25, acceleration: float = 0.0
     ) -> None:
         """
         Move the robot to the specified cartesian position.
@@ -124,7 +123,7 @@ class Jaka(SCT, Commands, Properties):
         }
         self._send_and_check(cmd)
 
-    def get_joint_positions(self) -> List[float]:
+    def get_joint_positions(self) -> list[float]:
         """
         Get the current joint positions of the robot.
         Returns
@@ -137,7 +136,7 @@ class Jaka(SCT, Commands, Properties):
         response = self._send_and_check(cmd)
         return [math.radians(angle) for angle in response["joint_pos"]]
 
-    def get_cartesian_position(self) -> List[float]:
+    def get_cartesian_position(self) -> list[float]:
         """
         Retrieves the current Cartesian position of the robot's tool center point (TCP).
         Returns
@@ -154,7 +153,7 @@ class Jaka(SCT, Commands, Properties):
         cc.stop_motion()
         self._send_and_check({"cmdName": "stop_program"})
 
-    def get_robot_state(self) -> Dict[str, Any]:
+    def get_robot_state(self) -> dict[str, Any]:
         """
         Get the current state of the robot.
 

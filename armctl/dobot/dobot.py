@@ -1,9 +1,9 @@
+import math
+
+from armctl.templates import Commands, Properties
 from armctl.templates import SerialController as SCT
-from armctl.templates import Commands
-from armctl.templates import Properties
 from armctl.utils import CommandCheck as cc
 from armctl.utils import units as uu
-import math
 
 ### Notes ###
 # - Command Format: CMD(arg)

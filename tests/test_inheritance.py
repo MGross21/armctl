@@ -4,12 +4,12 @@ from armctl.fanuc import Fanuc
 from armctl.jaka import Jaka
 from armctl.templates import (
     Commands,
-    Properties,
     PLCController,
+    Properties,
     SerialController,
     SocketController,
 )
-from armctl.universal_robots import UR3, UR5, UR5e, UR10, UR16, UniversalRobots
+from armctl.universal_robots import UR3, UR5, UR10, UR16, UniversalRobots, UR5e
 from armctl.vention import Vention
 
 # All robot classes that should inherit from Commands and a controller

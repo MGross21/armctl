@@ -1,6 +1,13 @@
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.8.14,<0.9.0"]
+build-backend = "uv_build"
+
+[tool.uv.build-backend]
+module-name = "armctl"
+module-root = ""
+
+[tool.uv.sources]
+urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", rev = "main" }
 
 [project]
 name = "armctl"
@@ -9,31 +16,37 @@ description = "Agnostic Robotic Manipulator Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
 license = { file = "LICENSE" }
-keywords = ["robotics", "socket", "control", "automation"]
+keywords = ["robotics", "socket", "control", "automation", "ur", "universal robotics", "jaka", "dobot", "elephant robotics", "vention", "fanuc"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent"
+    "Operating System :: OS Independent",
+    "Development Status :: 4 - Beta"
+
+]
+requires-python = ">=3.6"
+dependencies = [
+    # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
+    "urrtde",
 ]
 
 [project.urls]
 Homepage = "https://github.com/MGross21/armctl"
-Tracker = "https://github.com/MGross21/armctl/issues"
+Issues = "https://github.com/MGross21/armctl/issues"
 
-[tool.poetry.dependencies]
-python = "^3.9"
-# urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", branch = "main" }
+[dependency-groups]
+format = [
+    "ruff>=0.4.0;python_version>='3.11'",
+]
 
-[tool.poetry.urls]
-Homepage = "https://github.com/MGross21/armctl"
-Tracker = "https://github.com/MGross21/armctl/issues"
+test = [
+    "pytest>=6.0.0"
+]
 
-[tool.poetry.group.dev]
-optional = true
-
-[tool.poetry.group.dev.dependencies]
-ruff = { version = ">=0.4.0" }
-pytest = { version = ">=8.4.0"}
+dev = [
+    {include-group = "format"},
+    {include-group = "test"}
+]
 
 [tool.ruff]
 line-length = 80
