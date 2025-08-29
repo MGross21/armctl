@@ -1,21 +1,32 @@
 import time
 
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 
+from armctl.utils import CommandCheck as cc
+from armctl.utils import units as uu
 
-class ElephantRobotics(SCT, Commands):
+## Notes
+# - Command Format: CMD(arg)
+# - Command units are degrees & mm.
+
+
+class ElephantRobotics(SCT, Commands, Properties):
     def __init__(self, ip: str, port: int):
         super().__init__(ip, port)
-        self.JOINT_RANGES = [
-            (-180.00, 180.00),
-            (-270.00, 90.00),
-            (-150.00, 150.00),
-            (-260.00, 80.00),
-            (-168.00, 168.00),
-            (-174.00, 174.00),
-        ]
-        self.DOF = len(self.JOINT_RANGES)
+        self.JOINT_RANGES = uu.joints2rad(
+            [
+                (-180.00, 180.00),
+                (-270.00, 90.00),
+                (-150.00, 150.00),
+                (-260.00, 80.00),
+                (-168.00, 168.00),
+                (-174.00, 174.00),
+            ]
+        )
+        self.MAX_JOINT_VELOCITY = uu.deg2rad(2000)
+        self.MAX_JOINT_ACCELERATION = None
 
     def connect(self):
         super().connect()  # Socket Connection
@@ -43,46 +54,35 @@ class ElephantRobotics(SCT, Commands):
             time.sleep(0.25)
 
     def sleep(self, seconds):
-        assert isinstance(
-            seconds, (int, float)
-        ), "Seconds must be a numeric value."
-        assert seconds >= 0, "Seconds must be a non-negative value."
+        cc.sleep(seconds)
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
-    def move_joints(self, pos: list[float], speed: int = 500) -> None:
+    def move_joints(
+        self, pos: list[float], speed: int = uu.deg2rad(500)
+    ) -> None:
         """
         Move the robot to the specified joint positions.
 
         Parameters
         ----------
         pos : list of float
-            Joint positions in degrees [j1, j2, j3, j4, j5, j6].
+            Joint positions in radians [j1, j2, j3, j4, j5, j6].
         speed : int, optional
-            Speed of the movement, range 0 ~ 2000 (default: 200).
-        DOF : int, optional
-            Degrees of freedom (default: 6).
+            Speed of the movement, range `0` ~ `math.radians(2000)` (default: `math.radians(500)`).
         """
 
-        if len(pos) != self.DOF:
-            raise ValueError("Joint positions must have 6 elements")
+        cc.move_joints(self, pos, speed)
 
-        for i, (low, high) in enumerate(self.JOINT_RANGES):
-            if not (low <= pos[i] <= high):
-                raise ValueError(
-                    f"Joint {i + 1} angle out of range: {low} ~ {high}"
-                )
+        pos_deg = uu.joints2deg(pos)
+        speed_deg = uu.rad2deg(speed)
 
-        if not (0 <= speed <= 2000):
-            raise ValueError("Speed out of range: 0 ~ 2000")
+        command = f"set_angles({','.join(map(str, pos_deg))},{speed_deg})"
+        response = self.send_command(command)
 
-        command = "set_angles"
-        response = self.send_command(
-            f"{command}({','.join(map(str, pos))},{speed})"
+        assert response == f"{command}:[ok]", (
+            f"Failed to move joints: {response}"
         )
-        assert (
-            response == f"{command}:[ok]"
-        ), f"Failed to move joints: {response}"
 
         while any(
             abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)
@@ -92,7 +92,7 @@ class ElephantRobotics(SCT, Commands):
     def move_cartesian(
         self,
         pose: tuple[float, float, float, float, float, float],
-        speed: int = 500,
+        speed: int = uu.deg2rad(500),
     ) -> None:
         """
         Move the robot to the specified Cartesian coordinates.
@@ -102,17 +102,15 @@ class ElephantRobotics(SCT, Commands):
         pose : tuple of float
             Cartesian coordinates in the format `[x, y, z, rx, ry, rz]`.
         speed : int, optional
-            Speed of the movement, range 0 ~ 2000 (default: 500).
+            Speed of the movement, range `0` ~ `math.radians(2000)` (default: `math.radians(500)`).
         """
 
-        if not (0 <= speed <= 2000):
-            raise ValueError("Speed out of range: 0 ~ 2000")
-        if len(pose) != 6:
-            raise ValueError(
-                "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
-            )
+        cc.move_cartesian(self, pose)
 
-        command = f"set_coords({','.join(map(str, pose))},{speed})"
+        pose_deg = uu.pose2deg(pose)
+        speed_deg = uu.rad2deg(speed)
+
+        command = f"set_coords({','.join(map(str, pose_deg))},{speed_deg})"
 
         assert self.send_command(command) == "set_coords:[ok]"
 

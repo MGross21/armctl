@@ -3,16 +3,27 @@ from typing import List, Optional, Union
 
 from armctl.templates import Commands
 from armctl.templates import SocketController as SCT
+from armctl.templates import Properties
 from armctl.templates.logger import logger
+from armctl.utils import CommandCheck as cc
+
+from armctl.utils import units as uu
+
+### Notes ###
+# Command Format: CMD/args/;
+# Output Units: mm
 
 
-class Vention(SCT, Commands):
-    MAX_JOINT_RANGE = 1250  # mm
-    MIN_JOINT_RANGE = 0  # mm
-    VALID_AXES = (1, 2, 3)
-
+class Vention(SCT, Commands, Properties):
     def __init__(self, ip: str = "192.168.7.2", port: int = 9999):
         super().__init__(ip, port)
+        self.JOINT_RANGES = [
+            (0, 1250 * 1e-3),  # Axis 1 range in m
+            (0, 1250 * 1e-3),  # Axis 2 range in m
+            (0, 1250 * 1e-3),  # Axis 3 range in m
+        ]
+        self.MAX_JOINT_VELOCITY = 3000 * 1e-3  # m/s
+        self.MAX_JOINT_ACCELERATION = 1000 * 1e-3  # m/s^2
 
     def connect(self) -> None:
         """Establishes connection to the Vention controller and checks readiness."""
@@ -52,10 +63,7 @@ class Vention(SCT, Commands):
 
     def sleep(self, seconds: float) -> None:
         """Pauses execution for a specified number of seconds."""
-        if not isinstance(seconds, (int, float)):
-            raise TypeError("Seconds must be a numeric value.")
-        if seconds < 0:
-            raise ValueError("Seconds must be a non-negative value.")
+        cc.sleep(seconds)
         time.sleep(seconds)
 
     def home(self) -> None:
@@ -68,57 +76,40 @@ class Vention(SCT, Commands):
     def move_joints(
         self,
         pos: Union[List[float], float, int],
-        speed: int = 2500,
-        acceleration: int = 500,
+        speed: float = 2.000,  # m/s
+        acceleration: float = 0.500,  # m/s^2
         move_type: str = "abs",
     ) -> None:
         """Moves the axes to specified positions."""
         if move_type not in ("abs", "rel"):
             raise ValueError("Invalid move type. Must be 'abs' or 'rel'.")
+
         # Normalize input to a list
         if isinstance(pos, (float, int)):
             pos = [pos]
-        elif not (
-            isinstance(pos, list)
-            and all(isinstance(p, (int, float)) for p in pos)
-        ):
-            raise TypeError(
-                "Joint positions must be a list of numeric values, or a single numeric value."
-            )
-        if len(pos) > len(self.VALID_AXES):
-            raise ValueError(
-                f"Too many joint positions. Maximum supported axes are {len(self.VALID_AXES)}."
-            )
-        # Check if in range
-        if move_type == "abs":
-            for p in pos:
-                if not (self.MIN_JOINT_RANGE <= p <= self.MAX_JOINT_RANGE):
-                    raise ValueError(
-                        f"Absolute joint positions must be within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm."
-                    )
-        elif move_type == "rel":
+
+        # Validate using command checks
+        cc.move_joints(self, pos, speed, acceleration)
+
+        # Handle relative moves by adding to current positions
+        if move_type == "rel":
             current_positions = self.get_joint_positions()
-            for curr_pos, rel_pos in zip(current_positions, pos):
-                new_pos = curr_pos + rel_pos
-                if not (
-                    self.MIN_JOINT_RANGE <= new_pos <= self.MAX_JOINT_RANGE
-                ):
-                    raise ValueError(
-                        f"Relative joint positions must result in positions within the range {self.MIN_JOINT_RANGE} to {self.MAX_JOINT_RANGE} mm."
-                    )
-        if not (0 <= speed <= 3000):
-            raise ValueError("Speed must be between 0 and 3000mm/s.")
-        if not (0 <= acceleration <= 1000):
-            raise ValueError("Acceleration must be between 0 and 1000mm/s^2.")
+            pos = [curr + rel for curr, rel in zip(current_positions, pos)]
+            # Re-validate the absolute positions after relative calculation
+            cc.move_joints(self, pos, speed, acceleration)
+
+        # Send commands to robot
         self.send_command(f"SET speed/{speed}/;")
         self.send_command(f"SET acceleration/{acceleration}/;")
+
         for axis, p in enumerate(pos, start=1):
-            if axis not in self.VALID_AXES:
+            if axis > self.DOF:
                 raise ValueError(
-                    f"Invalid axis: {axis}. Must be one of {self.VALID_AXES}."
+                    f"Invalid axis: {axis}. Robot has {self.DOF} axes."
                 )
+            p_mm = uu.m2mm(p)  # Convert m to mm
             ack = self.send_command(
-                f"SET im_move_{move_type}_{axis}/{p}/;", timeout=30
+                f"SET im_move_{move_type}_{axis}/{p_mm}/;", timeout=30
             )
             if ack != "Ack":
                 raise RuntimeError(f"Failed to set position for axis {axis}.")
@@ -149,15 +140,20 @@ class Vention(SCT, Commands):
         self, axis: Optional[int] = None
     ) -> Union[List[float], float]:
         """Gets the current position of an axis or all axes."""
+        cc.get_joint_positions()
+
         if axis is not None:
-            if axis not in self.VALID_AXES:
+            if axis < 1 or axis > self.DOF:
                 raise ValueError(
-                    f"Invalid axis: {axis}. Must be one of {self.VALID_AXES} or None for all axes."
+                    f"Invalid axis: {axis}. Must be between 1 and {self.DOF}."
                 )
-            return self._get_axis_position(axis)
-        axis_positions = [self._get_axis_position(ax) for ax in self.VALID_AXES]
+            return uu.mm2m(self._get_axis_position(axis))
+
+        axis_positions = [
+            self._get_axis_position(ax) for ax in range(1, self.DOF + 1)
+        ]
         logger.receive(f"Received Response: {axis_positions}")
-        return axis_positions
+        return [uu.mm2m(pos) for pos in axis_positions]
 
     def _get_axis_position(self, axis: int) -> float:
         """Fetches the position of a specific axis."""
@@ -182,19 +178,23 @@ class Vention(SCT, Commands):
 
     def stop_motion(self) -> None:
         """Stops all robot motion."""
+        cc.stop_motion()
         ack = self.send_command("im_stop;")
         if "Ack" not in ack:
             raise RuntimeError("Failed to stop motion.")
 
     def move_cartesian(self, pose: List[float]) -> None:
         """Moves the robot to a specified Cartesian pose (not implemented)."""
+        cc.move_cartesian(self, pose)
         raise NotImplementedError("This method is not implemented yet.")
 
     def get_cartesian_position(self) -> List[float]:
         """Gets the current Cartesian position of the robot (not implemented)."""
+        cc.get_cartesian_position()
         raise NotImplementedError("This method is not implemented yet.")
 
     def get_robot_state(self) -> None:
         """Gets the current state of the robot."""
+        cc.get_robot_state()
         self.send_command("estop/status;")
         self.get_joint_positions()

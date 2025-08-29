@@ -26,14 +26,18 @@ __all__ = [
     "ElephantRobotics",
     "Pro600",
     "UniversalRobots",
+    "UR3",
     "UR5",
     "UR5e",
-    "OnRobot",
+    "UR10",
+    "UR16",
+    # "OnRobot",
     "Vention",
     "Jaka",
 ]
 
 __version__ = "0.3.2"
+
 
 class Logger:
     """Global logger utility for armctl."""
@@ -53,6 +57,7 @@ class Logger:
 
         # Re-enable logging to its previous state
         logging.disable(logging.NOTSET)
+
 
 import os
 

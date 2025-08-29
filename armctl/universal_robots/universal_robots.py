@@ -1,12 +1,18 @@
 from armctl.templates import Commands
+from armctl.templates import Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
+from armctl.utils import CommandCheck as cc
 
 import math
 from time import sleep as _sleep
 
+### Notes ###
+# Command Format: CMD(args)\n
+# Output Units: radians, meters
 
-class UniversalRobots(SCT, Commands):
+
+class UniversalRobots(SCT, Commands, Properties):
     def _check_rtde(self):
         try:
             from .protocols.rtde import RTDE
@@ -41,11 +47,10 @@ class UniversalRobots(SCT, Commands):
             (-2 * math.pi, 2 * math.pi),
             (-2 * math.pi, 2 * math.pi),
         ]
-        self.DOF = len(self.JOINT_RANGES)
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/2
         self.MAX_JOINT_VELOCITY = 2.0  # rad/s
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
-        self.MAX_ACCELERATION = 10.0  # rad/s^2
+        self.MAX_JOINT_ACCELERATION = 10.0  # rad/s^2
 
     def connect(self):
         super().connect()
@@ -58,6 +63,7 @@ class UniversalRobots(SCT, Commands):
         super().disconnect()
 
     def sleep(self, seconds):
+        cc.sleep(seconds)
         self.send_command(f"sleep({seconds})\n")
 
     def move_joints(
@@ -86,23 +92,7 @@ class UniversalRobots(SCT, Commands):
         radius : float, optional
             Blend radius in meters.
         """
-        if len(pos) != self.DOF:
-            raise ValueError(f"Joint positions must have {self.DOF} elements")
-
-        assert speed < self.MAX_JOINT_VELOCITY, (
-            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        )
-
-        assert acceleration <= self.MAX_ACCELERATION, (
-            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
-        )
-
-        for idx, p in enumerate(pos):
-            low, high = self.JOINT_RANGES[idx]
-            if not (low <= p <= high):
-                raise ValueError(
-                    f"Joint {idx + 1} position {p} is out of range: {low} ~ {high}"
-                )
+        cc.move_joints(self, pos, speed, acceleration)
 
         command = f"movej([{','.join(map(str, pos))}], a={acceleration}, v={speed}, t={t}, r={radius})\n"
         self.send_command(
@@ -145,18 +135,7 @@ class UniversalRobots(SCT, Commands):
             "movep",
         ], "Unsupported move type: movel or movep"
 
-        assert speed < self.MAX_JOINT_VELOCITY, (
-            f"Speed out of range: 0 ~ {self.MAX_JOINT_VELOCITY}"
-        )
-
-        assert acceleration <= self.MAX_ACCELERATION, (
-            f"Acceleration out of range: 0 ~ {self.MAX_ACCELERATION}"
-        )
-
-        if len(pose) != 6:
-            raise ValueError(
-                "Robot pose must have 6 elements: [x, y, z, rx, ry, rz]"
-            )
+        cc.move_cartesian(self, pose)
 
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
@@ -168,7 +147,7 @@ class UniversalRobots(SCT, Commands):
         #     _sleep(2)
         return
 
-    def get_joint_positions(self, *args, **kwargs) -> list[float]:
+    def get_joint_positions(self) -> list[float]:
         """
         Get the current joint positions of the robot.
 
