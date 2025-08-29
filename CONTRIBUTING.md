@@ -146,7 +146,7 @@ poetry install --with dev
 To ensure consistency and code quality, run the following commands before submitting your changes:
 
 ```bash
-poetry run ruff format .
+uv run ruff format .
 ```
 
 > All code must be properly formatted and pass type checks. Please resolve any issues reported by these tools prior to opening a pull request.
@@ -156,7 +156,7 @@ poetry run ruff format .
 While CI/CD automation will run tests on your pull request, you can speed up debugging by running the test suite locally:
 
 ```bash
-poetry run pytest tests
+uv run pytest tests
 ```
 
 This is optional, but helps catch issues before submitting your pull request.
