@@ -40,6 +40,9 @@ jobs:
         run: |
           uv sync --locked --all-extras --all-groups
 
+      - name: Check Docker version
+        run: docker --version
+
       - name: Run tests
         run: |
           uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
