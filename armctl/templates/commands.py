@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import List, Union
 
 
 class Commands(ABC):
@@ -29,19 +30,19 @@ class Commands(ABC):
         pass
 
     @abstractmethod
-    def move_joints(self, pos: List[float]) -> None:
+    def move_joints(self, pos: list[float]) -> None:
         pass
 
     @abstractmethod
-    def get_joint_positions(self) -> List[float]:
+    def get_joint_positions(self) -> list[float]:
         pass
 
     @abstractmethod
-    def move_cartesian(self, pose: List[float]) -> None:
+    def move_cartesian(self, pose: list[float]) -> None:
         pass
 
     @abstractmethod
-    def get_cartesian_position(self) -> List[float]:
+    def get_cartesian_position(self) -> list[float]:
         pass
 
     @abstractmethod
@@ -49,5 +50,5 @@ class Commands(ABC):
         pass
 
     @abstractmethod
-    def get_robot_state(self) -> Union[dict, str]:
+    def get_robot_state(self) -> dict | str:
         pass

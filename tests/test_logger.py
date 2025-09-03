@@ -1,7 +1,5 @@
 import logging
 
-import pytest
-
 from armctl import Logger
 from armctl.templates import logger as logger_module
 

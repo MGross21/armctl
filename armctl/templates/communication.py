@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Union
 
 
 class Communication(ABC):
@@ -25,7 +26,5 @@ class Communication(ABC):
         pass
 
     @abstractmethod
-    def send_command(
-        self, command: Union[str, dict], timeout: float
-    ) -> Union[dict, str]:
+    def send_command(self, command: str | dict, timeout: float) -> dict | str:
         pass

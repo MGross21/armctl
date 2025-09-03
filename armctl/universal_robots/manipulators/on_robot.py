@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import warnings
 
 from armctl.templates import SocketController as SCT
@@ -8,6 +10,7 @@ class OnRobot(SCT):
         self, ip: str = "192.168.1.111", port: int | tuple[int, int] = 30_002
     ):
         super().__init__(ip, port)
+        raise NotImplementedError("OnRobot gripper is not yet supported.")
 
     def connect(self):
         super().connect()

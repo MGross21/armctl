@@ -1,6 +1,13 @@
 <div align="center">
-    <h1><img src="assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
+    <h1><img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/logo/armctl_logo_orange.png" alt="armctl" width="300px"></h1>
 </div>
+
+<p align="center">
+  <!-- <img src="https://github.com/MGross21/armctl/actions/workflows/ci.yml/badge.svg" alt="Build Status"> -->
+  <img src="https://img.shields.io/badge/python-3-orange.svg" alt="Python Version">
+  <img src="https://img.shields.io/github/license/MGross21/armctl?color=orange" alt="License">
+  <a href="https://pypi.org/project/armctl/"><img src="https://static.pepy.tech/personalized-badge/armctl?period=total&left_color=gray&right_color=orange&left_text=downloads" alt="Downloads"></a>
+</p>
 
 A unified Python interface for controlling a variety of industrial and hobbyist robots from different manufacturers.
 
@@ -8,20 +15,41 @@ A unified Python interface for controlling a variety of industrial and hobbyist 
 
 The `armctl` library currently supports the following manufacturers and robot models:
 
-### [Universal Robots](https://www.universal-robots.com)
-
-- **Supported Models:** UR3, UR5, UR5e, UR10, UR16 <br>
-  <img src=https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif alt="UR5" width="400">
-
-### [Vention](https://vention.io)
-
-- **Supported Models:** 7th Axis Plate <br>
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="400">
-
-### [Elephant Robotics](https://www.elephantrobotics.com/en/)
-
-- **Supported Models:** myCobot Pro600 <br>
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="400">
+<table>
+  <tr>
+    <td align="center" width="33%">
+      <a href="https://www.universal-robots.com"><b>Universal Robots</b></a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://vention.io"><b>Vention</b></a>
+    </td>
+    <td align="center" width="33%">
+      <a href="https://www.elephantrobotics.com/en/"><b>Elephant Robotics</b></a>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <sub>UR3, UR5, UR5e, UR10, UR16</sub>
+    </td>
+    <td align="center">
+      <sub>7th Axis Plate</sub>
+    </td>
+    <td align="center">
+      <sub>myCobot Pro600</sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/ur5.gif" alt="UR5" width="250">
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/vention.gif" alt="Vention Plate" width="250">
+    </td>
+    <td align="center">
+      <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
+    </td>
+  </tr>
+</table>
 
 > **Want to see your robot supported?**  
 > [Open an issue](https://github.com/MGross21/armctl/issues) or contribute a pull request!
@@ -30,22 +58,16 @@ The `armctl` library currently supports the following manufacturers and robot mo
 
 ### Installation
 
-```text
+*From PyPI:*
+
+```bash
+pip install armctl
+```
+
+*From GitHub:*
+
+```bash
 pip install git+https://github.com/MGross21/armctl.git
-```
-
-#### Adding to Project Dependencies
-
-*`requirements.txt`*
-
-```text
-git+https://github.com/MGross21/armctl.git
-```
-
-*`pyproject.toml`*
-
-```toml
-armctl = {git = "https://github.com/MGross21/armctl.git"}
 ```
 
 ### Importing the Library
@@ -54,7 +76,7 @@ armctl = {git = "https://github.com/MGross21/armctl.git"}
 from armctl import *
 ```
 
-> [!NOTE]  
+> **Note:**  
 > For improved runtime performance and clarity, you may import specific manufacturers and robot series directly.
 
 ### Simple Example with Manufacturer Defaults
@@ -98,7 +120,7 @@ with (
     r2.move_joints([...])
 ```
 
-> [!TIP]  
+> **Tip:**  
 > For more precise and synchronous control of two or more robots, it is recommended to manage each robot within its own thread or process.
 
 #### Multithread Control
@@ -126,7 +148,7 @@ for t in threads:
 
 ## API Reference
 
-> [!NOTE]  
+> **Note:**  
 > The API has been designed for maximum compatibility across supported robots. Additional commands, such as gripper controls and other advanced features, are planned for future releases to further expand functionality.
 
 ### Control Template
@@ -135,14 +157,42 @@ The following methods are available to users of the library to control various s
 
 | Method Name                  | Description                                                                 |
 |------------------------------|-----------------------------------------------------------------------------|
-| `move_joints(pos)` | Move the robot to specified joint positions.             |
-| `get_joint_positions()` | Retrieve the current joint positions of the robot.                |
-| `move_cartesian(pose)` | Move the robot to a specified Cartesian pose.              |
-| `get_cartesian_position()` | Retrieve the current Cartesian position of the robot.          |
+| `move_joints(pos)`           | Move the robot to specified joint positions.                                |
+| `get_joint_positions()`      | Retrieve the current joint positions of the robot.                          |
+| `move_cartesian(pose)`       | Move the robot to a specified Cartesian pose.                               |
+| `get_cartesian_position()`   | Retrieve the current Cartesian position of the robot.                       |
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
 | `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
+
+
+<details><summary><strong>Robot Homing Behavior</strong></summary>
+
+The "home" position refers to a predefined, manufacturer-specific pose that is safe and repeatable for initialization and calibration.
+
+```txt⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⢀⢠⢰⢡⢣⢢⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢀⡶⣿⣺⢜⡜⡜⡜⡜⡜⡔⡄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠈⢯⣯⡿⣗⣕⡗⡵⡱⡱⡱⡱⡱⡱⡠⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣻⢾⣿⠱⣲⢫⢞⢵⣳⡵⡱⣱⣵⣻⣟⣿⢶⡤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⢽⣟⣿⢘⣯⣿⡕⢹⢺⡽⡕⣯⣿⢷⢿⣽⣟⡿⡳⡠⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣻⣽⢿⢨⣷⢿⡇⠀⠀⠈⠣⢟⡷⡽⢽⡾⣅⢇⢇⢇⢇⢇⢆⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣺⡿⣿⠰⣿⣻⡇⠀⠀⠀⠀⠀⠉⠛⢟⠿⣻⣯⡾⣜⢜⢜⢜⢜⢜⢔⢄⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣺⣟⣿⠸⣯⣿⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⠛⠿⣷⢷⣕⣕⡵⣵⣟⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⣺⡿⣯⢎⢭⢓⢇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢙⣿⣾⣻⢷⢿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⢠⣟⣿⣿⢸⢸⢸⢸⢸⢰⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠰⣿⣽⣳⢣⣿⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣤⡾⣯⣻⡾⣏⡮⣪⢪⢪⢪⢪⢲⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⣯⣟⡷⣿⣽⣦⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣷⢿⣽⢽⡻⡣⣣⢷⡣⡇⡇⡇⣇⡿⡇⠀⠀⠀⠀⠀⠀⠀⢀⣿⢾⣽⡿⢛⣷⢿⡇⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣾⢿⡽⣯⡿⣵⢧⡫⡕⣇⣧⣗⣿⣻⡇⠀⠀⠀⠀⠀⠀⠀⣞⣯⣿⠁⠀⢐⣟⣿⡇⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⣹⢿⣻⣯⡿⣯⣟⣯⣿⣽⡷⣿⣽⡫⠀⠀⠀⠀⠀⠀⠀⠀⣯⣟⣾⠀⠀⠀⠋⠻⠃⠀⠀⠀⠀
+⠀⠀⠀⠀⢠⢮⢺⡱⡫⡟⡯⣻⢝⢗⡟⣝⢝⢼⢸⡄⠀⠀⠀⠀⠀⠀⠀⢯⣿⣽⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⢸⣗⡵⡣⡏⣞⢜⡕⡗⣝⢼⢪⡺⣱⢽⡇⠀⠀⠀⠀⠀⠀⠀⠈⠈⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠘⢯⡿⣾⣳⢵⣝⣼⣱⣣⢯⣞⣾⣽⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠉⠻⠻⢿⢾⡷⣿⣽⢟⠿⠓⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+```
+
+</details>
 
 #### Standard Units
 
@@ -164,12 +214,23 @@ The following methods facilitate explicit connection management and low-level co
 | `disconnect()`               | Close the connection to the robot controller.                    |
 | `send_command(cmd)` | Send a low-level command to the robot controller.    |
 
+### Properties Template
+
+The properties template exposes key robot class attributes as variables, allowing you to query important specifications programmatically. These include:
+
+| Property Name            | Description                                      |
+|--------------------------|--------------------------------------------------|
+| `JOINT_RANGES`           | List of allowed ranges for each joint (radians). |
+| `DOF`                    | Number of degrees of freedom (joints).           |
+| `MAX_JOINT_VELOCITY`     | Maximum joint velocity (radians/second).         |
+| `MAX_JOINT_ACCELERATION` | Maximum joint acceleration (radians/second²).    |
+
 ### Graphical Overview
 
 Below is a high-level diagram illustrating the architecture of the `armctl` library. This design emphasizes the careful templatization of connection and control APIs, ensuring a consistent and extensible interface across different manufacturers and robot series.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/images/template_overview_mermaid.png" alt="Template Overview" width="800">
+  <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/diagrams/structure.svg" alt="Template Overview" width="800">
 </p>
 
 ### System Logging
@@ -193,17 +254,33 @@ By default, the library will show the outgoing commands and incoming data. An ex
 2025-02-12 13:18:14,176 - INFO - Disconnected from ElephantRobotics
 ```
 
-#### Disabling
+#### Disabling Logging
+
+To disable logging in your Python code:
 
 ```python
-from armctl import *
+from armctl import Logger
 Logger.disable()
 ```
 
-#### Re-Enabling
+Or, set the environment variable before running your script:
+
+```bash
+export ARMCTL_LOG=0
+```
+
+#### Re-Enabling Logging
+
+To re-enable logging in your code:
 
 ```python
 Logger.enable()
+```
+
+Or, remove the environment variable in your shell:
+
+```bash
+unset ARMCTL_LOG
 ```
 
 ## Under Development
@@ -226,3 +303,8 @@ Please feel free to submit a pull request or open an issue for any enhancements 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](https://github.com/MGross21/armctl/blob/main/LICENSE) file for more details.
+
+### Notice
+
+> This package automatically installs the [Universal Robots RTDE Python Client Library](https://github.com/UniversalRobots/RTDE_Python_Client_Library) when needed.  
+> The RTDE library is provided by Universal Robots and is subject to their licensing terms.
