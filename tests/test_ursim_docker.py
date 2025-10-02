@@ -397,8 +397,6 @@ def validate_position_data(
         ), "XYZ values should be finite"
 
 
-@pytest.mark.integration
-@pytest.mark.docker
 def test_ursim_functionality(ursim_container, ur5_robot):
     """Comprehensive test of URSim functionality.
 
@@ -429,8 +427,6 @@ def test_ursim_functionality(ursim_container, ur5_robot):
     logger.info("URSim functionality test passed")
 
 
-@pytest.mark.integration
-@pytest.mark.docker
 def test_ursim_multiple_queries(ursim_container, ur5_robot):
     """Test multiple sequential queries to ensure stability and performance.
 
@@ -480,8 +476,6 @@ def test_ursim_multiple_queries(ursim_container, ur5_robot):
     )
 
 
-@pytest.mark.integration
-@pytest.mark.docker
 def test_ursim_error_handling(ursim_container, ur5_robot):
     """Test graceful handling of invalid operations and edge cases.
 
