@@ -127,7 +127,6 @@ class UniversalRobots(SCT, Commands, Properties):
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_joint_positions(), joint_positions)):
         #     _sleep(2)
-        # return
 
     def move_cartesian(
         self,
@@ -139,14 +138,14 @@ class UniversalRobots(SCT, Commands, Properties):
         radius: float = 0.0,
     ) -> None:
         """
-        Move the robot to the specified cartesian position. (`movel` or `movep`)
+        Move the robot to the specified Cartesian position.
 
         Parameters
         ----------
-        robot_pose : list of float
+        pose : list of float
             Cartesian position and orientation [x, y, z, rx, ry, rz] in meters and radians.
         move_type : str, optional
-            Type of movement: "movel" for linear cartesian pathing/"movep" for circular cartesian pathing/"movej" for flexible real time path tracking
+            Type of movement: "movel" for linear Cartesian pathing, "movep" for circular Cartesian pathing, or "movej" for flexible real-time path tracking.
         speed : float, optional
             Velocity of the movement in m/s.
         acceleration : float, optional
@@ -156,28 +155,24 @@ class UniversalRobots(SCT, Commands, Properties):
         radius : float, optional
             Blend radius in meters.
         """
-        assert move_type in [
-            "movel",
-            "movep",
-            "movej",
-        ], "Unsupported move type: movel or movep or movej"
+        if move_type not in {"movel", "movep", "movej"}:
+            raise ValueError(
+                "Unsupported move type. Use 'movel', 'movep', or 'movej'."
+            )
 
         cc.move_cartesian(self, pose)
 
-        # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
-        #     raise ValueError("Cartesian position out of safety limits")
+        # Construct the command based on the move type
+        base_command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}"
+        if move_type in {"movel", "movej"}:
+            command = f"{base_command}, t={time}, r={radius})\n"
+        else:  # move_type == "movep"
+            command = f"{base_command}, r={radius})\n"
 
-        # Note: 'p' prefix designates pose
-        # Command Format: "p[X, Y, Z, Rx, Ry, Rz]"
-        if move_type in ("movel", "movej"):
-            command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
-        elif move_type=="movep":
-            command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}, r={radius})\n"
         self.send_command(command, suppress_output=True)
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), pose)):
         #     _sleep(2)
-        return
 
     def get_joint_positions(self) -> list[float]:
         """

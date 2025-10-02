@@ -164,8 +164,7 @@ The following methods are available to users of the library to control various s
 | `stop_motion()`              | Stop all robot motion immediately.                                          |
 | `get_robot_state()`          | Retrieve the current state of the robot.                                    |
 | `sleep(seconds)`             | Pause execution for a specified number of seconds.                          |
-| `home()` <br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
-
+| `home()` </br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Move the robot to its home position. |
 
 <details><summary><strong>Robot Homing Behavior</strong></summary>
 
@@ -224,6 +223,7 @@ The properties template exposes key robot class attributes as variables, allowin
 | `DOF`                    | Number of degrees of freedom (joints).           |
 | `MAX_JOINT_VELOCITY`     | Maximum joint velocity (radians/second).         |
 | `MAX_JOINT_ACCELERATION` | Maximum joint acceleration (radians/second²).    |
+| `HOME_POSITION` </br> <sub>*(Available only for specific robot series, not for generic manufacturer control)*</sub> | Joint positions of robot home position (radians) |
 
 ### Graphical Overview
 
