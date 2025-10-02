@@ -167,22 +167,12 @@ class UniversalRobots(SCT, Commands, Properties):
         # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
         #     raise ValueError("Cartesian position out of safety limits")
 
-        ''' Note: Since both the joint values (q) and the pose are list with num. of elements = 6
-            It is imperative to make a clear distinction between the two.
-            Acc. to UR script manual joint values are passed normally as a list with 6 elements.
-            The pose values are prefixed with a 'p' as :  p[X, Y, Z, Rx, Ry, Rz]
-            movel/movep/movej allows both pose and joint values as arguments.
-            Forward/Inverse Kinematics is later employed to move to desired pose/joint config depending on input.
-        '''
-        if move_type=="movel":
-            command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
-        elif move_type=="movej":
+        # Note: 'p' prefix designates pose
+        # Command Format: "p[X, Y, Z, Rx, Ry, Rz]"
+        if move_type in ("movel", "movej"):
             command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         elif move_type=="movep":
             command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}, r={radius})\n"
-        else:
-            logger.info("Unsupported move type")
-
         self.send_command(command, suppress_output=True)
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), pose)):
