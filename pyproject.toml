@@ -11,7 +11,7 @@ urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.
 
 [project]
 name = "armctl"
-version = "0.3.3"
+version = "0.3.4"
 description = "Agnostic Robotic Manipulator Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
