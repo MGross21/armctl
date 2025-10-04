@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+from time import sleep as _sleep
 
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as Communication
@@ -30,9 +31,8 @@ class Kuka(Communication, Commands, Properties):
     def sleep(self, seconds: float) -> None:
         """Sleep for the specified number of seconds."""
         cc.sleep(seconds)
-        # Additional sleep logic can be added here if needed
-        # Send sleep command to robot
-        pass
+        _sleep(seconds)
+
 
     def move_joints(self, pos: list[float]) -> None:
         """Move robot joints to specified positions"""
