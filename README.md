@@ -292,17 +292,17 @@ unset ARMCTL_LOG
                                                                                                                          
  Agnostic Robotic Manipulation Controller                                                                                
                                                                                                                          
-╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ --help                        Show this message and exit.                                                             │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
-╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
-│ connect      Connect to robot.                                                                                        │
-│ disconnect   Disconnect from robot.                                                                                   │
-│ move         Movement commands                                                                                        │
-│ get          Get robot information                                                                                    │
-│ control      Robot control                                                                                            │
-│ utils        Utility commands                                                                                         │
-╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Options ───────────────────────────────────────────────────╮
+│ --help       Show this message and exit.                    │
+╰─────────────────────────────────────────────────────────────╯
+╭─ Commands ──────────────────────────────────────────────────╮
+│ connect      Connect to robot.                              │
+│ disconnect   Disconnect from robot.                         │
+│ move         Movement commands                              │
+│ get          Get robot information                          │
+│ control      Robot control                                  │
+│ utils        Utility commands                               │
+╰─────────────────────────────────────────────────────────────╯
 ```
 
 ## Under Development
