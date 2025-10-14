@@ -283,6 +283,28 @@ Or, remove the environment variable in your shell:
 unset ARMCTL_LOG
 ```
 
+### CLI Tooling
+
+```bash
+>>> armctl
+
+ Usage: armctl [OPTIONS] COMMAND [ARGS]...                                                                               
+                                                                                                                         
+ Agnostic Robotic Manipulation Controller                                                                                
+                                                                                                                         
+╭─ Options ─────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ --help                        Show this message and exit.                                                             │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+╭─ Commands ────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ connect      Connect to robot.                                                                                        │
+│ disconnect   Disconnect from robot.                                                                                   │
+│ move         Movement commands                                                                                        │
+│ get          Get robot information                                                                                    │
+│ control      Robot control                                                                                            │
+│ utils        Utility commands                                                                                         │
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+```
+
 ## Under Development
 
 - [JAKA](https://www.jaka.com/en)

@@ -28,11 +28,15 @@ requires-python = ">=3.6"
 dependencies = [
     # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
     "urrtde",
+    "typer>=0.9.0",
 ]
 
 [project.urls]
 Homepage = "https://github.com/MGross21/armctl"
 Issues = "https://github.com/MGross21/armctl/issues"
+
+[project.scripts]
+armctl = "armctl.__main__:main"
 
 [dependency-groups]
 format = [

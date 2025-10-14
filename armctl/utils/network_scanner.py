@@ -2,116 +2,160 @@ import platform
 import socket
 import subprocess
 import time
-from concurrent.futures import ThreadPoolExecutor
+import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from typing import List, Optional, Dict, Tuple
 
 
 class NetworkScanner:
-    """A network listener that scans for active devices and detects new ones appearing on the network."""
+    """Efficient network scanner for discovering devices and services."""
+    
+    # Standard service ports
+    STANDARD_PORTS = {
+        22: "SSH", 23: "Telnet", 80: "HTTP", 443: "HTTPS", 
+        502: "Modbus", 8080: "HTTP-Alt", 9999: "Generic",
+        10000: "Generic", 10001: "Generic", 30002: "Industrial", 30003: "Industrial"
+    }
 
     @staticmethod
-    def get_local_ip():
-        """Returns the local machine's IP address."""
+    def get_local_ip() -> Optional[str]:
+        """Get local machine IP address."""
         try:
-            return socket.gethostbyname(socket.gethostname())
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                s.connect(("8.8.8.8", 80))
+                return s.getsockname()[0]
         except OSError:
-            return None
+            try:
+                return socket.gethostbyname(socket.gethostname())
+            except OSError:
+                return None
 
     @staticmethod
-    def get_network_prefix():
-        """Extracts the network prefix from the local IP (e.g., '192.168.1')."""
+    def get_network_prefix() -> Optional[str]:
+        """Get network prefix (e.g., '192.168.1')."""
         local_ip = NetworkScanner.get_local_ip()
         return ".".join(local_ip.split(".")[:3]) if local_ip else None
 
     @staticmethod
-    def ping(ip):
-        """Pings an IP and returns True if it's online."""
+    def ping(ip: str, timeout: int = 1) -> bool:
+        """Ping an IP address."""
         cmd = (
-            ["ping", "-c", "1", "-W", "1", ip]
+            ["ping", "-c", "1", "-W", str(timeout), ip]
             if platform.system() != "Windows"
-            else ["ping", "-n", "1", "-w", "500", ip]
+            else ["ping", "-n", "1", "-w", str(timeout * 1000), ip]
         )
-        return (
-            ip
-            if subprocess.run(
-                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-            ).returncode
-            == 0
-            else None
-        )
+        try:
+            result = subprocess.run(cmd, capture_output=True, timeout=timeout + 1)
+            return result.returncode == 0
+        except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
+            return False
 
     @staticmethod
-    def scan_network(num_threads=20):
-        """Scans the local network for active devices using multithreading."""
+    def check_port(ip: str, port: int, timeout: float = 0.5) -> bool:
+        """Check if a port is open."""
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.settimeout(timeout)
+                return s.connect_ex((ip, port)) == 0
+        except (socket.error, OSError):
+            return False
+
+    @staticmethod
+    def scan_network(num_threads: int = 100, timeout: int = 1) -> List[str]:
+        """Scan network for active devices."""
         network_prefix = NetworkScanner.get_network_prefix()
         if not network_prefix:
             return []
-
+        
         ip_range = [f"{network_prefix}.{i}" for i in range(1, 255)]
+        active_devices = []
+        
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
-            return [
-                ip for ip in executor.map(NetworkScanner.ping, ip_range) if ip
-            ]
+            future_to_ip = {
+                executor.submit(NetworkScanner.ping, ip, timeout): ip 
+                for ip in ip_range
+            }
+            
+            for future in as_completed(future_to_ip):
+                ip = future_to_ip[future]
+                if future.result():
+                    active_devices.append(ip)
+
+        return sorted(active_devices, key=lambda x: int(x.split('.')[-1]))
 
     @staticmethod
-    def scan_ports(ip, ports=None, timeout=1):
-        """Scans specified ports on a device to check if they are open."""
-        open_ports = []
-        ports = ports or [
-            22,
-            80,
-            443,
-            8080,
-            3389,
-        ]  # Default common ports (SSH, HTTP, HTTPS, RDP)
+    def scan_ports(ip: str, ports: Optional[List[int]] = None, timeout: float = 0.3) -> Dict[int, str]:
+        """Scan ports on a device."""
+        if ports is None:
+            ports = list(NetworkScanner.STANDARD_PORTS.keys())
+        
+        open_ports = {}
+        
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            future_to_port = {
+                executor.submit(NetworkScanner.check_port, ip, port, timeout): port 
+                for port in ports
+            }
+            
+            for future in as_completed(future_to_port):
+                port = future_to_port[future]
+                if future.result():
+                    description = NetworkScanner.STANDARD_PORTS.get(port, "Unknown")
+                    open_ports[port] = description
 
-        with ThreadPoolExecutor(max_workers=10) as executor:
-            results = executor.map(
-                lambda port: NetworkScanner._check_port(ip, port, timeout),
-                ports,
-            )
-
-        return [port for port in results if port]
-
-    @staticmethod
-    def _check_port(ip, port, timeout):
-        """Checks if a specific port is open on a device."""
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(timeout)
-            if s.connect_ex((ip, port)) == 0:
-                return port  # Open port
-        return None
+        return open_ports
 
     @staticmethod
-    def listen_for_changes(interval=10, scan_ports=False):
-        """Continuously monitors the network for new devices and optionally scans ports."""
-        print("Listening for new devices... Press Ctrl+C to stop.")
+    def scan_for_controllers(target_ports: Optional[List[int]] = None) -> List[Dict[str, any]]:
+        """Scan for devices with specific controller ports."""
+        if target_ports is None:
+            target_ports = [502, 9999, 10000, 10001, 30002, 30003]
+        
+        active_devices = NetworkScanner.scan_network()
+        if not active_devices:
+            return []
+        
+        controllers = []
+        
+        with ThreadPoolExecutor(max_workers=50) as executor:
+            # Submit port scanning tasks for all devices
+            future_to_ip = {
+                executor.submit(NetworkScanner.scan_ports, ip, target_ports, 0.3): ip 
+                for ip in active_devices
+            }
+            
+            for future in as_completed(future_to_ip):
+                ip = future_to_ip[future]
+                open_ports = future.result()
+                
+                if open_ports:
+                    controllers.append({
+                        'ip': ip,
+                        'ports': open_ports
+                    })
+        
+        return controllers
 
+    @staticmethod
+    def monitor_network(interval: int = 10, callback=None) -> None:
+        """Monitor network for changes."""
+        known_devices = set(NetworkScanner.scan_network())
+        
         try:
-            known_devices = set(NetworkScanner.scan_network())
-
             while True:
                 time.sleep(interval)
                 current_devices = set(NetworkScanner.scan_network())
-
+                
                 new_devices = current_devices - known_devices
-                if new_devices:
-                    print("\n🔔 New Device(s) Detected!")
-                    for device in new_devices:
-                        print(f" - {device}")
-
-                        if scan_ports:
-                            ports = NetworkScanner.scan_ports(device)
-                            print(
-                                f"   🔍 Open Ports: {ports if ports else 'None'}"
-                            )
-
+                removed_devices = known_devices - current_devices
+                
+                if callback and (new_devices or removed_devices):
+                    callback(new_devices, removed_devices)
+                
                 known_devices = current_devices
+                
         except KeyboardInterrupt:
-            print("\nExiting...", end=" ")
-        finally:
-            print("Done!")
+            pass
 
 
-# Run directly
-if __name__ == "__main__":
-    NetworkScanner.listen_for_changes(scan_ports=True)  # Enable port scanning
+# Efficient network scanner - CLI functionality is in armctl.__main__
