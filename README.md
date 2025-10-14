@@ -288,10 +288,10 @@ unset ARMCTL_LOG
 ```bash
 >>> armctl
 
- Usage: armctl [OPTIONS] COMMAND [ARGS]...                                                                               
-                                                                                                                         
- Agnostic Robotic Manipulation Controller                                                                                
-                                                                                                                         
+ Usage: armctl [OPTIONS] COMMAND [ARGS]...
+
+ Agnostic Robotic Manipulation Controller
+ 
 ╭─ Options ───────────────────────────────────────────────────╮
 │ --help       Show this message and exit.                    │
 ╰─────────────────────────────────────────────────────────────╯
