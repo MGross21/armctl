@@ -227,7 +227,7 @@ class TestMovementCommands:
     
     def test_move_cartesian_wrong_count(self):
         """Test move cartesian with wrong number of values."""
-        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0"])
+        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0"])
         assert result.exit_code == 1
     
     def test_move_home_no_connection(self):
