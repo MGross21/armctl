@@ -13,7 +13,7 @@ from armctl.utils import NetworkScanner
 @pytest.fixture(scope="session")
 def runner():
     """Session-scoped CLI runner fixture."""
-    return CliRunner()
+    return CliRunner(env={"NO_COLOR": "1"})
 
 
 @pytest.fixture(scope="function")
