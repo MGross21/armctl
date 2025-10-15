@@ -55,7 +55,10 @@ def mock_robot(monkeypatch):
         return mock_instance
     
     for robot_class_name in armctl.__all__:
-        monkeypatch.setattr(f"armctl.{robot_class_name}", mock_robot_factory)
+        try:
+            monkeypatch.setattr(f"armctl.{robot_class_name}", mock_robot_factory)
+        except AttributeError:
+            pass
     
     class MockRobotAccessor:
         def get_instance(self):
