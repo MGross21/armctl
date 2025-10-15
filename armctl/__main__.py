@@ -16,7 +16,8 @@ from .utils import NetworkScanner
 
 # Global state
 _robot = None
-app = typer.Typer(help="Agnostic Robotic Manipulation Controller")
+# Disable Typer's built-in completion commands
+app = typer.Typer(help="Agnostic Robotic Manipulation Controller", add_completion=False)
 
 
 class RobotType(str, Enum):
@@ -129,38 +130,34 @@ app.add_typer(move_app, name="move")
 
 
 @move_app.command()
-def joints(positions: List[float] = typer.Argument(..., help="6 joint positions in radians")):
-    """Move to joint positions."""
+def cartesian(
+    x: float, y: float, z: float, rx: float, ry: float, rz: float
+):
+    """Move to Cartesian pose."""
     global _robot
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
-    if len(positions) != 6:
-        typer.echo("Exactly 6 joint positions required", err=True)
-        raise typer.Exit(1)
-    
+
     try:
-        _robot.move_joints(positions)
+        _robot.move_cartesian([x, y, z, rx, ry, rz])
     except Exception as e:
         typer.echo(f"Movement failed: {e}", err=True)
         raise typer.Exit(1)
 
 
 @move_app.command()
-def cartesian(pose: List[float] = typer.Argument(..., help="6DOF pose: x y z rx ry rz")):
-    """Move to Cartesian pose."""
+def joints(
+    positions: List[float] = typer.Argument(..., help="Joint positions (space-separated)")
+):
+    """Move to joint positions."""
     global _robot
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
-    if len(pose) != 6:
-        typer.echo("Exactly 6 pose values required", err=True)
-        raise typer.Exit(1)
-    
+
     try:
-        _robot.move_cartesian(pose)
+        _robot.move_joints(positions)
     except Exception as e:
         typer.echo(f"Movement failed: {e}", err=True)
         raise typer.Exit(1)
@@ -191,34 +188,32 @@ app.add_typer(get_app, name="get")
 
 
 @get_app.command()
-def joints():
-    """Get current joint positions."""
-    global _robot
-    if not _robot:
-        typer.echo("Not connected", err=True)
-        raise typer.Exit(1)
-    
-    try:
-        positions = _robot.get_joint_positions()
-        for pos in positions:
-            typer.echo(pos)
-    except Exception as e:
-        typer.echo(f"Failed: {e}", err=True)
-        raise typer.Exit(1)
-
-
-@get_app.command()
 def cartesian():
     """Get current Cartesian position."""
     global _robot
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
+
     try:
         pose = _robot.get_cartesian_position()
-        for p in pose:
-            typer.echo(p)
+        typer.echo(" ".join(map(str, pose)))
+    except Exception as e:
+        typer.echo(f"Failed: {e}", err=True)
+        raise typer.Exit(1)
+
+
+@get_app.command()
+def joints():
+    """Get current joint positions."""
+    global _robot
+    if not _robot:
+        typer.echo("Not connected", err=True)
+        raise typer.Exit(1)
+
+    try:
+        positions = _robot.get_joint_positions()
+        typer.echo(" ".join(map(str, positions)))
     except Exception as e:
         typer.echo(f"Failed: {e}", err=True)
         raise typer.Exit(1)
