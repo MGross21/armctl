@@ -1,6 +1,6 @@
-#!/usr/bin/env python3
 """Comprehensive CLI tests for armctl."""
 
+import re
 import pytest
 from unittest.mock import MagicMock, patch
 from typer.testing import CliRunner
@@ -8,6 +8,17 @@ from typer.testing import CliRunner
 import armctl
 from armctl.__main__ import app, get_robot_types
 from armctl.utils import NetworkScanner
+
+
+# ANSI escape sequence regex for stripping color codes
+ANSI_ESC_RE = re.compile(r'\x1B[@-_][0-?]*[ -/]*[@-~]')
+
+
+def strip_ansi(s: str) -> str:
+    """Strip ANSI escape sequences from string."""
+    if s is None:
+        return s
+    return ANSI_ESC_RE.sub('', s)
 
 
 @pytest.fixture(scope="session")
@@ -75,57 +86,63 @@ class TestCLIHelp:
     
     def test_main_help(self):
         """Test main command help."""
-        result = self.runner.invoke(app, ["--help"])
+        result = self.runner.invoke(app, ["--help"], color=False)
         assert result.exit_code == 0
-        assert "Agnostic Robotic Manipulation Controller" in result.stdout
-        assert "connect" in result.stdout
-        assert "disconnect" in result.stdout
-        assert "move" in result.stdout
-        assert "get" in result.stdout
-        assert "control" in result.stdout
-        assert "utils" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Agnostic Robotic Manipulation Controller" in out
+        assert "connect" in out
+        assert "disconnect" in out
+        assert "move" in out
+        assert "get" in out
+        assert "control" in out
+        assert "utils" in out
     
     def test_connect_help(self):
         """Test connect command help."""
-        result = self.runner.invoke(app, ["connect", "--help"])
+        result = self.runner.invoke(app, ["connect", "--help"], color=False)
         assert result.exit_code == 0
-        assert "Connect to robot" in result.stdout
-        assert "--ip" in result.stdout
-        assert "--robot-type" in result.stdout
-        assert "--port" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Connect to robot" in out
+        assert "--ip" in out
+        assert "--robot-type" in out
+        assert "--port" in out
     
     def test_move_help(self):
         """Test move command help."""
-        result = self.runner.invoke(app, ["move", "--help"])
+        result = self.runner.invoke(app, ["move", "--help"], color=False)
         assert result.exit_code == 0
-        assert "Movement commands" in result.stdout
-        assert "joints" in result.stdout
-        assert "cartesian" in result.stdout
-        assert "home" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Movement commands" in out
+        assert "joints" in out
+        assert "cartesian" in out
+        assert "home" in out
     
     def test_get_help(self):
         """Test get command help."""
-        result = self.runner.invoke(app, ["get", "--help"])
+        result = self.runner.invoke(app, ["get", "--help"], color=False)
         assert result.exit_code == 0
-        assert "Get robot information" in result.stdout
-        assert "joints" in result.stdout
-        assert "cartesian" in result.stdout
-        assert "state" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Get robot information" in out
+        assert "joints" in out
+        assert "cartesian" in out
+        assert "state" in out
     
     def test_control_help(self):
         """Test control command help."""
-        result = self.runner.invoke(app, ["control", "--help"])
+        result = self.runner.invoke(app, ["control", "--help"], color=False)
         assert result.exit_code == 0
-        assert "Robot control" in result.stdout
-        assert "stop" in result.stdout
-        assert "sleep" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Robot control" in out
+        assert "stop" in out
+        assert "sleep" in out
     
     def test_utils_help(self):
         """Test utils command help."""
-        result = self.runner.invoke(app, ["utils", "--help"])
+        result = self.runner.invoke(app, ["utils", "--help"], color=False)
         assert result.exit_code == 0
-        assert "Utility commands" in result.stdout
-        assert "scan" in result.stdout
+        out = strip_ansi(result.stdout)
+        assert "Utility commands" in out
+        assert "scan" in out
         assert "list" in result.stdout
 
 

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 armctl - Agnostic Robotic Manipulation Controller
 Minimal CLI for controlling robotic arms across multiple vendors.
