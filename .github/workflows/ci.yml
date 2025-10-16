@@ -40,6 +40,11 @@ jobs:
         run: |
           uv sync --locked --all-extras --all-groups
 
+      - name: Clear pytest cache
+        run: |
+          rm -rf .pytest_cache
+        continue-on-error: true
+
       - name: Check Docker version
         run: docker --version
 
