@@ -1,5 +1,7 @@
 """Comprehensive CLI tests for armctl."""
 
+from __future__ import annotations
+
 import re
 import pytest
 from unittest.mock import MagicMock, patch

@@ -3,6 +3,8 @@ armctl - Agnostic Robotic Manipulation Controller
 Minimal CLI for controlling robotic arms across multiple vendors.
 """
 
+from __future__ import annotations
+
 import sys
 import signal
 import atexit
