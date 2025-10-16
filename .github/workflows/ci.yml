@@ -40,10 +40,20 @@ jobs:
         run: |
           uv sync --locked --all-extras --all-groups
 
+      - name: Clear all caches and compiled files
+        run: |
+          rm -rf .pytest_cache
+          find . -type d -name __pycache__ -exec rm -rf {} + 2>/dev/null || true
+          find . -type f -name "*.pyc" -delete 2>/dev/null || true
+        continue-on-error: true
+
       - name: Check Docker version
         run: docker --version
 
       - name: Run tests
+        env:
+          NO_COLOR: "1"
+          PYTHONDONTWRITEBYTECODE: "1"
         run: |
           uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
 

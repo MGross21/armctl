@@ -162,7 +162,7 @@ uv run ruff format .
 
 > All code must be properly formatted. Please resolve any issues reported by these tools prior to opening a pull request.
 
-✅ **(Optional) Running Tests Locally:**
+**(Optional) Running Tests Locally:**
 
 While CI/CD automation will run tests on your pull request, you can speed up debugging by running the test suite locally:
 
@@ -170,4 +170,10 @@ While CI/CD automation will run tests on your pull request, you can speed up deb
 uv run pytest tests
 ```
 
-This is optional, but helps catch issues before submitting your pull request.
+**(Optional) Running CLI Locally:**
+
+```bash
+uv run armctl
+```
+
+These are optional, but helps catch issues before submitting your pull request.

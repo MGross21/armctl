@@ -2,6 +2,10 @@
 **/__pycache__
 .*_cache/
 
+# Testing
+.pytest_cache/
+.coverage
+
 # Python Package Management
 *egg-info/
 *venv/

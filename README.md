@@ -283,6 +283,14 @@ Or, remove the environment variable in your shell:
 unset ARMCTL_LOG
 ```
 
+### CLI Tooling
+
+To get started with the command-line interface, run:
+
+```bash
+armctl --help
+```
+
 ## Under Development
 
 - [JAKA](https://www.jaka.com/en)
