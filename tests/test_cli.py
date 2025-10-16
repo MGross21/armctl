@@ -71,7 +71,7 @@ class TestCLIHelp:
     """Test help functionality for all commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_main_help(self):
         """Test main command help."""
@@ -133,7 +133,7 @@ class TestUtilsCommands:
     """Test utility commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_utils_list(self):
         result = self.runner.invoke(app, ["utils", "list"])
@@ -173,7 +173,7 @@ class TestConnectionCommands:
     """Test connection commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_connect_missing_ip(self):
         result = self.runner.invoke(app, ["connect", "--robot-type", "ur5"])
@@ -230,7 +230,7 @@ class TestMovementCommands:
     """Test movement commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_move_joints_no_connection(self):
         result = self.runner.invoke(app, ["move", "joints", "0", "0", "0", "0", "0", "0"])
@@ -257,7 +257,7 @@ class TestGetCommands:
     """Test get commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_get_joints_no_connection(self):
         result = self.runner.invoke(app, ["get", "joints"])
@@ -276,7 +276,7 @@ class TestControlCommands:
     """Test control commands."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_control_stop_no_connection(self):
         result = self.runner.invoke(app, ["control", "stop"])
@@ -295,7 +295,7 @@ class TestIntegratedWorkflow:
     """Test integrated workflows."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_full_workflow(self, runner, mock_robot, monkeypatch):
         result = runner.invoke(app, ["connect", "--ip", "192.168.1.10", "--robot-type", "universalrobots"])
@@ -313,7 +313,7 @@ class TestRobotTypeHandling:
     """Test robot type handling."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_get_robot_types(self):
         types = get_robot_types()
@@ -338,7 +338,7 @@ class TestErrorHandling:
     """Test error handling."""
     
     def setup_method(self):
-        self.runner = CliRunner()
+        self.runner = CliRunner(env={"NO_COLOR": "1"})
     
     def test_invalid_command(self):
         result = self.runner.invoke(app, ["invalid_command"])
