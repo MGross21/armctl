@@ -237,7 +237,10 @@ class TestConnectionCommands:
         with patch('armctl.__main__.get_robot_types', mock_get_robot_types_failing):
             result = runner.invoke(app, ["connect", "--ip", "192.168.1.10", "--robot-type", "universalrobots"])
             assert result.exit_code == 1
-            output = result.stderr if hasattr(result, 'stderr') else result.stdout
+            try:
+                output = result.stderr
+            except (ValueError, AttributeError):
+                output = result.stdout
             assert "Connection failed" in output
     
     def test_disconnect_no_connection(self, runner):
