@@ -10,7 +10,7 @@ Commands : ABC
 """
 
 from .commands import Commands
-from .properties import Properties
 from .plc_controller import PLCController
+from .properties import Properties
 from .serial_controller import SerialController
 from .socket_controller import SocketController

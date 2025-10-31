@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 from abc import ABC
-from typing import List, ClassVar, Tuple
+from typing import ClassVar
 
 
 class Properties(ABC):
     """Base class for robot properties."""
 
-    JOINT_RANGES: ClassVar[List[Tuple[float, float]]]
+    JOINT_RANGES: ClassVar[list[tuple[float, float]]]
     """Joint position limits for each joint in radians."""
 
     MAX_JOINT_VELOCITY: ClassVar[float]

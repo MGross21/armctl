@@ -1,11 +1,11 @@
-from armctl.templates import Commands
-from armctl.templates import Properties
+from __future__ import annotations
+
+import math
+
+from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
-
-import math
-from time import sleep as _sleep
 
 ### Notes ###
 # Command Format: CMD(args)\n
@@ -17,24 +17,50 @@ class UniversalRobots(SCT, Commands, Properties):
         try:
             from .protocols.rtde import RTDE
         except ImportError:
-            from subprocess import run
+            import os
+            import shutil
             import sys
+            from subprocess import run
 
             logger.warning(
-                "RTDE Python Client Library not found. Installing from GitHub..."
+                "RTDE Python Client Library not found. Attempting installation..."
             )
-            run(
-                [
+
+            # Determine installer
+            if shutil.which("uv") and os.environ.get("VIRTUAL_ENV"):
+                install_cmd = [
+                    "uv",
+                    "add",
+                    "--quiet",
+                    "urrtde@git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            elif shutil.which("poetry") and os.environ.get("POETRY_ACTIVE"):
+                install_cmd = [
+                    "poetry",
+                    "add",
+                    "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
+                ]
+            else:
+                install_cmd = [
                     sys.executable,
                     "-m",
                     "pip",
                     "install",
                     "--quiet",
                     "git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main",
-                ],
-                check=True,
-            )
-            from .protocols.rtde import RTDE
+                ]
+
+            try:
+                run(install_cmd, check=True)
+            except Exception as e:
+                logger.error(
+                    f"Failed to install RTDE Python Client Library: {e}"
+                )
+                raise ImportError(
+                    "Could not install RTDE Python Client Library."
+                ) from e
+
+            # Try import again
 
     def __init__(self, ip: str, port: int | tuple[int, int] = 30_002):
         self._check_rtde()
@@ -101,7 +127,6 @@ class UniversalRobots(SCT, Commands, Properties):
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_joint_positions(), joint_positions)):
         #     _sleep(2)
-        # return
 
     def move_cartesian(
         self,
@@ -113,14 +138,14 @@ class UniversalRobots(SCT, Commands, Properties):
         radius: float = 0.0,
     ) -> None:
         """
-        Move the robot to the specified cartesian position. (`movel` or `movep`)
+        Move the robot to the specified Cartesian position.
 
         Parameters
         ----------
-        robot_pose : list of float
+        pose : list of float
             Cartesian position and orientation [x, y, z, rx, ry, rz] in meters and radians.
         move_type : str, optional
-            Type of movement: "movel" for linear cartesian pathing or "movep" for circular cartesian pathing.
+            Type of movement: "movel" for linear Cartesian pathing, "movep" for circular Cartesian pathing, or "movej" for flexible real-time path tracking.
         speed : float, optional
             Velocity of the movement in m/s.
         acceleration : float, optional
@@ -130,22 +155,24 @@ class UniversalRobots(SCT, Commands, Properties):
         radius : float, optional
             Blend radius in meters.
         """
-        assert move_type in [
-            "movel",
-            "movep",
-        ], "Unsupported move type: movel or movep"
+        if move_type not in {"movel", "movep", "movej"}:
+            raise ValueError(
+                "Unsupported move type. Use 'movel', 'movep', or 'movej'."
+            )
 
         cc.move_cartesian(self, pose)
 
-        # if self.send_command("is_within_safety_limits({})\n".format(','.join(map(str, pose)))) == "False":
-        #     raise ValueError("Cartesian position out of safety limits")
+        # Construct the command based on the move type
+        base_command = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}"
+        if move_type in {"movel", "movej"}:
+            command = f"{base_command}, t={time}, r={radius})\n"
+        else:  # move_type == "movep"
+            command = f"{base_command}, r={radius})\n"
 
-        command = f"{move_type}([{','.join(map(str, pose))}], a={acceleration}, v={speed}, t={time}, r={radius})\n"
         self.send_command(command, suppress_output=True)
 
         # while not all(round(a, 2) == round(b, 2) for a, b in zip(self.get_cartesian_position(), pose)):
         #     _sleep(2)
-        return
 
     def get_joint_positions(self) -> list[float]:
         """
@@ -178,9 +205,7 @@ class UniversalRobots(SCT, Commands, Properties):
 
     def stop_motion(self) -> None:
         deceleration = 2.0  # rad/s^2
-        self.send_command(
-            "stopj({})\n".format(deceleration), suppress_output=True
-        )
+        self.send_command(f"stopj({deceleration})\n", suppress_output=True)
 
     def get_robot_state(self) -> dict[str, bool]:
         status = self.rtde.robot_status()

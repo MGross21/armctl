@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 from pathlib import Path
 from typing import NewType
+
 import rtde.rtde as rtde
 import rtde.rtde_config as rtde_config
 

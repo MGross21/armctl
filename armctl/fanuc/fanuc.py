@@ -1,7 +1,5 @@
-from armctl.templates import Commands
-from armctl.templates import Properties
+from armctl.templates import Commands, Properties
 from armctl.templates import PLCController as PLC
-
 from armctl.utils import CommandCheck as cc
 
 

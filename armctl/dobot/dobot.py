@@ -1,10 +1,10 @@
+import math
+
+from armctl.templates import Commands, Properties
 from armctl.templates import SerialController as Serial
 from armctl.templates import SocketController as Socket
-from armctl.templates import Commands
-from armctl.templates import Properties
 from armctl.utils import CommandCheck as cc
 from armctl.utils import units as uu
-import math
 
 ### Notes ###
 # - Command Format: CMD(arg)

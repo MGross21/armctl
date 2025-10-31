@@ -15,16 +15,17 @@ Communication Methods:
 
 # Universal Imports
 from __future__ import annotations
+
 import atexit
 import math
-from armctl.templates import Commands
-from armctl.templates import Properties
-from armctl.utils import units as uu
-from armctl.utils import CommandCheck as cc
+
+from armctl.templates import Commands, Properties
 
 # Choose one of the following Communication Methods
 # Uncomment the one you need and comment out the others
 from armctl.templates import SocketController as Communication
+from armctl.utils import CommandCheck as cc
+
 # from armctl.templates import PLCController as Communication
 # from armctl.templates import SerialController as Communication
 

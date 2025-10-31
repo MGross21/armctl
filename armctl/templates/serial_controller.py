@@ -5,6 +5,8 @@ commands, and handling responses with enhanced debugging features.
 
 """
 
+from __future__ import annotations
+
 from .communication import Communication
 from .logger import logger
 import serial

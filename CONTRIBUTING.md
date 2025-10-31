@@ -134,29 +134,46 @@ Please ensure your code adheres to the project's formatting and quality standard
 
 **Setup:**
 
+Install `uv` python package manager. See install options [`here`](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
+
 ```bash
-python -m venv .venv
+uv venv --clear
 source .venv/bin/activate
-pip install poetry
-poetry install --with dev
+uv sync --dev
 ```
+
+**Testing with a Different Python Version:**
+
+To create a virtual environment with a specific Python version, use:
+
+```bash
+uv venv --clear --python 3.X
+```
+
+Replace `3.X` with your desired Python version (e.g., `3.10`).
 
 **Formatting Code:**
 
 To ensure consistency and code quality, run the following commands before submitting your changes:
 
 ```bash
-poetry run ruff format .
+uv run ruff format .
 ```
 
-> All code must be properly formatted and pass type checks. Please resolve any issues reported by these tools prior to opening a pull request.
+> All code must be properly formatted. Please resolve any issues reported by these tools prior to opening a pull request.
 
-✅ **(Optional) Running Tests Locally:**
+**(Optional) Running Tests Locally:**
 
 While CI/CD automation will run tests on your pull request, you can speed up debugging by running the test suite locally:
 
 ```bash
-poetry run pytest tests
+uv run pytest tests
 ```
 
-This is optional, but helps catch issues before submitting your pull request.
+**(Optional) Running CLI Locally:**
+
+```bash
+uv run armctl
+```
+
+These are optional, but helps catch issues before submitting your pull request.
