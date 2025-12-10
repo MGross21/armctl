@@ -1,5 +1,4 @@
 """
-armctl - Agnostic Robotic Manipulation Controller
 Minimal CLI for controlling robotic arms across multiple vendors.
 """
 
@@ -321,9 +320,16 @@ def list():
         typer.echo(f"{robot_type:<20} -> {robot_class.__name__}")
 
 
+@app.callback(invoke_without_command=True)
+def default_callback(ctx: typer.Context):
+    """Show help if no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
+
 def main():
-    """Main entry point."""
-    Logger.disable()
+    """Entry point for the CLI."""
     app()
 
 
