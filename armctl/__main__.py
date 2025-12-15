@@ -17,7 +17,7 @@ from .utils import NetworkScanner
 # Global state
 _robot = None
 # Disable Typer's built-in completion commands
-app = typer.Typer(help="Agnostic Robotic Manipulation Controller", add_completion=False)
+app = typer.Typer(help="Agnostic Robotic Manipulation Controller", add_completion=False, no_args_is_help=True)
 
 
 class RobotType(str, Enum):
@@ -124,16 +124,8 @@ def disconnect():
 
 
 # Movement commands
-move_app = typer.Typer(help="Movement commands")
+move_app = typer.Typer(help="Movement commands", no_args_is_help=True)
 app.add_typer(move_app, name="move")
-
-
-@move_app.callback(invoke_without_command=True)
-def move_callback(ctx: typer.Context):
-    """Show help if no subcommand is provided."""
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
 
 
 @move_app.command()
@@ -190,16 +182,8 @@ def home():
 
 
 # Get commands
-get_app = typer.Typer(help="Get robot information")
+get_app = typer.Typer(help="Get robot information", no_args_is_help=True)
 app.add_typer(get_app, name="get")
-
-
-@get_app.callback(invoke_without_command=True)
-def get_callback(ctx: typer.Context):
-    """Show help if no subcommand is provided."""
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
 
 
 @get_app.command()
@@ -251,16 +235,8 @@ def state():
 
 
 # Control commands
-control_app = typer.Typer(help="Robot control")
+control_app = typer.Typer(help="Robot control", no_args_is_help=True)
 app.add_typer(control_app, name="control")
-
-
-@control_app.callback(invoke_without_command=True)
-def control_callback(ctx: typer.Context):
-    """Show help if no subcommand is provided."""
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
 
 
 @control_app.command()
@@ -294,16 +270,8 @@ def sleep(duration: float = typer.Argument(..., help="Sleep duration in seconds"
 
 
 # Utils commands
-utils_app = typer.Typer(help="Utility commands")
+utils_app = typer.Typer(help="Utility commands", no_args_is_help=True)
 app.add_typer(utils_app, name="utils")
-
-
-@utils_app.callback(invoke_without_command=True)
-def utils_callback(ctx: typer.Context):
-    """Show help if no subcommand is provided."""
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
 
 
 @utils_app.command()
@@ -333,20 +301,15 @@ def list():
         typer.echo(f"{robot_type:<20} -> {robot_class.__name__}")
 
 
-@app.callback(invoke_without_command=True)
+@app.callback()
 def default_callback(
-    ctx: typer.Context,
     verbose: bool = typer.Option(False, "-v", "--verbose", help="Enable verbose logging")
 ):
-    """Show help if no subcommand is provided."""
+    """Handle global options."""
     if verbose:
         Logger.enable()
     else:
         Logger.disable()
-    
-    if ctx.invoked_subcommand is None:
-        typer.echo(ctx.get_help())
-        raise typer.Exit()
 
 
 def main():
