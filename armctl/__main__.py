@@ -91,7 +91,6 @@ def connect(
 ):
     """Connect to robot."""
     global _robot
-    Logger.disable()
     
     types = get_robot_types()
     robot_class = types.get(robot_type.value)
@@ -127,6 +126,14 @@ def disconnect():
 # Movement commands
 move_app = typer.Typer(help="Movement commands")
 app.add_typer(move_app, name="move")
+
+
+@move_app.callback(invoke_without_command=True)
+def move_callback(ctx: typer.Context):
+    """Show help if no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
 
 
 @move_app.command()
@@ -187,6 +194,14 @@ get_app = typer.Typer(help="Get robot information")
 app.add_typer(get_app, name="get")
 
 
+@get_app.callback(invoke_without_command=True)
+def get_callback(ctx: typer.Context):
+    """Show help if no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
+
 @get_app.command()
 def cartesian():
     """Get current Cartesian position."""
@@ -240,6 +255,14 @@ control_app = typer.Typer(help="Robot control")
 app.add_typer(control_app, name="control")
 
 
+@control_app.callback(invoke_without_command=True)
+def control_callback(ctx: typer.Context):
+    """Show help if no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
+
 @control_app.command()
 def stop():
     """Stop robot motion."""
@@ -275,41 +298,31 @@ utils_app = typer.Typer(help="Utility commands")
 app.add_typer(utils_app, name="utils")
 
 
+@utils_app.callback(invoke_without_command=True)
+def utils_callback(ctx: typer.Context):
+    """Show help if no subcommand is provided."""
+    if ctx.invoked_subcommand is None:
+        typer.echo(ctx.get_help())
+        raise typer.Exit()
+
+
 @utils_app.command()
 def scan(
-    basic: bool = typer.Option(False, "--basic", help="Basic network scan"),
-    listen: bool = typer.Option(False, "--listen", help="Monitor network changes"),
-    ports: bool = typer.Option(False, "--ports", help="Include port scanning")
+    listen: bool = typer.Option(False, "--listen", help="Monitor network changes")
 ):
-    """Scan for devices/controllers."""
+    """Scan network for devices."""
     if listen:
         def callback(new, removed):
             for device in new:
                 typer.echo(f"+{device}")
-                if ports:
-                    device_ports = NetworkScanner.scan_ports(device, timeout=0.3)
-                    for port in device_ports:
-                        typer.echo(f"  :{port}")
             for device in removed:
                 typer.echo(f"-{device}")
         
         NetworkScanner.monitor_network(callback=callback)
-        
-    elif basic:
+    else:
         devices = NetworkScanner.scan_network()
         for device in devices:
             typer.echo(device)
-    else:
-        controllers = NetworkScanner.scan_for_controllers()
-        if controllers:
-            for controller in controllers:
-                typer.echo(controller['ip'])
-                for port in controller['ports']:
-                    typer.echo(f"  :{port}")
-        else:
-            devices = NetworkScanner.scan_network()
-            for device in devices:
-                typer.echo(device)
 
 
 @utils_app.command()
@@ -321,8 +334,16 @@ def list():
 
 
 @app.callback(invoke_without_command=True)
-def default_callback(ctx: typer.Context):
+def default_callback(
+    ctx: typer.Context,
+    verbose: bool = typer.Option(False, "-v", "--verbose", help="Enable verbose logging")
+):
     """Show help if no subcommand is provided."""
+    if verbose:
+        Logger.enable()
+    else:
+        Logger.disable()
+    
     if ctx.invoked_subcommand is None:
         typer.echo(ctx.get_help())
         raise typer.Exit()
