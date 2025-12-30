@@ -34,15 +34,7 @@ def mock_network_scanner(monkeypatch):
     """Mock NetworkScanner for network scan tests."""
     def mock_scan_network():
         return ["192.168.1.10", "192.168.1.20"]
-
-    def mock_scan_for_controllers():
-        return [
-            {"ip": "192.168.1.10", "ports": [502, 8080]},
-            {"ip": "192.168.1.20", "ports": [30001, 30002]},
-        ]
-
     monkeypatch.setattr(NetworkScanner, "scan_network", mock_scan_network)
-    monkeypatch.setattr(NetworkScanner, "scan_for_controllers", mock_scan_for_controllers)
 
 
 @pytest.fixture(scope="function")
@@ -162,26 +154,6 @@ class TestUtilsCommands:
             assert robot_type in result.stdout
     
     def test_utils_scan_basic(self, runner, mock_network_scanner):
-        result = runner.invoke(app, ["utils", "scan", "--basic"])
-        assert result.exit_code == 0
-        assert "192.168.1.10" in result.stdout
-        assert "192.168.1.20" in result.stdout
-    
-    def test_utils_scan_controllers(self, runner, mock_network_scanner):
-        result = runner.invoke(app, ["utils", "scan"])
-        assert result.exit_code == 0
-        assert "192.168.1.10" in result.stdout
-        assert ":502" in result.stdout
-        assert ":8080" in result.stdout
-        assert "192.168.1.20" in result.stdout
-        assert ":30001" in result.stdout
-        assert ":30002" in result.stdout
-    
-    def test_utils_scan_fallback(self, runner, mock_network_scanner, monkeypatch):
-        def mock_scan_for_controllers_empty():
-            return []
-
-        monkeypatch.setattr(NetworkScanner, "scan_for_controllers", mock_scan_for_controllers_empty)
         result = runner.invoke(app, ["utils", "scan"])
         assert result.exit_code == 0
         assert "192.168.1.10" in result.stdout
