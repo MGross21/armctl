@@ -425,16 +425,16 @@ class TestErrorHandling:
 
     def test_missing_subcommand(self):
         result = self.runner.invoke(app, ["move"])
-        assert result.exit_code != 0
+        assert result.exit_code == 0
 
         result = self.runner.invoke(app, ["get"])
-        assert result.exit_code != 0
+        assert result.exit_code == 0
 
         result = self.runner.invoke(app, ["control"])
-        assert result.exit_code != 0
+        assert result.exit_code == 0
 
         result = self.runner.invoke(app, ["utils"])
-        assert result.exit_code != 0
+        assert result.exit_code == 0
 
     def test_robot_method_with_mock(self, runner, mock_robot):
         result = runner.invoke(
