@@ -1,0 +1,23 @@
+VAR socketdev server_socket;
+VAR socketdev client_socket;
+VAR string    recv_str;
+VAR string    client_ip;
+
+PROC main()
+    SocketClose server_socket;
+    SocketClose client_socket;
+
+    SocketCreate server_socket;
+    SocketBind server_socket, "192.168.125.1", 11002;
+    SocketListen server_socket;
+    SocketAccept server_socket, client_socket \ClientAddress:=client_ip;
+
+    TPWrite "Client at "\NumToStr(StrLen(client_ip))" connected.";
+
+    WHILE TRUE DO
+        SocketReceive client_socket \Str:=recv_str \Time:=10;
+        ! Parse recv_str and call movement routines here
+        ! Example: if recv_str = "P1" then MoveJ p1, v100, z50, tool0;
+        SocketSend client_socket \Str:="OK";
+    ENDWHILE
+ENDPROC
