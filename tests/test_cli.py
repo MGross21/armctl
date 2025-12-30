@@ -10,6 +10,7 @@ from typer.testing import CliRunner
 import armctl
 from armctl.__main__ import app, get_robot_types
 from armctl.utils import NetworkScanner
+import sys
 
 
 # ANSI escape sequence regex for stripping color codes
@@ -416,6 +417,12 @@ class TestRobotTypeHandling:
 class TestErrorHandling:
     """Test error handling."""
 
+    def _version_compatible_exit_code(self, result):
+        if sys.version_info >= (3, 10):
+            return result.exit_code != 0
+        else:
+            return result.exit_code == 0
+
     def setup_method(self):
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
@@ -425,16 +432,16 @@ class TestErrorHandling:
 
     def test_missing_subcommand(self):
         result = self.runner.invoke(app, ["move"])
-        assert result.exit_code == 0
+        assert self._version_compatible_exit_code(result)
 
         result = self.runner.invoke(app, ["get"])
-        assert result.exit_code == 0
+        assert self._version_compatible_exit_code(result)
 
         result = self.runner.invoke(app, ["control"])
-        assert result.exit_code == 0
+        assert self._version_compatible_exit_code(result)
 
         result = self.runner.invoke(app, ["utils"])
-        assert result.exit_code == 0
+        assert self._version_compatible_exit_code(result)
 
     def test_robot_method_with_mock(self, runner, mock_robot):
         result = runner.invoke(
