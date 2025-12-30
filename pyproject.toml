@@ -12,7 +12,7 @@ urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.
 [project]
 name = "armctl"
 version = "0.3.4"
-description = "Agnostic Robotic Manipulator Controller (armctl)"
+description = "Agnostic Robotic Manipulation Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
 license = { file = "LICENSE" }
@@ -29,6 +29,7 @@ dependencies = [
     # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
     "urrtde",
     "typer>=0.9.0",
+    "pyserial>=3.5",
 ]
 
 [project.urls]

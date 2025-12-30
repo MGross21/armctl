@@ -31,12 +31,12 @@ __all__ = [
     "UR5e",
     "UR10",
     "UR16",
-    # "OnRobot",
     "Vention",
     "Jaka",
 ]
 
 __version__ = "0.3.4"
+__author__ = "Michael Gross"
 
 
 class Logger:
