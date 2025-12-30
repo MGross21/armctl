@@ -1,5 +1,4 @@
 """
-armctl - Agnostic Robotic Manipulation Controller
 Minimal CLI for controlling robotic arms across multiple vendors.
 """
 
@@ -18,17 +17,23 @@ from .utils import NetworkScanner
 # Global state
 _robot = None
 # Disable Typer's built-in completion commands
-app = typer.Typer(help="Agnostic Robotic Manipulation Controller", add_completion=False)
+app = typer.Typer(
+    help="Agnostic Robotic Manipulation Controller",
+    add_completion=False,
+    no_args_is_help=True,
+)
 
 
 class RobotType(str, Enum):
     """Dynamically populated robot types."""
+
     pass
 
 
 def get_robot_types():
     """Get available robot types dynamically."""
     import armctl
+
     types = {}
     for name in __all__:
         try:
@@ -36,11 +41,11 @@ def get_robot_types():
             key = name.lower()
             types[key] = cls
             # Add aliases
-            if 'universal' in key or key.startswith('ur'):
-                if key == 'universalrobots':
-                    types['ur'] = cls
-            elif 'elephant' in key:
-                types['elephant'] = cls
+            if "universal" in key or key.startswith("ur"):
+                if key == "universalrobots":
+                    types["ur"] = cls
+            elif "elephant" in key:
+                types["elephant"] = cls
         except (AttributeError, ImportError):
             continue
     return types
@@ -49,7 +54,7 @@ def get_robot_types():
 def setup_robot_enum():
     """Dynamically create robot type enum."""
     types = list(get_robot_types().keys())
-    return Enum('RobotType', {t.upper(): t for t in types}, type=str)
+    return Enum("RobotType", {t.upper(): t for t in types}, type=str)
 
 
 # Create dynamic enum
@@ -88,19 +93,18 @@ atexit.register(cleanup)
 def connect(
     ip: str = typer.Option(..., help="Robot IP address"),
     robot_type: RobotType = typer.Option(..., help="Robot type"),
-    port: Optional[int] = typer.Option(None, help="Robot port")
+    port: Optional[int] = typer.Option(None, help="Robot port"),
 ):
     """Connect to robot."""
     global _robot
-    Logger.disable()
-    
+
     types = get_robot_types()
     robot_class = types.get(robot_type.value)
-    
+
     if not robot_class:
         typer.echo(f"Unknown robot type: {robot_type.value}", err=True)
         raise typer.Exit(1)
-    
+
     try:
         _robot = robot_class(ip, port) if port else robot_class(ip)
         _robot.connect()
@@ -116,7 +120,7 @@ def disconnect():
     if not _robot:
         typer.echo("No active connection", err=True)
         raise typer.Exit(1)
-    
+
     try:
         _robot.disconnect()
         _robot = None
@@ -126,14 +130,12 @@ def disconnect():
 
 
 # Movement commands
-move_app = typer.Typer(help="Movement commands")
+move_app = typer.Typer(help="Movement commands", no_args_is_help=True)
 app.add_typer(move_app, name="move")
 
 
 @move_app.command()
-def cartesian(
-    x: float, y: float, z: float, rx: float, ry: float, rz: float
-):
+def cartesian(x: float, y: float, z: float, rx: float, ry: float, rz: float):
     """Move to Cartesian pose."""
     global _robot
     if not _robot:
@@ -149,7 +151,9 @@ def cartesian(
 
 @move_app.command()
 def joints(
-    positions: List[float] = typer.Argument(..., help="Joint positions (space-separated)")
+    positions: List[float] = typer.Argument(
+        ..., help="Joint positions (space-separated)"
+    ),
 ):
     """Move to joint positions."""
     global _robot
@@ -171,9 +175,9 @@ def home():
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
+
     try:
-        if hasattr(_robot, 'home'):
+        if hasattr(_robot, "home"):
             _robot.home()
         else:
             typer.echo("Home not supported", err=True)
@@ -184,7 +188,7 @@ def home():
 
 
 # Get commands
-get_app = typer.Typer(help="Get robot information")
+get_app = typer.Typer(help="Get robot information", no_args_is_help=True)
 app.add_typer(get_app, name="get")
 
 
@@ -227,7 +231,7 @@ def state():
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
+
     try:
         state = _robot.get_robot_state()
         typer.echo(state)
@@ -237,7 +241,7 @@ def state():
 
 
 # Control commands
-control_app = typer.Typer(help="Robot control")
+control_app = typer.Typer(help="Robot control", no_args_is_help=True)
 app.add_typer(control_app, name="control")
 
 
@@ -248,7 +252,7 @@ def stop():
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
+
     try:
         _robot.stop_motion()
     except Exception as e:
@@ -257,13 +261,15 @@ def stop():
 
 
 @control_app.command()
-def sleep(duration: float = typer.Argument(..., help="Sleep duration in seconds")):
+def sleep(
+    duration: float = typer.Argument(..., help="Sleep duration in seconds"),
+):
     """Pause execution."""
     global _robot
     if not _robot:
         typer.echo("Not connected", err=True)
         raise typer.Exit(1)
-    
+
     try:
         _robot.sleep(duration)
     except Exception as e:
@@ -272,45 +278,30 @@ def sleep(duration: float = typer.Argument(..., help="Sleep duration in seconds"
 
 
 # Utils commands
-utils_app = typer.Typer(help="Utility commands")
+utils_app = typer.Typer(help="Utility commands", no_args_is_help=True)
 app.add_typer(utils_app, name="utils")
 
 
 @utils_app.command()
 def scan(
-    basic: bool = typer.Option(False, "--basic", help="Basic network scan"),
-    listen: bool = typer.Option(False, "--listen", help="Monitor network changes"),
-    ports: bool = typer.Option(False, "--ports", help="Include port scanning")
+    listen: bool = typer.Option(
+        False, "--listen", help="Monitor network changes"
+    ),
 ):
-    """Scan for devices/controllers."""
+    """Scan network for devices."""
     if listen:
+
         def callback(new, removed):
             for device in new:
                 typer.echo(f"+{device}")
-                if ports:
-                    device_ports = NetworkScanner.scan_ports(device, timeout=0.3)
-                    for port in device_ports:
-                        typer.echo(f"  :{port}")
             for device in removed:
                 typer.echo(f"-{device}")
-        
+
         NetworkScanner.monitor_network(callback=callback)
-        
-    elif basic:
+    else:
         devices = NetworkScanner.scan_network()
         for device in devices:
             typer.echo(device)
-    else:
-        controllers = NetworkScanner.scan_for_controllers()
-        if controllers:
-            for controller in controllers:
-                typer.echo(controller['ip'])
-                for port in controller['ports']:
-                    typer.echo(f"  :{port}")
-        else:
-            devices = NetworkScanner.scan_network()
-            for device in devices:
-                typer.echo(device)
 
 
 @utils_app.command()
@@ -321,9 +312,21 @@ def list():
         typer.echo(f"{robot_type:<20} -> {robot_class.__name__}")
 
 
+@app.callback()
+def default_callback(
+    verbose: bool = typer.Option(
+        False, "-v", "--verbose", help="Enable verbose logging"
+    ),
+):
+    """Handle global options."""
+    if verbose:
+        Logger.enable()
+    else:
+        Logger.disable()
+
+
 def main():
-    """Main entry point."""
-    Logger.disable()
+    """Entry point for the CLI."""
     app()
 
 
