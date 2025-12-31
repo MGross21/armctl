@@ -202,6 +202,32 @@ class UniversalRobots(SCT, Commands, Properties):
         pose = self.rtde.tcp_pose()
         logger.receive(f"Received response: {pose}")
         return pose
+    
+    def get_joint_torques(self) -> list[float]:
+        """
+        Get the current joint torques of the robot.
+
+        Returns
+        -------
+        list of float
+            Joint torques in Nm [T1, T2, T3, T4, T5, T6].
+        """
+        torques = self.rtde.joint_torques()
+        logger.receive(f"Received response: {torques}")
+        return torques
+    
+    def get_tcp_forces(self) -> list[float]:
+        """
+        Get the current TCP forces of the robot.
+
+        Returns
+        -------
+        list of float
+            TCP forces [Fx, Fy, Fz, Tx, Ty, Tz] in Newton and Newton-meters.
+        """
+        forces = self.rtde.tcp_force()
+        logger.receive(f"Received response: {forces}")
+        return forces
 
     def stop_motion(self) -> None:
         deceleration = 2.0  # rad/s^2
