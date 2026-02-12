@@ -29,6 +29,8 @@ dependencies = [
     # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
     "urrtde",
     "typer>=0.9.0",
+    "pyserial>=3.5",
+    "requests>=2.27.1",
 ]
 
 [project.urls]
