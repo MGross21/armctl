@@ -3,8 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import NewType
 
-import rtde.rtde as rtde
-import rtde.rtde_config as rtde_config
+from rtde import RTDE as _RTDE
+from rtde.rtde_config import ConfigFile
 
 UINT32 = NewType("UINT32", int)
 
@@ -12,13 +12,15 @@ UINT32 = NewType("UINT32", int)
 class RTDE:
     def __init__(self, ip: str):
         config_file = Path(__file__).parent / "config.xml"
-        config = rtde_config.ConfigFile(str(config_file))
+        config = ConfigFile(str(config_file))
         state_names, state_types = config.get_recipe("out")
 
-        self.c = rtde.RTDE(ip)
+        self.c = _RTDE(ip)
         self.c.connect()
         self.c.send_output_setup(state_names, state_types)
-        self.c.get_controller_version()
+        self.controller_version = (
+            self.c.get_controller_version()
+        )  # (MAJOR, MINOR, BUGFIX, BUILD)
         self.c.send_start()
 
     def _get_data(self):
@@ -33,6 +35,20 @@ class RTDE:
     def tcp_pose(self) -> list[float]:
         """Return TCP pose [x, y, z, rx, ry, rz]."""
         return list(self._get_data().actual_TCP_pose)
+
+    def joint_torques(self) -> list[float]:
+        """Return joint torques in Nm converted from current."""
+        # See: https://www.universal-robots.com/articles/ur/release-notes/release-note-software-version-523x/
+        if self.controller_version >= (5, 23, 0, 0):
+            return list(self._get_data().actual_current_as_torque)
+        else:
+            raise NotImplementedError(
+                "Joint torques not available for controller versions below 5.23.0.0"
+            )
+
+    def tcp_force(self) -> list[float]:
+        """Return TCP force [Fx, Fy, Fz, Tx, Ty, Tz] in Newton and Newton-meters."""
+        return list(self._get_data().actual_TCP_force)
 
     def robot_status(self) -> dict[str, bool]:
         """Return robot status.
