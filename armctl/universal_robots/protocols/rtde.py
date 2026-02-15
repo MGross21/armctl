@@ -18,7 +18,9 @@ class RTDE:
         self.c = _RTDE(ip)
         self.c.connect()
         self.c.send_output_setup(state_names, state_types)
-        self.controller_version = self.c.get_controller_version() # (MAJOR, MINOR, BUGFIX, BUILD)
+        self.controller_version = (
+            self.c.get_controller_version()
+        )  # (MAJOR, MINOR, BUGFIX, BUILD)
         self.c.send_start()
 
     def _get_data(self):
@@ -33,15 +35,17 @@ class RTDE:
     def tcp_pose(self) -> list[float]:
         """Return TCP pose [x, y, z, rx, ry, rz]."""
         return list(self._get_data().actual_TCP_pose)
-    
+
     def joint_torques(self) -> list[float]:
         """Return joint torques in Nm converted from current."""
         # See: https://www.universal-robots.com/articles/ur/release-notes/release-note-software-version-523x/
         if self.controller_version >= (5, 23, 0, 0):
             return list(self._get_data().actual_current_as_torque)
         else:
-            raise NotImplementedError("Joint torques not available for controller versions below 5.23.0.0")
-        
+            raise NotImplementedError(
+                "Joint torques not available for controller versions below 5.23.0.0"
+            )
+
     def tcp_force(self) -> list[float]:
         """Return TCP force [Fx, Fy, Fz, Tx, Ty, Tz] in Newton and Newton-meters."""
         return list(self._get_data().actual_TCP_force)
