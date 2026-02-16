@@ -35,12 +35,13 @@ def test_logger_receive_logs_message(caplog):
 
 
 def test_logger_verbosity_and_enable_disable(caplog):
+    armctl_logger = logging.getLogger("armctl.test")
     with caplog.at_level(logging.INFO):
         Logger.enable()  # Make sure logging is enabled
-        logging.info("This should appear")
+        armctl_logger.info("This should appear")
         assert "This should appear" in caplog.text
         Logger.disable()
-        logging.info("This should NOT appear")
+        armctl_logger.info("This should NOT appear")
         assert "This should NOT appear" not in caplog.text
         Logger.enable()  # Re-enable for other tests
 
@@ -65,5 +66,25 @@ def test_rtde_logger_suppression(caplog):
     assert "RTDE message when disabled" not in caplog.text
     
     # Re-enable for other tests
+    Logger.enable()
+
+
+def test_other_loggers_not_affected(caplog):
+    """Test that non-armctl loggers are NOT affected by Logger.disable()."""
+    other_logger = logging.getLogger("some.other.library")
+    
+    Logger.enable()
+    with caplog.at_level(logging.INFO):
+        other_logger.info("Other library message when enabled")
+    assert "Other library message when enabled" in caplog.text
+    
+    caplog.clear()
+    
+    # Disable armctl logging - should NOT affect other loggers
+    Logger.disable()
+    with caplog.at_level(logging.INFO):
+        other_logger.info("Other library message when disabled")
+    assert "Other library message when disabled" in caplog.text
+    
     Logger.enable()
 
