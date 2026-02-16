@@ -71,11 +71,14 @@ def test_rtde_logger_suppression(caplog):
 
 def test_other_loggers_not_affected(caplog):
     """Test that non-armctl loggers are NOT affected by Logger.disable()."""
+    armctl_logger = logging.getLogger("armctl.test2")
     other_logger = logging.getLogger("some.other.library")
     
     Logger.enable()
     with caplog.at_level(logging.INFO):
+        armctl_logger.info("Armctl message when enabled")
         other_logger.info("Other library message when enabled")
+    assert "Armctl message when enabled" in caplog.text
     assert "Other library message when enabled" in caplog.text
     
     caplog.clear()
@@ -83,7 +86,11 @@ def test_other_loggers_not_affected(caplog):
     # Disable armctl logging - should NOT affect other loggers
     Logger.disable()
     with caplog.at_level(logging.INFO):
+        armctl_logger.info("Armctl message when disabled")
         other_logger.info("Other library message when disabled")
+    # Armctl logger should be suppressed
+    assert "Armctl message when disabled" not in caplog.text
+    # Other library logger should still work
     assert "Other library message when disabled" in caplog.text
     
     Logger.enable()

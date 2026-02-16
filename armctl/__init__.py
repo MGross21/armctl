@@ -51,9 +51,9 @@ class Logger:
         """Disables logging for armctl and its dependencies."""
         import logging
 
-        # Suppress armctl and dependency loggers
+        # Suppress armctl and dependency loggers by setting level above CRITICAL
         for logger_name in _LOGGERS_TO_MANAGE:
-            logging.getLogger(logger_name).setLevel(logging.CRITICAL)
+            logging.getLogger(logger_name).setLevel(logging.CRITICAL + 1)
 
     @staticmethod
     def enable():
