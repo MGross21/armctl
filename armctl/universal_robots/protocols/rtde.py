@@ -5,8 +5,9 @@ from typing import NewType
 
 from rtde import RTDE as _RTDE
 from rtde.rtde_config import ConfigFile
+from ctypes import c_uint32
 
-UINT32 = NewType("UINT32", int)
+u32 = NewType("u32", c_uint32)
 
 
 class RTDE:
@@ -73,25 +74,27 @@ class RTDE:
         - **`Bit 10`**: Is stopped due to safety
         """
         data = self._get_data()
-        rsb: UINT32 = data.robot_status_bits
-        ssb: UINT32 = data.safety_status_bits
+        rsb: u32 = data.robot_status_bits
+        ssb: u32 = data.safety_status_bits
+
+        bit = lambda data, n: bool(data & (1 << n))
 
         return {
             # Robot status bits
-            "Power On": bool(rsb & 1),
-            "Program Running": bool(rsb & 2),
-            "Teach Button": bool(rsb & 4),
-            "Power Button": bool(rsb & 8),
+            "Power On": bit(rsb, 0),
+            "Program Running": bit(rsb, 1),
+            "Teach Button": bit(rsb, 2),
+            "Power Button": bit(rsb, 3),
             # Safety status bits
-            "Normal Mode": bool(ssb & 1),
-            "Reduced Mode": bool(ssb & 2),
-            "Protective Stop": bool(ssb & 4),
-            "Recovery Mode": bool(ssb & 8),
-            "Safeguard Stopped": bool(ssb & 16),
-            "System Emergency Stopped": bool(ssb & 32),
-            "Robot Emergency Stopped": bool(ssb & 64),
-            "Emergency Stopped": bool(ssb & 128),
-            "Violation": bool(ssb & 256),
-            "Fault": bool(ssb & 512),
-            "Stopped Due to Safety": bool(ssb & 1024),
+            "Normal Mode": bit(ssb, 0),
+            "Reduced Mode": bit(ssb, 1),
+            "Protective Stop": bit(ssb, 2),
+            "Recovery Mode": bit(ssb, 3),
+            "Safeguard Stopped": bit(ssb, 4),
+            "System Emergency Stopped": bit(ssb, 5),
+            "Robot Emergency Stopped": bit(ssb, 6),
+            "Emergency Stopped": bit(ssb, 7),
+            "Violation": bit(ssb, 8),
+            "Fault": bit(ssb, 9),
+            "Stopped Due to Safety": bit(ssb, 10),
         }
