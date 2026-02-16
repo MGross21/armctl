@@ -43,3 +43,27 @@ def test_logger_verbosity_and_enable_disable(caplog):
         logging.info("This should NOT appear")
         assert "This should NOT appear" not in caplog.text
         Logger.enable()  # Re-enable for other tests
+
+
+def test_rtde_logger_suppression(caplog):
+    """Test that the RTDE logger is suppressed when Logger.disable() is called."""
+    rtde_logger = logging.getLogger("rtde")
+    
+    # Enable logging first
+    Logger.enable()
+    with caplog.at_level(logging.INFO):
+        rtde_logger.info("RTDE message when enabled")
+    assert "RTDE message when enabled" in caplog.text
+    
+    # Clear captured logs
+    caplog.clear()
+    
+    # Disable logging and test that RTDE logger is suppressed
+    Logger.disable()
+    with caplog.at_level(logging.INFO):
+        rtde_logger.info("RTDE message when disabled")
+    assert "RTDE message when disabled" not in caplog.text
+    
+    # Re-enable for other tests
+    Logger.enable()
+

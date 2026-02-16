@@ -49,6 +49,8 @@ class Logger:
 
         # Disable all logging at and below the CRITICAL level
         logging.disable(logging.CRITICAL)
+        # Suppress dependency loggers
+        logging.getLogger("rtde").setLevel(logging.CRITICAL)
 
     @staticmethod
     def enable():
@@ -57,6 +59,8 @@ class Logger:
 
         # Re-enable logging to its previous state
         logging.disable(logging.NOTSET)
+        # Re-enable dependency loggers
+        logging.getLogger("rtde").setLevel(logging.NOTSET)
 
 
 import os
