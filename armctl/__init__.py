@@ -39,6 +39,10 @@ __version__ = "0.3.4"
 __author__ = "Michael Gross"
 
 
+# Dependency loggers to suppress/enable along with main logging
+_DEPENDENCY_LOGGERS = ["rtde"]
+
+
 class Logger:
     """Global logger utility for armctl."""
 
@@ -50,7 +54,8 @@ class Logger:
         # Disable all logging at and below the CRITICAL level
         logging.disable(logging.CRITICAL)
         # Suppress dependency loggers
-        logging.getLogger("rtde").setLevel(logging.CRITICAL)
+        for logger_name in _DEPENDENCY_LOGGERS:
+            logging.getLogger(logger_name).setLevel(logging.CRITICAL)
 
     @staticmethod
     def enable():
@@ -60,7 +65,8 @@ class Logger:
         # Re-enable logging to its previous state
         logging.disable(logging.NOTSET)
         # Re-enable dependency loggers
-        logging.getLogger("rtde").setLevel(logging.NOTSET)
+        for logger_name in _DEPENDENCY_LOGGERS:
+            logging.getLogger(logger_name).setLevel(logging.NOTSET)
 
 
 import os
