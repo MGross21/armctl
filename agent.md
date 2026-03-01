@@ -1,29 +1,25 @@
 # Agent Notes: Adding a New Robot
 
-This file is intentionally brief. For implementation details, rely on existing project docs and code.
+This file is intentionally brief. For detailed implementation info, see existing project docs and code.
 
-## Where to start
+## Before You Start
 
-- Read [CONTRIBUTING.md](CONTRIBUTING.md) for project conventions, control flow expectations, and unit standards.
-- Read [README.md](README.md) for the public API style and usage patterns expected by users.
+Read these first for required context:
 
-## Main code locations to inspect
+- [CONTRIBUTING.md](CONTRIBUTING.md) — Project conventions, control flow, unit standards
+- [README.md](README.md) — Public API style and usage patterns
 
-- Template starting point: [armctl/_blank/robot.py](armctl/_blank/robot.py)
-- Existing robot implementations.
-- Shared interfaces/helpers: [armctl/templates](armctl/templates)
-- Validation and utility helpers: [armctl/utils](armctl/utils)
+## Implementation Steps
 
-## Practical workflow (high-level)
+1. Use the blank robot template (`armctl/_blank/robot.py`) as your structural baseline
+2. Choose communication layer: SocketController, SerialController, or PLCController from the templates directory
+3. Ensure all abstract methods and properties from inherited base classes (Commands, Properties, and communication layer) are fully implemented
+4. Study existing robot implementations in the `armctl/` directory for API consistency patterns
+5. Keep conversions and checks aligned with project-wide conventions from CONTRIBUTING.md
+6. Add/update tests for your integration
 
-1. Use the blank robot template as your structural baseline.
-2. Choose the correct communication layer from templates (socket, serial, or PLC).
-3. Match method names and behavior to existing robot modules so API usage remains consistent.
-4. Keep conversions and checks aligned with project-wide conventions from the contributing guide.
-5. Add/update tests in [tests](tests) for any new integration behavior.
+## Key Decisions
 
-## Dependency preference
+**Dependencies:** Prefer official first-party robot SDKs when available and stable. Use custom implementation if no suitable first-party option exists.
 
-- Prefer official first-party robot dependencies/SDKs when they are available, stable, and compatible with this project.
-- If no suitable first-party dependency exists, or if it cannot support required behavior safely/reliably, implement the integration directly with a custom protocol/client as appropriate.
-- Keep any dependency choice minimal.
+**Documentation:** As you discover manufacturer documentation/specs/resources, add links to the robot's folder README or inline code comments. Keep it minimal—only include links directly relevant to implementation and maintenance.
