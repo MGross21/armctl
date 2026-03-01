@@ -21,6 +21,7 @@ from .universal_robots import (
 
 # from .fanuc import Fanuc
 from .vention import Vention
+from .zaber import Zaber
 
 __all__ = [
     "ElephantRobotics",
@@ -33,6 +34,7 @@ __all__ = [
     "UR16",
     "Vention",
     "Jaka",
+    "Zaber",
 ]
 
 __version__ = "0.3.4"

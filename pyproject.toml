@@ -30,6 +30,7 @@ dependencies = [
     "urrtde",
     "typer>=0.9.0",
     "pyserial>=3.5",
+    "zaber-motion>=2.13.1",
 ]
 
 [project.urls]
