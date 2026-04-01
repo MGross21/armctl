@@ -58,7 +58,7 @@ jobs:
           PYTHONOPTIMIZE: "2"
           UV_COMPILE_BYTECODE: "0"
         run: |
-          uv run -O pytest tests --maxfail=1 --disable-warnings --tb=short -v
+          uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
 
       # Prune cache to optimize storage
       - name: Minimize uv cache
