@@ -8,16 +8,20 @@ try:
     from rtde import RTDE as _RTDE
     from rtde.rtde_config import ConfigFile
 except ImportError:
-    raise ImportError(
-        "Universal Robots RTDE support requires the urrtde package. "
-        "Install it with: pip install armctl[ur]"
-    )
+    _RTDE = None
+    ConfigFile = None
 
 u32 = NewType("u32", c_uint32)
 
 
 class RTDE:
     def __init__(self, ip: str):
+        if _RTDE is None or ConfigFile is None:
+            raise ImportError(
+                "Universal Robots RTDE support requires additional dependencies."
+                "Install it with: pip install armctl[ur]"
+            )
+
         config_file = Path(__file__).parent / "config.xml"
         config = ConfigFile(str(config_file))
         state_names, state_types = config.get_recipe("out")

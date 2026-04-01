@@ -6,14 +6,7 @@ from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
-
-try:
-    from .protocols.rtde import RTDE
-except ImportError as e:
-    raise ImportError(
-        "Universal Robots RTDE support requires the urrtde package. "
-        "Install it with: pip install armctl[ur]"
-    ) from e
+from .protocols.rtde import RTDE
 
 ### Notes ###
 # Command Format: CMD(args)\n
