@@ -2,10 +2,16 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import NewType
-
-from rtde import RTDE as _RTDE
-from rtde.rtde_config import ConfigFile
 from ctypes import c_uint32
+
+try:
+    from rtde import RTDE as _RTDE
+    from rtde.rtde_config import ConfigFile
+except ImportError:
+    raise ImportError(
+        "Universal Robots RTDE support requires the urrtde package. "
+        "Install it with: pip install armctl[ur]"
+    )
 
 u32 = NewType("u32", c_uint32)
 
