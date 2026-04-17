@@ -39,7 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --locked --all-extras --all-groups
+          uv sync --locked --all-groups
 
       - name: Clear all caches and compiled files
         run: |
@@ -55,6 +55,7 @@ jobs:
         env:
           NO_COLOR: "1"
           PYTHONDONTWRITEBYTECODE: "1"
+          UV_COMPILE_BYTECODE: "0"
         run: |
           uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
 
@@ -77,4 +78,4 @@ jobs:
       
       - name: Check if uv.lock is up to date
         run: |
-          uv sync --locked --all-extras --all-groups --dry-run
+          uv sync --locked --all-groups --dry-run
