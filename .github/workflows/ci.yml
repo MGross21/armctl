@@ -55,7 +55,6 @@ jobs:
         env:
           NO_COLOR: "1"
           PYTHONDONTWRITEBYTECODE: "1"
-          PYTHONOPTIMIZE: "2"
           UV_COMPILE_BYTECODE: "0"
         run: |
           uv run pytest tests --maxfail=1 --disable-warnings --tb=short -v
