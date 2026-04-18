@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build>=0.11.2,<0.12"]
+requires = ["uv_build>=0.5,<1"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
@@ -24,7 +24,7 @@ classifiers = [
     "Development Status :: 4 - Beta"
 
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 dependencies = [
     "typer>=0.9.0",
     "pyserial>=3.5",

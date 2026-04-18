@@ -1,0 +1,55 @@
+name: publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    environment: pypi
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync CITATION.cff version and date
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          DATE="$(date -u +%Y-%m-%d)"
+          python - <<EOF
+          import re, pathlib
+          cff = pathlib.Path("CITATION.cff")
+          text = cff.read_text()
+          text = re.sub(r'^version:.*$', f'version: "$VERSION"', text, flags=re.MULTILINE)
+          text = re.sub(r'^date-released:.*$', f'date-released: "$DATE"', text, flags=re.MULTILINE)
+          cff.write_text(text)
+          EOF
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Commit updated CITATION.cff
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CITATION.cff
+          git diff --cached --quiet || git commit -m "chore: update CITATION.cff to ${GITHUB_REF_NAME}"
+          git push origin HEAD:main
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Build package
+        run: uv build
+
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1

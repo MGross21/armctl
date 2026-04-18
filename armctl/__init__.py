@@ -37,7 +37,9 @@ __all__ = [
     "Zaber",
 ]
 
-__version__ = "0.4.0"
+from importlib.metadata import version as _version
+
+__version__ = _version("armctl")
 __author__ = "Michael Gross"
 
 
