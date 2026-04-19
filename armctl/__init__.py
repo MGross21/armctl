@@ -21,6 +21,7 @@ from .universal_robots import (
 
 # from .fanuc import Fanuc
 from .vention import Vention
+from .zaber import Zaber
 
 __all__ = [
     "ElephantRobotics",
@@ -31,12 +32,15 @@ __all__ = [
     "UR5e",
     "UR10",
     "UR16",
-    # "OnRobot",
     "Vention",
     "Jaka",
+    "Zaber",
 ]
 
-__version__ = "0.3.4"
+from importlib.metadata import version as _version
+
+__version__ = _version("armctl")
+__author__ = "Michael Gross"
 
 
 class Logger:

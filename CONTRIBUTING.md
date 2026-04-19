@@ -137,9 +137,9 @@ Please ensure your code adheres to the project's formatting and quality standard
 Install `uv` python package manager. See install options [`here`](https://docs.astral.sh/uv/getting-started/installation/#standalone-installer).
 
 ```bash
-uv venv --clear
-source .venv/bin/activate
-uv sync --dev
+git clone https://github.com/MGross21/armctl.git
+cd armctl
+uv sync --group dev
 ```
 
 **Testing with a Different Python Version:**

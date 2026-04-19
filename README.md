@@ -64,6 +64,11 @@ The `armctl` library currently supports the following manufacturers and robot mo
 pip install armctl
 ```
 
+> **Note:** Universal Robots (UR) support requires the optional extra:
+> ```bash
+> pip install armctl[ur]
+> ```
+
 *From GitHub:*
 
 ```bash

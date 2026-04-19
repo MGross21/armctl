@@ -1,5 +1,5 @@
 [build-system]
-requires = ["uv_build>=0.8.14,<0.10.0"]
+requires = ["uv_build>=0.5,<1"]
 build-backend = "uv_build"
 
 [tool.uv.build-backend]
@@ -11,24 +11,29 @@ urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.
 
 [project]
 name = "armctl"
-version = "0.3.4"
-description = "Agnostic Robotic Manipulator Controller (armctl)"
+version = "0.4.0"
+description = "Agnostic Robotic Manipulation Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
-license = { file = "LICENSE" }
+license = "MIT"
 keywords = ["robotics", "socket", "control", "automation", "ur", "universal robotics", "jaka", "dobot", "elephant robotics", "vention", "fanuc"]
+license-files = ["LICENSE"]
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Development Status :: 4 - Beta"
 
 ]
-requires-python = ">=3.6"
+requires-python = ">=3.8"
 dependencies = [
-    # "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
-    "urrtde",
     "typer>=0.9.0",
+    "pyserial>=3.5",
+    "zaber-motion>=2.13.1",
+]
+
+[project.optional-dependencies]
+ur = [
+    "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
 ]
 
 [project.urls]
