@@ -1,101 +1,148 @@
 """
-This module provides a base class `SerialController` for implementing serial-based
-robot controllers. It provides methods for connecting, disconnecting, sending
-commands, and handling responses with enhanced debugging features.
-
+SerialController: robot-agnostic base class for serial-port communication.
 """
 
 from __future__ import annotations
 
-from .communication import Communication
-from .logger import logger
-import serial
 import threading
 import time
 
+import serial
+
+from .communication import Communication
+from .logger import logger
+
 
 class SerialController(Communication):
-    def __init__(self, port: str, baudrate: int = 115200):
+    def __init__(self, port: str, baudrate: int = 115200, timeout: float = 5.0):
         """
-        Initialize the SerialController with support for separate send/receive ports.
-
         Parameters
         ----------
         port : str
-            The serial port of the robot.
+            Serial port path (e.g. ``'/dev/ttyUSB0'``, ``'COM3'``).
         baudrate : int
-            The baud rate for the serial connection.
+            Baud rate.
+        timeout : float
+            Default read timeout in seconds.
         """
         self.port = port
         self.baudrate = baudrate
-        self._serial = None
+        self._timeout = timeout
+        self._serial: serial.Serial | None = None
         self._lock = threading.Lock()
 
-    def __enter__(self):
-        """Context manager for automatic connection management."""
+    def __enter__(self) -> SerialController:
         self.connect()
         return self
 
-    def __exit__(self, _, __, ___):
-        """Ensure disconnection when leaving the context."""
+    def __exit__(self, *_) -> None:
         self.disconnect()
 
-    def connect(self):
-        """Establishes the serial connection to the robot."""
+    def connect(self) -> None:
+        """Open the serial port. No-op if already open."""
         if self._serial and self._serial.is_open:
             return
         try:
-            self._serial = serial.Serial(self.port, self.baudrate, timeout=5)
+            self._serial = serial.Serial(
+                self.port, self.baudrate, timeout=self._timeout
+            )
             logger.info(
                 f"Connected to {self.__class__.__name__}({self.port}:{self.baudrate})"
             )
         except serial.SerialException:
             raise
 
-    def disconnect(self):
-        """Closes the serial connection to the robot."""
+    def disconnect(self) -> None:
+        """Close the serial port."""
         if self._serial and self._serial.is_open:
             self._serial.close()
             logger.info(f"Disconnected from {self.__class__.__name__}")
+        self._serial = None
 
-    def send_command(self, command, timeout=5, **kwargs):
+    def send_command(
+        self,
+        command: str | bytes,
+        timeout: float = 5.0,
+        suppress_input: bool = False,
+        suppress_output: bool = False,
+        raw_response: bool = False,
+    ) -> str | bytes:
         """
-        Send a command to the robot with an optional timeout.
+        Send a command and return the response.
 
         Parameters
         ----------
-        command : str
-            The command to send.
+        command : str | bytes
+            ``str`` — encoded UTF-8 with ``'\\n'`` appended.
+            ``bytes`` — sent as-is.
         timeout : float
-            The timeout for the command in seconds.
-        **kwargs : dict
-            Additional arguments for the command.
+            Per-command read timeout in seconds.
+        suppress_input : bool
+            Skip send-side log entry.
+        suppress_output : bool
+            Skip receive-side log entry.
+        raw_response : bool
+            Return raw ``bytes`` instead of a decoded ``str``.
 
         Returns
         -------
-        str
-            The response from the robot.
+        str or bytes
+            Decoded response string, or raw bytes when ``raw_response=True``.
+
+        Raises
+        ------
+        ConnectionError
+            Port is not open.
+        TimeoutError
+            No newline-terminated response within *timeout* seconds.
+        serial.SerialException
+            Low-level serial error.
         """
         if not self._serial or not self._serial.is_open:
-            raise ConnectionError(
-                f"Robot is not connected. Call {self.connect.__name__} first."
-            )
+            raise ConnectionError("Not connected. Call connect() first.")
+
         with self._lock:
-            try:
-                logger.send(f"Sending command: {command}")
-                self._serial.write((command + "\n").encode())
-                self._serial.flush()
-                start_time = time.time()
-                response = b""
-                while True:
-                    if self._serial.in_waiting > 0:
-                        response += self._serial.read(self._serial.in_waiting)
-                        if response.endswith(b"\n"):
-                            break
-                    if (time.time() - start_time) > timeout:
-                        raise TimeoutError("Command timed out.")
-                    time.sleep(0.01)
-                logger.receive(f"Received response: {response}")
-                return response.decode(errors="ignore").strip()
-            except serial.SerialException:
-                raise
+            if isinstance(command, bytes):
+                payload = command
+                if not suppress_input:
+                    logger.send(f"Sending bytes: {command.hex()}")
+            else:
+                payload = (command + "\n").encode()
+                if not suppress_input:
+                    logger.send(f"Sending command: {command.strip()}")
+
+            self._serial.reset_input_buffer()
+            self._serial.write(payload)
+            self._serial.flush()
+
+            deadline = time.monotonic() + timeout
+            response = bytearray()
+
+            while True:
+                if self._serial.in_waiting:
+                    response.extend(self._serial.read(self._serial.in_waiting))
+                    if response.endswith(b"\n"):
+                        break
+                if time.monotonic() > deadline:
+                    raise TimeoutError(f"Command timed out after {timeout}s")
+                time.sleep(0.005)
+
+            raw = bytes(response)
+
+            if raw_response:
+                if not suppress_output:
+                    logger.receive(f"Received bytes: {raw.hex()}")
+                return raw
+
+            for encoding in ("utf-8", "latin1"):
+                try:
+                    decoded = raw.decode(encoding).strip()
+                    break
+                except UnicodeDecodeError:
+                    continue
+            else:
+                decoded = raw.decode("utf-8", errors="replace").strip()
+
+            if not suppress_output:
+                logger.receive(f"Received response: {decoded}")
+            return decoded
