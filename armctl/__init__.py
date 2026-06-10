@@ -37,9 +37,13 @@ __all__ = [
     "Zaber",
 ]
 
-from importlib.metadata import version as _version
+from importlib.metadata import PackageNotFoundError, version as _version
 
-__version__ = _version("armctl")
+try:
+    __version__ = _version("armctl")
+except PackageNotFoundError:
+    # Fallback for source checkouts where package metadata is unavailable.
+    __version__ = "0+unknown"
 __author__ = "Michael Gross"
 
 
