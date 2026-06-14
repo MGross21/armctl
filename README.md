@@ -64,11 +64,6 @@ The `armctl` library currently supports the following manufacturers and robot mo
 pip install armctl
 ```
 
-> **Note:** Universal Robots (UR) support requires the optional extra:
-> ```bash
-> pip install armctl[ur]
-> ```
-
 *From GitHub:*
 
 ```bash
@@ -319,5 +314,4 @@ This project is licensed under the MIT License. See the [LICENSE](https://github
 
 ### Notice
 
-> This package automatically installs the [Universal Robots RTDE Python Client Library](https://github.com/UniversalRobots/RTDE_Python_Client_Library) when needed.  
-> The RTDE library is provided by Universal Robots and is subject to their licensing terms.
+> armctl includes an in-repo RTDE client implementation for UR support.

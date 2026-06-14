@@ -6,12 +6,9 @@ build-backend = "uv_build"
 module-name = "armctl"
 module-root = ""
 
-[tool.uv.sources]
-urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", rev = "main" }
-
 [project]
 name = "armctl"
-version = "0.4.0"
+version = "0.4.1"
 description = "Agnostic Robotic Manipulation Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -29,11 +26,6 @@ dependencies = [
     "typer>=0.9.0",
     "pyserial>=3.5",
     "zaber-motion>=2.13.1",
-]
-
-[project.optional-dependencies]
-ur = [
-    "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
 ]
 
 [project.urls]

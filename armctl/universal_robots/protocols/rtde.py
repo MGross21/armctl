@@ -1,44 +1,21 @@
 from __future__ import annotations
 
 import time
-from ctypes import c_uint32
-from pathlib import Path
-from typing import NewType
 
 from .codes import RobotMode, RuntimeState, SafetyMode
+from .rtde_core import RTDE as _RTDE
 
-try:
-    from rtde import RTDE as _RTDE
-    from rtde.rtde_config import ConfigFile
-except ImportError:
-    _RTDE = None
-    ConfigFile = None
-
-u32 = NewType("u32", c_uint32)
 
 _MOVING_VELOCITY_THRESHOLD = 1e-3  # rad/s — below this on all joints = stopped
 
 
 class RTDE:
     def __init__(self, ip: str):
-        if _RTDE is None or ConfigFile is None:
-            raise ImportError(
-                "Universal Robots RTDE support requires additional dependencies. "
-                "Install it with: pip install armctl[ur]"
-            )
-
-        config_file = Path(__file__).parent / "config.xml"
-        config = ConfigFile(str(config_file))
-        out_names, out_types = config.get_recipe("out")
-        in_names, in_types = config.get_recipe("in")
-
         self.c = _RTDE(ip)
         self.c.connect()
-        self.c.send_output_setup(out_names, out_types)
-        self._input = self.c.send_input_setup(in_names, in_types)
-        self.controller_version = (
-            self.c.get_controller_version()
-        )  # (MAJOR, MINOR, BUGFIX, BUILD)
+        self.c.send_output_setup()
+        self._input = self.c.send_input_setup()
+        self.controller_version = self.c.get_controller_version()
         self.c.send_start()
 
     def _get_data(self):
@@ -133,8 +110,8 @@ class RTDE:
         - **`Bit 10`**: Is stopped due to safety
         """
         data = self._get_data()
-        rsb: u32 = data.robot_status_bits
-        ssb: u32 = data.safety_status_bits
+        rsb = data.robot_status_bits
+        ssb = data.safety_status_bits
 
         bit = lambda data, n: bool(data & (1 << n))
 

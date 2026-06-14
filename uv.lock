@@ -19,7 +19,7 @@ wheels = [
 
 [[package]]
 name = "armctl"
-version = "0.4.0"
+version = "0.4.1"
 source = { editable = "." }
 dependencies = [
     { name = "pyserial" },
@@ -27,11 +27,6 @@ dependencies = [
     { name = "typer", version = "0.23.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version == '3.9.*'" },
     { name = "typer", version = "0.24.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.10'" },
     { name = "zaber-motion" },
-]
-
-[package.optional-dependencies]
-ur = [
-    { name = "urrtde" },
 ]
 
 [package.dev-dependencies]
@@ -58,10 +53,8 @@ test = [
 requires-dist = [
     { name = "pyserial", specifier = ">=3.5" },
     { name = "typer", specifier = ">=0.9.0" },
-    { name = "urrtde", marker = "extra == 'ur'", git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git?rev=main" },
     { name = "zaber-motion", specifier = ">=2.13.1" },
 ]
-provides-extras = ["ur"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -910,11 +903,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/72/94/1a15dd82efb362ac8
 wheels = [
     { url = "https://files.pythonhosted.org/packages/18/67/36e9267722cc04a6b9f15c7f3441c2363321a3ea07da7ae0c0707beb2a9c/typing_extensions-4.15.0-py3-none-any.whl", hash = "sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548", size = 44614, upload-time = "2025-08-25T13:49:24.86Z" },
 ]
-
-[[package]]
-name = "urrtde"
-version = "2.7.12"
-source = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git?rev=main#3b1a2da3e7291910952ca590269bcee49dc90909" }
 
 [[package]]
 name = "zaber-motion"
