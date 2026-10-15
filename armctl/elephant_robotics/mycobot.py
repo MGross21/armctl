@@ -11,4 +11,4 @@ class Pro600(ElephantRobotics):
         """
         Move the robot to the home position: `[0, -90, 90, -90, -90, 0]`.
         """
-        self.move_joints(self.HOME_POSITION, speed=750)
+        self.move_joints(self.HOME_POSITION, speed=uu.deg2rad(750))

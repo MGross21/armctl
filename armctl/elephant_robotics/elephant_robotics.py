@@ -52,7 +52,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
-    def move_joints(self, pos: list[float], speed: int = uu.deg2rad(500)) -> None:
+    def move_joints(self, pos: list[float], speed: float = uu.deg2rad(500)) -> None:
         """
         Move the robot to the specified joint positions.
 
@@ -60,52 +60,55 @@ class ElephantRobotics(SCT, Commands, Properties):
         ----------
         pos : list of float
             Joint positions in radians [j1, j2, j3, j4, j5, j6].
-        speed : int, optional
+        speed : float, optional
             Speed of the movement, range `0` ~ `math.radians(2000)` (default: `math.radians(500)`).
         """
 
         cc.move_joints(self, pos, speed)
 
         pos_deg = uu.joints2deg(pos)
-        speed_deg = uu.rad2deg(speed)
+        speed_deg = round(uu.rad2deg(speed))
 
         command = f"set_angles({','.join(map(str, pos_deg))},{speed_deg})"
         response = self.send_command(command)
 
         assert response == f"{command}:[ok]", f"Failed to move joints: {response}"
 
-        while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)):
+        while any(abs(a - b) > uu.deg2rad(3) for a, b in zip(self.get_joint_positions(), pos)):
             time.sleep(1)
 
     def move_cartesian(
         self,
-        pose: tuple[float, float, float, float, float, float],
-        speed: int = uu.deg2rad(500),
+        pose: list[float],
+        speed: float = uu.deg2rad(500),
     ) -> None:
         """
         Move the robot to the specified Cartesian coordinates.
 
         Parameters
         ----------
-        pose : tuple of float
+        pose : list of float
             Cartesian coordinates in the format `[x, y, z, rx, ry, rz]`.
-        speed : int, optional
+        speed : float, optional
             Speed of the movement, range `0` ~ `math.radians(2000)` (default: `math.radians(500)`).
         """
 
         cc.move_cartesian(self, pose)
 
-        pose_deg = uu.pose2deg(pose)
-        speed_deg = uu.rad2deg(speed)
+        pose_mm_deg = [uu.m2mm(v) for v in pose[:3]] + uu.pose2deg(pose)[3:]
+        speed_deg = round(uu.rad2deg(speed))
 
-        command = f"set_coords({','.join(map(str, pose_deg))},{speed_deg})"
+        command = f"set_coords({','.join(map(str, pose_mm_deg))},{speed_deg})"
 
         assert self.send_command(command) == "set_coords:[ok]"
 
-        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)):
+        tolerances = [1e-3] * 3 + [uu.deg2rad(1)] * 3
+        while any(
+            abs(a - b) > tol for a, b, tol in zip(self.get_cartesian_position(), pose, tolerances)
+        ):
             time.sleep(1)
 
-    def get_joint_positions(self):
+    def get_joint_positions(self) -> list[float]:
         response = self.send_command("get_angles()")
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid joint positions response from robot")
@@ -115,9 +118,9 @@ class ElephantRobotics(SCT, Commands, Properties):
                 response[response.index("[") + 1 : response.index("]")].split(","),
             )
         )  # From string list to float list
-        return [round(x, 2) for x in joint_positions]
+        return uu.joints2rad([round(x, 2) for x in joint_positions])
 
-    def get_cartesian_position(self):
+    def get_cartesian_position(self) -> list[float]:
         response = self.send_command("get_coords()")  # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
             raise ValueError("Invalid cartesian position response from robot")
@@ -127,9 +130,10 @@ class ElephantRobotics(SCT, Commands, Properties):
                 response[response.index("[") + 1 : response.index("]")].split(","),
             )
         )  # From string list to float list
-        return [round(x, 2) for x in cartesian_position]
+        x, y, z, *rotation = (round(v, 2) for v in cartesian_position)
+        return [uu.mm2m(x), uu.mm2m(y), uu.mm2m(z)] + uu.joints2rad(rotation)
 
-    def stop_motion(self):
+    def stop_motion(self) -> None:
         command = "task_stop"
         response = self.send_command(f"{command}()")
 
@@ -140,9 +144,8 @@ class ElephantRobotics(SCT, Commands, Properties):
 
         if result != "[ok]":
             raise SystemError(result)
-        return True
 
-    def get_robot_state(self):
+    def get_robot_state(self) -> bool:
         command = "check_running"
         response = self.send_command(f"{command}()")
 
