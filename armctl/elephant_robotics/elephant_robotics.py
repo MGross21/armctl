@@ -31,25 +31,19 @@ class ElephantRobotics(SCT, Commands, Properties):
     def connect(self):
         super().connect()  # Socket Connection
 
-        assert (
-            self.send_command("power_on()") == "power_on:[ok]"
-        )  # Power on the robot
-        assert (
-            self.send_command("state_on()") == "state_on:[ok]"
-        )  # Enable the system
+        assert self.send_command("power_on()") == "power_on:[ok]"  # Power on the robot
+        assert self.send_command("state_on()") == "state_on:[ok]"  # Enable the system
 
     def disconnect(self):
         self.stop_motion()  # Stop any ongoing motion
-        # assert self.send_command("state_off()") == "state_off:[ok]"  # Shut down the system, but the robot is still powered on
+        # Shuts down the system, robot stays powered on:
+        # assert self.send_command("state_off()") == "state_off:[ok]"
         # assert self.send_command("power_off()") == "power_off:[ok]"  # Power off the robot
         super().disconnect()  # Socket disconnection
 
     def _waitforfinish(self):
         while True:
-            if (
-                self.send_command("wait_command_done()", timeout=60)
-                == "wait_command_done:0"
-            ):
+            if self.send_command("wait_command_done()", timeout=60) == "wait_command_done:0":
                 break
             time.sleep(0.25)
 
@@ -58,9 +52,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
-    def move_joints(
-        self, pos: list[float], speed: int = uu.deg2rad(500)
-    ) -> None:
+    def move_joints(self, pos: list[float], speed: int = uu.deg2rad(500)) -> None:
         """
         Move the robot to the specified joint positions.
 
@@ -80,13 +72,9 @@ class ElephantRobotics(SCT, Commands, Properties):
         command = f"set_angles({','.join(map(str, pos_deg))},{speed_deg})"
         response = self.send_command(command)
 
-        assert response == f"{command}:[ok]", (
-            f"Failed to move joints: {response}"
-        )
+        assert response == f"{command}:[ok]", f"Failed to move joints: {response}"
 
-        while any(
-            abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)
-        ):
+        while any(abs(a - b) > 3 for a, b in zip(self.get_joint_positions(), pos)):
             time.sleep(1)
 
     def move_cartesian(
@@ -114,9 +102,7 @@ class ElephantRobotics(SCT, Commands, Properties):
 
         assert self.send_command(command) == "set_coords:[ok]"
 
-        while not all(
-            abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)
-        ):
+        while not all(abs(a - b) <= 1 for a, b in zip(self.get_cartesian_position(), pose)):
             time.sleep(1)
 
     def get_joint_positions(self):
@@ -126,9 +112,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         joint_positions = list(
             map(
                 float,
-                response[response.index("[") + 1 : response.index("]")].split(
-                    ","
-                ),
+                response[response.index("[") + 1 : response.index("]")].split(","),
             )
         )  # From string list to float list
         return [round(x, 2) for x in joint_positions]
@@ -140,9 +124,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         cartesian_position = list(
             map(
                 float,
-                response[response.index("[") + 1 : response.index("]")].split(
-                    ","
-                ),
+                response[response.index("[") + 1 : response.index("]")].split(","),
             )
         )  # From string list to float list
         return [round(x, 2) for x in cartesian_position]

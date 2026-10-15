@@ -4,14 +4,15 @@ Minimal CLI for controlling robotic arms across multiple vendors.
 
 from __future__ import annotations
 
-import sys
-import signal
 import atexit
-from typing import Optional, List
+import signal
+import sys
 from enum import Enum
+from typing import List, Optional
 
 import typer
-from . import Logger, __version__, __all__
+
+from . import Logger, __all__
 from .utils import NetworkScanner
 
 # Global state
@@ -22,12 +23,6 @@ app = typer.Typer(
     add_completion=False,
     no_args_is_help=True,
 )
-
-
-class RobotType(str, Enum):
-    """Dynamically populated robot types."""
-
-    pass
 
 
 def get_robot_types():
@@ -110,7 +105,7 @@ def connect(
         _robot.connect()
     except Exception as e:
         typer.echo(f"Connection failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @app.command()
@@ -126,7 +121,7 @@ def disconnect():
         _robot = None
     except Exception as e:
         typer.echo(f"Disconnect failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 # Movement commands
@@ -134,8 +129,8 @@ move_app = typer.Typer(help="Movement commands", no_args_is_help=True)
 app.add_typer(move_app, name="move")
 
 
-@move_app.command()
-def cartesian(x: float, y: float, z: float, rx: float, ry: float, rz: float):
+@move_app.command("cartesian")
+def move_cartesian(x: float, y: float, z: float, rx: float, ry: float, rz: float):
     """Move to Cartesian pose."""
     global _robot
     if not _robot:
@@ -146,14 +141,12 @@ def cartesian(x: float, y: float, z: float, rx: float, ry: float, rz: float):
         _robot.move_cartesian([x, y, z, rx, ry, rz])
     except Exception as e:
         typer.echo(f"Movement failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
-@move_app.command()
-def joints(
-    positions: List[float] = typer.Argument(
-        ..., help="Joint positions (space-separated)"
-    ),
+@move_app.command("joints")
+def move_joints(
+    positions: List[float] = typer.Argument(..., help="Joint positions (space-separated)"),
 ):
     """Move to joint positions."""
     global _robot
@@ -165,7 +158,7 @@ def joints(
         _robot.move_joints(positions)
     except Exception as e:
         typer.echo(f"Movement failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @move_app.command()
@@ -184,7 +177,7 @@ def home():
             raise typer.Exit(1)
     except Exception as e:
         typer.echo(f"Home failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 # Get commands
@@ -192,8 +185,8 @@ get_app = typer.Typer(help="Get robot information", no_args_is_help=True)
 app.add_typer(get_app, name="get")
 
 
-@get_app.command()
-def cartesian():
+@get_app.command("cartesian")
+def get_cartesian():
     """Get current Cartesian position."""
     global _robot
     if not _robot:
@@ -205,11 +198,11 @@ def cartesian():
         typer.echo(" ".join(map(str, pose)))
     except Exception as e:
         typer.echo(f"Failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
-@get_app.command()
-def joints():
+@get_app.command("joints")
+def get_joints():
     """Get current joint positions."""
     global _robot
     if not _robot:
@@ -221,7 +214,7 @@ def joints():
         typer.echo(" ".join(map(str, positions)))
     except Exception as e:
         typer.echo(f"Failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @get_app.command()
@@ -237,7 +230,7 @@ def state():
         typer.echo(state)
     except Exception as e:
         typer.echo(f"Failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 # Control commands
@@ -257,7 +250,7 @@ def stop():
         _robot.stop_motion()
     except Exception as e:
         typer.echo(f"Stop failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 @control_app.command()
@@ -274,7 +267,7 @@ def sleep(
         _robot.sleep(duration)
     except Exception as e:
         typer.echo(f"Sleep failed: {e}", err=True)
-        raise typer.Exit(1)
+        raise typer.Exit(1) from e
 
 
 # Utils commands
@@ -284,9 +277,7 @@ app.add_typer(utils_app, name="utils")
 
 @utils_app.command()
 def scan(
-    listen: bool = typer.Option(
-        False, "--listen", help="Monitor network changes"
-    ),
+    listen: bool = typer.Option(False, "--listen", help="Monitor network changes"),
 ):
     """Scan network for devices."""
     if listen:
@@ -314,9 +305,7 @@ def list():
 
 @app.callback()
 def default_callback(
-    verbose: bool = typer.Option(
-        False, "-v", "--verbose", help="Enable verbose logging"
-    ),
+    verbose: bool = typer.Option(False, "-v", "--verbose", help="Enable verbose logging"),
 ):
     """Handle global options."""
     if verbose:

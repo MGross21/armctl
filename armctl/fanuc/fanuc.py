@@ -10,21 +10,15 @@ class Fanuc(PLC, Commands, Properties):
         self.JOINT_RANGES = None
         self.MAX_JOINT_VELOCITY = None
         self.MAX_JOINT_ACCELERATION = None
-        raise NotImplementedError(
-            f"{self.__class__.__name__.upper()} is not yet supported."
-        )
+        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
     def move_joints(self, pos, speed=1.0):
         cc.move_joints(self, pos, speed)
-        return self.send_command(
-            {"type": "move_joints", "positions": pos, "speed": speed}
-        )
+        return self.send_command({"type": "move_joints", "positions": pos, "speed": speed})
 
     def move_cartesian(self, pose, speed=1.0):
         cc.move_cartesian(self, pose)
-        return self.send_command(
-            {"type": "move_cartesian", "position": pose, "speed": speed}
-        )
+        return self.send_command({"type": "move_cartesian", "position": pose, "speed": speed})
 
     def get_joint_positions(self):
         return self.send_command({"type": "get_joint_positions"})

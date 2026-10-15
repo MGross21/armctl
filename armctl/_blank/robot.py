@@ -39,9 +39,7 @@ class BlankRobot(Communication, Commands, Properties):
         super().__init__(**kwargs)
 
         # Define Properties
-        self.JOINT_RANGES: list[tuple[float, float]] = [
-            (-math.pi, math.pi) for _ in range(6)
-        ]
+        self.JOINT_RANGES: list[tuple[float, float]] = [(-math.pi, math.pi) for _ in range(6)]
         self.MAX_JOINT_VELOCITY: float | None = None
         self.MAX_JOINT_ACCELERATION: float | None = None
 

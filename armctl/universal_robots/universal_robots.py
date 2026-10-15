@@ -82,9 +82,7 @@ class UniversalRobots(SCT, Commands, Properties):
             f" a={acceleration}, v={speed}, t={t}, r={radius})\n"
             f"write_output_integer_register(0,1)\n"
         )
-        self.send_command(
-            command, timeout=t + 10, suppress_output=True, raw_response=False
-        )
+        self.send_command(command, timeout=t + 10, suppress_output=True, raw_response=False)
         if radius == 0.0:
             timeout = (t + 15.0) if t > 0 else 120.0
             self.rtde.wait_until_stopped(timeout=timeout)
@@ -116,20 +114,23 @@ class UniversalRobots(SCT, Commands, Properties):
             Blend radius in metres. Non-zero disables blocking at this waypoint.
         """
         if move_type not in {"movel", "movep", "movej"}:
-            raise ValueError(
-                "Unsupported move type. Use 'movel', 'movep', or 'movej'."
-            )
+            raise ValueError("Unsupported move type. Use 'movel', 'movep', or 'movej'.")
 
         cc.move_cartesian(self, pose)
 
-        base = (
-            f"{move_type}(p[{','.join(map(str, pose))}],"
-            f" a={acceleration}, v={speed}"
-        )
+        base = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}"
         if move_type in {"movel", "movej"}:
-            command = f"write_output_integer_register(0,0)\n{base}, t={time}, r={radius})\nwrite_output_integer_register(0,1)\n"
+            command = (
+                "write_output_integer_register(0,0)\n"
+                f"{base}, t={time}, r={radius})\n"
+                "write_output_integer_register(0,1)\n"
+            )
         else:  # movep
-            command = f"write_output_integer_register(0,0)\n{base}, r={radius})\nwrite_output_integer_register(0,1)\n"
+            command = (
+                "write_output_integer_register(0,0)\n"
+                f"{base}, r={radius})\n"
+                "write_output_integer_register(0,1)\n"
+            )
 
         self.send_command(command, suppress_output=True)
         if radius == 0.0:
@@ -216,9 +217,7 @@ class UniversalRobots(SCT, Commands, Properties):
             "Stopped Due to Safety",
         ]
         logger.receive(
-            "Received response: "
-            + ", ".join(f"{k}: {status[k]}" for k in key_out)
-            + " ..."
+            "Received response: " + ", ".join(f"{k}: {status[k]}" for k in key_out) + " ..."
         )
         return status
 

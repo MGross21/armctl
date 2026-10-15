@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 import time
+
 try:
     from zaber_motion import Units, ascii
 except ImportError:
     ascii = Units = None
 
 from armctl.templates import Commands, Properties
-from armctl.utils import CommandCheck as cc
 from armctl.templates.logger import logger
+from armctl.utils import CommandCheck as cc
 
 
 class Zaber(Commands, Properties):
@@ -41,7 +42,9 @@ class Zaber(Commands, Properties):
             num_axes: Number of axes on this device (auto-detected if not set)
         """
         if ascii is None:
-            raise ImportError("Zaber support requires the optional extra: pip install armctl[zaber]")
+            raise ImportError(
+                "Zaber support requires the optional extra: pip install armctl[zaber]"
+            )
         self.ip = ip
         self.port = port
         self.device_address = device_address
@@ -79,9 +82,7 @@ class Zaber(Commands, Properties):
             logger.info(f"Device has {self.num_axes} axes")
 
             # Get axis objects for later use
-            self.axes = [
-                self.device.get_axis(i + 1) for i in range(self.num_axes)
-            ]
+            self.axes = [self.device.get_axis(i + 1) for i in range(self.num_axes)]
 
         except Exception as e:
             logger.error(f"Failed to connect to Zaber: {e}")
@@ -122,9 +123,7 @@ class Zaber(Commands, Properties):
 
         try:
             if len(pos) != len(self.axes):
-                raise ValueError(
-                    f"Expected {len(self.axes)} positions, got {len(pos)}"
-                )
+                raise ValueError(f"Expected {len(self.axes)} positions, got {len(pos)}")
 
             # Move each axis to target position
             for i, axis in enumerate(self.axes):
@@ -184,7 +183,7 @@ class Zaber(Commands, Properties):
 
         try:
             logger.info("Stopping all axes")
-            for i, axis in enumerate(self.axes):
+            for axis in self.axes:
                 axis.stop()
 
         except Exception as e:

@@ -36,9 +36,7 @@ class RTDE:
         self.c.connect()
         self.c.send_output_setup(out_names, out_types)
         self._input = self.c.send_input_setup(in_names, in_types)
-        self.controller_version = (
-            self.c.get_controller_version()
-        )  # (MAJOR, MINOR, BUGFIX, BUILD)
+        self.controller_version = self.c.get_controller_version()  # (MAJOR, MINOR, BUGFIX, BUILD)
         self.c.send_start()
 
     def _get_data(self):
@@ -136,7 +134,8 @@ class RTDE:
         rsb: u32 = data.robot_status_bits
         ssb: u32 = data.safety_status_bits
 
-        bit = lambda data, n: bool(data & (1 << n))
+        def bit(data, n):
+            return bool(data & (1 << n))
 
         return {
             # Robot status bits
@@ -196,7 +195,10 @@ class RTDE:
         Bits 16-17: Tool DI 0-1
         """
         bits = self._get_data().standard_digital_input_bits
-        bit = lambda n: bool(bits & (1 << n))
+
+        def bit(n):
+            return bool(bits & (1 << n))
+
         return {
             **{f"DI{i}": bit(i) for i in range(8)},
             **{f"CDI{i}": bit(i + 8) for i in range(8)},
@@ -212,7 +214,10 @@ class RTDE:
         Bits 16-17: Tool DO 0-1
         """
         bits = self._get_data().standard_digital_output_bits
-        bit = lambda n: bool(bits & (1 << n))
+
+        def bit(n):
+            return bool(bits & (1 << n))
+
         return {
             **{f"DO{i}": bit(i) for i in range(8)},
             **{f"CDO{i}": bit(i + 8) for i in range(8)},
@@ -235,9 +240,7 @@ class RTDE:
         """Return True if any joint velocity exceeds threshold (rad/s)."""
         return any(abs(v) > threshold for v in self._get_data().actual_qd)
 
-    def wait_until_stopped(
-        self, timeout: float = 120.0, poll_interval: float = 0.05
-    ) -> None:
+    def wait_until_stopped(self, timeout: float = 120.0, poll_interval: float = 0.05) -> None:
         """Block until all joints are stopped or timeout expires.
 
         Waits for motion to begin, then polls joint velocities via RTDE
@@ -265,9 +268,7 @@ class RTDE:
     def set_speed_slider(self, fraction: float) -> None:
         """Set speed override slider fraction in [0.0, 1.0]."""
         if not 0.0 <= fraction <= 1.0:
-            raise ValueError(
-                f"Speed fraction must be in [0, 1], got {fraction}"
-            )
+            raise ValueError(f"Speed fraction must be in [0, 1], got {fraction}")
         self._input.speed_slider_mask = 1
         self._input.speed_slider_fraction = fraction
         self.c.send(self._input)
@@ -292,9 +293,7 @@ class RTDE:
             Output value in Volts [0, 10] (voltage mode).
         """
         if channel not in (0, 1):
-            raise ValueError(
-                f"Analog output channel must be 0 or 1, got {channel}"
-            )
+            raise ValueError(f"Analog output channel must be 0 or 1, got {channel}")
         self._input.standard_analog_output_mask = 1 << channel
         self._input.standard_analog_output_type = 0  # 0 = voltage mode
         if channel == 0:

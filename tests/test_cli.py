@@ -3,15 +3,15 @@
 from __future__ import annotations
 
 import re
-import pytest
+import sys
 from unittest.mock import MagicMock, patch
+
+import pytest
 from typer.testing import CliRunner
 
 import armctl
 from armctl.__main__ import app, get_robot_types
 from armctl.utils import NetworkScanner
-import sys
-
 
 # ANSI escape sequence regex for stripping color codes
 ANSI_ESC_RE = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
@@ -52,12 +52,8 @@ def mock_robot(monkeypatch):
             self.disconnect = MagicMock()
             self.move_joints = MagicMock()
             self.move_cartesian = MagicMock()
-            self.get_joint_positions = MagicMock(
-                return_value=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
-            )
-            self.get_cartesian_position = MagicMock(
-                return_value=[0.5, 0.0, 0.3, 0.0, 1.57, 0.0]
-            )
+            self.get_joint_positions = MagicMock(return_value=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
+            self.get_cartesian_position = MagicMock(return_value=[0.5, 0.0, 0.3, 0.0, 1.57, 0.0])
             self.get_robot_state = MagicMock(return_value="RUNNING")
 
     mock_instance = None
@@ -69,9 +65,7 @@ def mock_robot(monkeypatch):
 
     for robot_class_name in armctl.__all__:
         try:
-            monkeypatch.setattr(
-                f"armctl.{robot_class_name}", mock_robot_factory
-            )
+            monkeypatch.setattr(f"armctl.{robot_class_name}", mock_robot_factory)
         except AttributeError:
             pass
 
@@ -245,9 +239,7 @@ class TestConnectionCommands:
             types["universalrobots"] = FailingRobot
             return types
 
-        with patch(
-            "armctl.__main__.get_robot_types", mock_get_robot_types_failing
-        ):
+        with patch("armctl.__main__.get_robot_types", mock_get_robot_types_failing):
             result = runner.invoke(
                 app,
                 [
@@ -277,9 +269,7 @@ class TestMovementCommands:
         self.runner = CliRunner(env={"NO_COLOR": "1"})
 
     def test_move_joints_no_connection(self):
-        result = self.runner.invoke(
-            app, ["move", "joints", "0", "0", "0", "0", "0", "0"]
-        )
+        result = self.runner.invoke(app, ["move", "joints", "0", "0", "0", "0", "0", "0"])
         assert result.exit_code == 1
 
     def test_move_joints_wrong_count(self):
@@ -287,15 +277,11 @@ class TestMovementCommands:
         assert result.exit_code == 1
 
     def test_move_cartesian_no_connection(self):
-        result = self.runner.invoke(
-            app, ["move", "cartesian", "0", "0", "0", "0", "0", "0"]
-        )
+        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0", "0"])
         assert result.exit_code == 1
 
     def test_move_cartesian_wrong_count(self):
-        result = self.runner.invoke(
-            app, ["move", "cartesian", "0", "0", "0", "0", "0"]
-        )
+        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0"])
         assert result.exit_code == 2
 
     def test_move_home_no_connection(self):
@@ -406,9 +392,7 @@ class TestRobotTypeHandling:
         ],
     )
     def test_all_robot_types_connect(self, robot_type, runner, mock_robot):
-        result = runner.invoke(
-            app, ["connect", "--ip", "192.168.1.10", "--robot-type", robot_type]
-        )
+        result = runner.invoke(app, ["connect", "--ip", "192.168.1.10", "--robot-type", robot_type])
         assert result.exit_code in [0, 2]
         if result.exit_code == 2:
             pytest.skip(f"Robot type {robot_type} not in current enum")
@@ -456,9 +440,7 @@ class TestErrorHandling:
         )
         assert result.exit_code == 0
 
-        result = runner.invoke(
-            app, ["move", "joints", "0", "0", "0", "0", "0", "0"]
-        )
+        result = runner.invoke(app, ["move", "joints", "0", "0", "0", "0", "0", "0"])
         assert result.exit_code == 0
 
     def test_home_not_supported(self, runner, mock_robot):
@@ -489,10 +471,7 @@ class TestCLISubprocess:
     def test_cli_utils_list(self, runner):
         result = runner.invoke(app, ["utils", "list"])
         assert result.exit_code == 0
-        assert (
-            "universalrobots" in result.stdout
-            or "UniversalRobots" in result.stdout
-        )
+        assert "universalrobots" in result.stdout or "UniversalRobots" in result.stdout
 
 
 if __name__ == "__main__":

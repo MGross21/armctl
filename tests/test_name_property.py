@@ -16,10 +16,7 @@ class TestRobotNameProperty:
         """Test that manufacturer classes return just their class name."""
         # These require instantiation since __name__ is now a property
         try:
-            assert (
-                ElephantRobotics("192.168.1.1", 5001).__name__
-                == "ElephantRobotics"
-            )
+            assert ElephantRobotics("192.168.1.1", 5001).__name__ == "ElephantRobotics"
         except (NotImplementedError, ImportError):
             pass  # ElephantRobotics might not be fully implemented
 
@@ -61,9 +58,7 @@ class TestRobotNameProperty:
             (UR3, "UniversalRobots UR3", ("192.168.1.1", 30002)),
         ],
     )
-    def test_name_property_parametrized(
-        self, robot_class, expected_name, init_args
-    ):
+    def test_name_property_parametrized(self, robot_class, expected_name, init_args):
         """Parametrized test for all robot classes."""
         try:
             instance = robot_class(*init_args)

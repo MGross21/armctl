@@ -61,9 +61,17 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 80
+line-length = 100
+extend-exclude = ["*.md"]
 target-version = "py39"
 lint.select = ["E", "F", "W", "I", "B", "UP", "N", "C90"]
-lint.ignore = []
+lint.ignore = [
+    "N802",  # DOF property name
+    "N813",  # cc alias for CommandCheck
+    "N814",  # SCT/PLC aliases for controllers
+    "N817",  # UR alias
+    "B008",  # typer.Option/Argument defaults
+]
+lint.per-file-ignores = { "__init__.py" = ["F401", "F403", "E402"], "armctl/__main__.py" = ["UP006", "UP035", "UP045"] }
 format.quote-style = "double"
 format.indent-style = "space"

@@ -41,9 +41,7 @@ def _start_echo_server(host, port):
             try:
                 server.settimeout(0.5)
                 conn, addr = server.accept()
-                threading.Thread(
-                    target=handle_client, args=(conn, addr), daemon=True
-                ).start()
+                threading.Thread(target=handle_client, args=(conn, addr), daemon=True).start()
             except socket.timeout:
                 continue
             except Exception:
@@ -83,9 +81,7 @@ class MockSocketRobot(Socket, Commands):
         time.sleep(0.1)  # Allow server thread to exit
 
     def _mock_command(self, name: str, arg=None) -> str:
-        cmd = f"{TEST_STRING_PREFIX} {name.upper()}" + (
-            f": {arg}" if arg is not None else ""
-        )
+        cmd = f"{TEST_STRING_PREFIX} {name.upper()}" + (f": {arg}" if arg is not None else "")
         return self.send_command(cmd)
 
     def move_joints(self, pos) -> str:

@@ -24,9 +24,7 @@ class Dobot(SCT, Commands, Properties):
         self.MAX_JOINT_VELOCITY = None
         self.MAX_JOINT_ACCELERATION = None
 
-        raise NotImplementedError(
-            f"{self.__class__.__name__.upper()} is not yet supported."
-        )
+        raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
     def sleep(self, seconds):
         cc.sleep(seconds)
@@ -45,7 +43,8 @@ class Dobot(SCT, Commands, Properties):
         Moves the robot arm to a specified Cartesian position.
 
         Parameters:
-            pose (list or tuple): Target position as [x, y, z, r]. x, y, z are in meters and r is in radians.
+            pose (list or tuple): Target position as [x, y, z, r].
+                x, y, z in meters; r in radians.
 
         Returns:
             str: The response from the robot after executing the MOVEL command.
