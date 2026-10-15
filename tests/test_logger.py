@@ -36,10 +36,9 @@ def test_logger_receive_logs_message(caplog):
 
 def test_logger_verbosity_and_enable_disable(caplog):
     with caplog.at_level(logging.INFO):
-        Logger.enable()  # Make sure logging is enabled
+        Logger.enable()
         logging.info("This should appear")
         assert "This should appear" in caplog.text
         Logger.disable()
         logging.info("This should NOT appear")
         assert "This should NOT appear" not in caplog.text
-        Logger.enable()  # Re-enable for other tests
