@@ -78,3 +78,20 @@ jobs:
       - name: Check if uv.lock is up to date
         run: |
           uv sync --locked --all-groups --dry-run
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.13'
+          enable-cache: true
+
+      - name: Ruff
+        run: |
+          uv run --locked --only-group format ruff check .
+          uv run --locked --only-group format ruff format --check .
