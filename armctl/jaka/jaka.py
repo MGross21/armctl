@@ -146,7 +146,7 @@ class Jaka(SCT, Commands, Properties):
         cc.get_cartesian_position()
         cmd = {"cmdName": "get_tcp_pos"}
         response = self._send_and_check(cmd)
-        return self.to_radians_cartesian(response["tcp_pos"])
+        return uu.pose2rad(response["tcp_pos"])
 
     def stop_motion(self) -> None:
         cc.stop_motion()
