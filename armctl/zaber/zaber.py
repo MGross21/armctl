@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 import time
-from zaber_motion import ascii, Units
+try:
+    from zaber_motion import Units, ascii
+except ImportError:
+    ascii = Units = None
 
 from armctl.templates import Commands, Properties
 from armctl.utils import CommandCheck as cc
@@ -37,6 +40,8 @@ class Zaber(Commands, Properties):
             device_address: Device address on the bus (default: 1)
             num_axes: Number of axes on this device (auto-detected if not set)
         """
+        if ascii is None:
+            raise ImportError("Zaber support requires the optional extra: pip install armctl[zaber]")
         self.ip = ip
         self.port = port
         self.device_address = device_address

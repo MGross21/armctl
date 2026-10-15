@@ -38,7 +38,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --locked --all-groups
+          uv sync --locked --all-groups --extra zaber
 
       - name: Clear all caches and compiled files
         run: |
