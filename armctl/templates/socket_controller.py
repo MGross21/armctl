@@ -7,6 +7,7 @@ commands, and handling responses with enhanced debugging features.
 from __future__ import annotations
 
 import socket
+from typing import Literal, overload
 
 from .communication import Communication
 from .logger import logger
@@ -96,6 +97,25 @@ class SocketController(Communication):
         self.send_socket = self.recv_socket = None
         logger.info(f"Disconnected from {self.__class__.__name__}")
 
+    @overload
+    def send_command(
+        self,
+        command: str,
+        timeout: float = ...,
+        suppress_input: bool = ...,
+        suppress_output: bool = ...,
+        raw_response: Literal[False] = ...,
+    ) -> str: ...
+    @overload
+    def send_command(
+        self,
+        command: str,
+        timeout: float = ...,
+        suppress_input: bool = ...,
+        suppress_output: bool = ...,
+        *,
+        raw_response: Literal[True],
+    ) -> bytes: ...
     def send_command(
         self,
         command: str,

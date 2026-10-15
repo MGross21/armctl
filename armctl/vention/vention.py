@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import time
+from typing import overload
 
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
@@ -127,6 +128,10 @@ class Vention(SCT, Commands, Properties):
             time.sleep(delay)
         logger.info("Motion completed.")
 
+    @overload
+    def get_joint_positions(self, axis: None = None) -> list[float]: ...
+    @overload
+    def get_joint_positions(self, axis: int) -> float: ...
     def get_joint_positions(self, axis: int | None = None) -> list[float] | float:
         """Gets the current position of an axis or all axes."""
         cc.get_joint_positions()

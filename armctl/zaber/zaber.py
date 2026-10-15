@@ -52,7 +52,7 @@ class Zaber(Commands, Properties):
 
         self.connection = None
         self.device = None
-        self.axes = []
+        self.axes: list = []
 
         # Define Properties - for linear systems, ranges are in meters
         # Default: single axis with typical range

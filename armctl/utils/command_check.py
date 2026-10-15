@@ -18,8 +18,8 @@ class CommandCheck(Commands):
     def move_joints(
         robot_instance: Properties,
         positions: list[float],
-        velocity: float = None,
-        acceleration: float = None,
+        velocity: float | None = None,
+        acceleration: float | None = None,
     ) -> None:
         """Validate joint positions against robot ranges."""
         # Basic type validation

@@ -5,6 +5,7 @@ Minimal unit conversion utilities for robotics.
 from __future__ import annotations
 
 import math
+from typing import overload
 
 __all__ = [
     "deg2rad",
@@ -38,9 +39,11 @@ def m2mm(meters: float) -> float:
     return meters * 1e3
 
 
-def joints2deg(
-    joint_positions: list[float] | list[tuple[float, float]],
-) -> list[float] | list[tuple[float, float]]:
+@overload
+def joints2deg(joint_positions: list[float]) -> list[float]: ...
+@overload
+def joints2deg(joint_positions: list[tuple[float, float]]) -> list[tuple[float, float]]: ...
+def joints2deg(joint_positions):
     """
     Convert joint positions from radians to degrees.
     Accepts either a list of floats or a list of (min, max) tuples.
@@ -53,9 +56,11 @@ def joints2deg(
     return [math.degrees(j) for j in joint_positions]
 
 
-def joints2rad(
-    joint_positions: list[float] | list[tuple[float, float]],
-) -> list[float] | list[tuple[float, float]]:
+@overload
+def joints2rad(joint_positions: list[float]) -> list[float]: ...
+@overload
+def joints2rad(joint_positions: list[tuple[float, float]]) -> list[tuple[float, float]]: ...
+def joints2rad(joint_positions):
     """
     Convert joint positions from degrees to radians.
     Accepts either a list of floats or a list of (min, max) tuples.
