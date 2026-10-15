@@ -4,7 +4,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from armctl import Jaka, UniversalRobots, Vention
+from armctl import Jaka, UniversalRobots, Vention, Zaber
 
 HOME = [0.0, -1.57, 1.57, 0.0, 0.0, 0.0]
 
@@ -151,3 +151,24 @@ def test_vention_rejects_bad_axis_position(vention, reply):
     vention.send_command.return_value = reply
     with pytest.raises(RuntimeError):
         vention.get_joint_positions(axis=1)
+
+
+@pytest.fixture
+def zaber():
+    pytest.importorskip("zaber_motion")
+    robot = Zaber("10.0.0.1", num_axes=2)
+    robot.axes = [MagicMock(), MagicMock()]
+    return robot
+
+
+def test_zaber_move_joints_moves_each_axis(zaber):
+    zaber.move_joints([0.1, 0.2])
+    for axis, target in zip(zaber.axes, [0.1, 0.2]):
+        axis.move_absolute.assert_called_once_with(target, unit=zaber.units)
+        axis.wait_until_idle.assert_called_once()
+
+
+def test_zaber_rejects_out_of_range(zaber):
+    with pytest.raises(ValueError):
+        zaber.move_joints([0.1, 0.5])
+    zaber.axes[0].move_absolute.assert_not_called()
