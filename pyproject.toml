@@ -75,3 +75,8 @@ lint.ignore = [
 lint.per-file-ignores = { "__init__.py" = ["F401", "F403", "E402"], "armctl/__main__.py" = ["UP006", "UP035", "UP045"] }
 format.quote-style = "double"
 format.indent-style = "space"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = ["-ra", "--strict-markers"]
+markers = ["integration: requires Docker and the ur extra (URSim)"]

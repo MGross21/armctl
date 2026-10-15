@@ -1,478 +1,181 @@
-"""Comprehensive CLI tests for armctl."""
-
-from __future__ import annotations
-
-import re
-import sys
-from unittest.mock import MagicMock, patch
-
+import click
 import pytest
-from typer.testing import CliRunner
 
-import armctl
 from armctl.__main__ import app, get_robot_types
 from armctl.utils import NetworkScanner
 
-# ANSI escape sequence regex for stripping color codes
-ANSI_ESC_RE = re.compile(r"\x1B[@-_][0-?]*[ -/]*[@-~]")
-
-
-def strip_ansi(s: str) -> str:
-    """Strip ANSI escape sequences from string."""
-    if s is None:
-        return s
-    return ANSI_ESC_RE.sub("", s)
-
-
-@pytest.fixture(scope="session")
-def runner():
-    """Session-scoped CLI runner fixture."""
-    return CliRunner(env={"NO_COLOR": "1"})
-
-
-@pytest.fixture(scope="function")
-def mock_network_scanner(monkeypatch):
-    """Mock NetworkScanner for network scan tests."""
-
-    def mock_scan_network():
-        return ["192.168.1.10", "192.168.1.20"]
-
-    monkeypatch.setattr(NetworkScanner, "scan_network", mock_scan_network)
-
-
-@pytest.fixture(scope="function")
-def mock_robot(monkeypatch):
-    """Mock robot classes dynamically from armctl.__all__."""
-
-    class MockRobot:
-        def __init__(self, ip=None, port=None):
-            self.ip = ip
-            self.port = port
-            self.connect = MagicMock()
-            self.disconnect = MagicMock()
-            self.move_joints = MagicMock()
-            self.move_cartesian = MagicMock()
-            self.get_joint_positions = MagicMock(return_value=[0.1, 0.2, 0.3, 0.4, 0.5, 0.6])
-            self.get_cartesian_position = MagicMock(return_value=[0.5, 0.0, 0.3, 0.0, 1.57, 0.0])
-            self.get_robot_state = MagicMock(return_value="RUNNING")
-
-    mock_instance = None
-
-    def mock_robot_factory(ip=None, port=None):
-        nonlocal mock_instance
-        mock_instance = MockRobot(ip, port)
-        return mock_instance
-
-    for robot_class_name in armctl.__all__:
-        try:
-            monkeypatch.setattr(f"armctl.{robot_class_name}", mock_robot_factory)
-        except AttributeError:
-            pass
-
-    class MockRobotAccessor:
-        def get_instance(self):
-            return mock_instance
-
-    return MockRobotAccessor()
-
-
-class TestCLIHelp:
-    """Test help functionality for all commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_main_help(self):
-        """Test main command help."""
-        result = self.runner.invoke(app, ["--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Agnostic Robotic Manipulation Controller" in out
-        assert "connect" in out
-        assert "disconnect" in out
-        assert "move" in out
-        assert "get" in out
-        assert "control" in out
-        assert "utils" in out
-
-    def test_connect_help(self):
-        """Test connect command help."""
-        result = self.runner.invoke(app, ["connect", "--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Connect to robot" in out
-        assert "--ip" in out
-        assert "--robot-type" in out
-        assert "--port" in out
-
-    def test_move_help(self):
-        """Test move command help."""
-        result = self.runner.invoke(app, ["move", "--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Movement commands" in out
-        assert "joints" in out
-        assert "cartesian" in out
-        assert "home" in out
-
-    def test_get_help(self):
-        """Test get command help."""
-        result = self.runner.invoke(app, ["get", "--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Get robot information" in out
-        assert "joints" in out
-        assert "cartesian" in out
-        assert "state" in out
-
-    def test_control_help(self):
-        """Test control command help."""
-        result = self.runner.invoke(app, ["control", "--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Robot control" in out
-        assert "stop" in out
-        assert "sleep" in out
-
-    def test_utils_help(self):
-        """Test utils command help."""
-        result = self.runner.invoke(app, ["utils", "--help"], color=False)
-        assert result.exit_code == 0
-        out = strip_ansi(result.stdout)
-        assert "Utility commands" in out
-        assert "scan" in out
-        assert "list" in result.stdout
-
-
-class TestUtilsCommands:
-    """Test utility commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_utils_list(self):
-        result = self.runner.invoke(app, ["utils", "list"])
-        assert result.exit_code == 0
-        robot_types = get_robot_types()
-        for robot_type in robot_types:
-            assert robot_type in result.stdout
-
-    def test_utils_scan_basic(self, runner, mock_network_scanner):
-        result = runner.invoke(app, ["utils", "scan"])
-        assert result.exit_code == 0
-        assert "192.168.1.10" in result.stdout
-        assert "192.168.1.20" in result.stdout
-
-
-class TestConnectionCommands:
-    """Test connection commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_connect_missing_ip(self):
-        result = self.runner.invoke(app, ["connect", "--robot-type", "ur5"])
-        assert result.exit_code == 2
-
-    def test_connect_missing_robot_type(self):
-        result = self.runner.invoke(app, ["connect", "--ip", "192.168.1.10"])
-        assert result.exit_code == 2
-
-    def test_connect_invalid_robot_type(self):
-        result = self.runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "invalid_robot",
-            ],
-        )
-        assert result.exit_code == 2
-
-    def test_connect_success(self, runner, mock_robot):
-        result = runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "universalrobots",
-            ],
-        )
-        assert result.exit_code == 0
-        instance = mock_robot.get_instance()
-        assert instance is not None
-        instance.connect.assert_called_once()
-
-    def test_connect_with_port(self, runner, mock_robot):
-        result = runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "universalrobots",
-                "--port",
-                "30001",
-            ],
-        )
-        assert result.exit_code == 0
-        instance = mock_robot.get_instance()
-        assert instance is not None
-        instance.connect.assert_called_once()
-
-    def test_connect_failure(self, runner, mock_robot):
-        class FailingRobot:
-            def __init__(self, ip=None, port=None):
-                self.ip = ip
-                self.port = port
-
-            def connect(self):
-                raise Exception("Connection failed")
-
-        def mock_get_robot_types_failing():
-            types = get_robot_types()
-            types["universalrobots"] = FailingRobot
-            return types
-
-        with patch("armctl.__main__.get_robot_types", mock_get_robot_types_failing):
-            result = runner.invoke(
-                app,
-                [
-                    "connect",
-                    "--ip",
-                    "192.168.1.10",
-                    "--robot-type",
-                    "universalrobots",
-                ],
-            )
-            assert result.exit_code == 1
-            try:
-                output = result.stderr
-            except (ValueError, AttributeError):
-                output = result.stdout
-            assert "Connection failed" in output
-
-    def test_disconnect_no_connection(self, runner):
-        result = runner.invoke(app, ["disconnect"])
-        assert result.exit_code in [0, 1]
-
-
-class TestMovementCommands:
-    """Test movement commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_move_joints_no_connection(self):
-        result = self.runner.invoke(app, ["move", "joints", "0", "0", "0", "0", "0", "0"])
-        assert result.exit_code == 1
-
-    def test_move_joints_wrong_count(self):
-        result = self.runner.invoke(app, ["move", "joints", "0", "0", "0"])
-        assert result.exit_code == 1
-
-    def test_move_cartesian_no_connection(self):
-        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0", "0"])
-        assert result.exit_code == 1
-
-    def test_move_cartesian_wrong_count(self):
-        result = self.runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0"])
-        assert result.exit_code == 2
-
-    def test_move_home_no_connection(self):
-        result = self.runner.invoke(app, ["move", "home"])
-        assert result.exit_code == 1
-
-
-class TestGetCommands:
-    """Test get commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_get_joints_no_connection(self):
-        result = self.runner.invoke(app, ["get", "joints"])
-        assert result.exit_code == 1
-
-    def test_get_cartesian_no_connection(self):
-        result = self.runner.invoke(app, ["get", "cartesian"])
-        assert result.exit_code == 1
-
-    def test_get_state_no_connection(self):
-        result = self.runner.invoke(app, ["get", "state"])
-        assert result.exit_code == 1
-
-
-class TestControlCommands:
-    """Test control commands."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_control_stop_no_connection(self):
-        result = self.runner.invoke(app, ["control", "stop"])
-        assert result.exit_code == 1
-
-    def test_control_sleep_no_connection(self):
-        result = self.runner.invoke(app, ["control", "sleep", "1.0"])
-        assert result.exit_code == 1
-
-    def test_control_sleep_invalid_duration(self):
-        result = self.runner.invoke(app, ["control", "sleep", "invalid"])
-        assert result.exit_code != 0
-
-
-class TestIntegratedWorkflow:
-    """Test integrated workflows."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_full_workflow(self, runner, mock_robot, monkeypatch):
-        result = runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "universalrobots",
-            ],
-        )
-        assert result.exit_code == 0
-
-        instance = mock_robot.get_instance()
-        assert instance is not None
-        instance.connect.assert_called_once()
-
-        result = runner.invoke(app, ["disconnect"])
-        assert result.exit_code == 0
-
-
-class TestRobotTypeHandling:
-    """Test robot type handling."""
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_get_robot_types(self):
-        types = get_robot_types()
-        assert isinstance(types, dict)
-        assert len(types) > 0
-        expected_types = [
-            "universalrobots",
-            "ur",
-            "jaka",
-            "vention",
-            "elephant",
-        ]
-        for expected in expected_types:
-            assert expected in types
-
-    @pytest.mark.parametrize(
-        "robot_type",
-        [
-            "universalrobots",
-            "ur",
-            "ur5",
-            "ur10",
-            "ur3",
-            "ur5e",
-            "ur16",
-            "jaka",
-            "vention",
-            "elephant",
-            "elephantrobotics",
-            "pro600",
-        ],
-    )
-    def test_all_robot_types_connect(self, robot_type, runner, mock_robot):
-        result = runner.invoke(app, ["connect", "--ip", "192.168.1.10", "--robot-type", robot_type])
-        assert result.exit_code in [0, 2]
-        if result.exit_code == 2:
-            pytest.skip(f"Robot type {robot_type} not in current enum")
-
-
-class TestErrorHandling:
-    """Test error handling."""
-
-    def _version_compatible_exit_code(self, result):
-        if sys.version_info >= (3, 10):
-            return result.exit_code != 0
-        else:
-            return result.exit_code == 0
-
-    def setup_method(self):
-        self.runner = CliRunner(env={"NO_COLOR": "1"})
-
-    def test_invalid_command(self):
-        result = self.runner.invoke(app, ["invalid_command"])
-        assert result.exit_code != 0
-
-    def test_missing_subcommand(self):
-        result = self.runner.invoke(app, ["move"])
-        assert self._version_compatible_exit_code(result)
-
-        result = self.runner.invoke(app, ["get"])
-        assert self._version_compatible_exit_code(result)
-
-        result = self.runner.invoke(app, ["control"])
-        assert self._version_compatible_exit_code(result)
-
-        result = self.runner.invoke(app, ["utils"])
-        assert self._version_compatible_exit_code(result)
-
-    def test_robot_method_with_mock(self, runner, mock_robot):
-        result = runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "universalrobots",
-            ],
-        )
-        assert result.exit_code == 0
-
-        result = runner.invoke(app, ["move", "joints", "0", "0", "0", "0", "0", "0"])
-        assert result.exit_code == 0
-
-    def test_home_not_supported(self, runner, mock_robot):
-        result = runner.invoke(
-            app,
-            [
-                "connect",
-                "--ip",
-                "192.168.1.10",
-                "--robot-type",
-                "universalrobots",
-            ],
-        )
-        assert result.exit_code == 0
-
-        result = runner.invoke(app, ["move", "home"])
-        assert result.exit_code == 1
-
-
-class TestCLISubprocess:
-    """Test CLI integration."""
-
-    def test_cli_help(self, runner):
-        result = runner.invoke(app, ["--help"])
-        assert result.exit_code == 0
-        assert "Agnostic Robotic Manipulation Controller" in result.stdout
-
-    def test_cli_utils_list(self, runner):
-        result = runner.invoke(app, ["utils", "list"])
-        assert result.exit_code == 0
-        assert "universalrobots" in result.stdout or "UniversalRobots" in result.stdout
-
-
-if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+EXPORTED_TYPES = sorted(get_robot_types())
+
+
+@pytest.mark.parametrize(
+    "args, expected",
+    [
+        ([], ["connect", "disconnect", "move", "get", "control", "utils"]),
+        (["connect"], ["--ip", "--robot-type", "--port"]),
+        (["move"], ["joints", "cartesian", "home"]),
+        (["get"], ["joints", "cartesian", "state"]),
+        (["control"], ["stop", "sleep"]),
+        (["utils"], ["scan", "list"]),
+    ],
+)
+def test_help_lists_subcommands(runner, args, expected):
+    result = runner.invoke(app, [*args, "--help"])
+    assert result.exit_code == 0
+    output = click.unstyle(result.output)
+    for word in expected:
+        assert word in output
+
+
+@pytest.mark.parametrize("group", ["move", "get", "control", "utils"])
+def test_group_without_subcommand_shows_usage(runner, group):
+    result = runner.invoke(app, [group])
+    assert result.exit_code in (0, 2)  # click < 8.2 exits 0
+    assert "Usage" in click.unstyle(result.output)
+
+
+def test_unknown_command(runner):
+    assert runner.invoke(app, ["invalid_command"]).exit_code == 2
+
+
+def test_utils_list(runner):
+    result = runner.invoke(app, ["utils", "list"])
+    assert result.exit_code == 0
+    for robot_type in EXPORTED_TYPES:
+        assert robot_type in result.output
+
+
+def test_utils_scan(runner, monkeypatch):
+    monkeypatch.setattr(NetworkScanner, "scan_network", lambda: ["192.168.1.10", "192.168.1.20"])
+    result = runner.invoke(app, ["utils", "scan"])
+    assert result.exit_code == 0
+    assert result.output.split() == ["192.168.1.10", "192.168.1.20"]
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["connect", "--robot-type", "ur"],
+        ["connect", "--ip", "10.0.0.1"],
+        ["connect", "--ip", "10.0.0.1", "--robot-type", "invalid_robot"],
+    ],
+)
+def test_connect_rejects_bad_options(runner, args):
+    assert runner.invoke(app, args).exit_code == 2
+
+
+@pytest.mark.parametrize("robot_type", EXPORTED_TYPES)
+def test_connect_every_robot_type(runner, cli_robot, robot_type):
+    result = runner.invoke(app, ["connect", "--ip", "10.0.0.1", "--robot-type", robot_type])
+    assert result.exit_code == 0, result.output
+    assert cli_robot.init_args == ("10.0.0.1",)
+    cli_robot.connect.assert_called_once()
+
+
+def test_connect_passes_port(runner, cli_robot):
+    args = ["connect", "--ip", "10.0.0.1", "--robot-type", "ur", "--port", "30001"]
+    assert runner.invoke(app, args).exit_code == 0
+    assert cli_robot.init_args == ("10.0.0.1", 30001)
+
+
+def test_connect_failure_reports_error(runner, cli_robot):
+    cli_robot.connect.side_effect = ConnectionError("Connection failed")
+    result = runner.invoke(app, ["connect", "--ip", "10.0.0.1", "--robot-type", "ur"])
+    assert result.exit_code == 1
+    assert "Connection failed" in result.output
+
+
+def test_disconnect(runner, connected):
+    assert runner.invoke(app, ["disconnect"]).exit_code == 0
+    connected.disconnect.assert_called_once()
+    assert runner.invoke(app, ["disconnect"]).exit_code == 1
+
+
+@pytest.mark.parametrize(
+    "args",
+    [
+        ["disconnect"],
+        ["move", "joints", "0", "0", "0", "0", "0", "0"],
+        ["move", "cartesian", "0", "0", "0", "0", "0", "0"],
+        ["move", "home"],
+        ["get", "joints"],
+        ["get", "cartesian"],
+        ["get", "state"],
+        ["control", "stop"],
+        ["control", "sleep", "1.0"],
+    ],
+)
+def test_requires_connection(runner, args):
+    result = runner.invoke(app, args)
+    assert result.exit_code == 1
+    assert "connect" in result.output.lower()
+
+
+def test_move_joints_forwards_positions(runner, connected):
+    result = runner.invoke(app, ["move", "joints", "1", "2", "3"])
+    assert result.exit_code == 0
+    connected.move_joints.assert_called_once_with([1.0, 2.0, 3.0])
+
+
+def test_move_cartesian_forwards_pose(runner, connected):
+    result = runner.invoke(app, ["move", "cartesian", "1", "2", "3", "4", "5", "6"])
+    assert result.exit_code == 0
+    connected.move_cartesian.assert_called_once_with([1.0, 2.0, 3.0, 4.0, 5.0, 6.0])
+
+
+def test_move_cartesian_requires_six_values(runner, connected):
+    assert runner.invoke(app, ["move", "cartesian", "0", "0", "0", "0", "0"]).exit_code == 2
+    connected.move_cartesian.assert_not_called()
+
+
+def test_move_failure_reports_error(runner, connected):
+    connected.move_joints.side_effect = ValueError("out of range")
+    result = runner.invoke(app, ["move", "joints", "9"])
+    assert result.exit_code == 1
+    assert "out of range" in result.output
+
+
+def test_move_home_unsupported(runner, connected):
+    result = runner.invoke(app, ["move", "home"])
+    assert result.exit_code == 1
+    assert "not supported" in result.output
+
+
+@pytest.mark.parametrize(
+    "args, method",
+    [
+        (["get", "joints"], "get_joint_positions"),
+        (["get", "cartesian"], "get_cartesian_position"),
+    ],
+)
+def test_get_prints_positions(runner, connected, args, method):
+    result = runner.invoke(app, args)
+    assert result.exit_code == 0
+    values = getattr(connected, method).return_value
+    assert result.output.split() == [str(v) for v in values]
+
+
+def test_get_state(runner, connected):
+    result = runner.invoke(app, ["get", "state"])
+    assert result.exit_code == 0
+    assert result.output.strip() == "RUNNING"
+
+
+def test_control_stop(runner, connected):
+    assert runner.invoke(app, ["control", "stop"]).exit_code == 0
+    connected.stop_motion.assert_called_once_with()
+
+
+def test_control_sleep(runner, connected):
+    assert runner.invoke(app, ["control", "sleep", "0.5"]).exit_code == 0
+    connected.sleep.assert_called_once_with(0.5)
+
+
+def test_control_sleep_rejects_non_number(runner, connected):
+    assert runner.invoke(app, ["control", "sleep", "invalid"]).exit_code == 2
+    connected.sleep.assert_not_called()
+
+
+def test_get_robot_types_aliases():
+    types = get_robot_types()
+    assert types["ur"] is types["universalrobots"]
+    assert types["elephant"] is types["elephantrobotics"]
