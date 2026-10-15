@@ -5,6 +5,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from armctl import Jaka, UniversalRobots, Vention, Zaber
+from armctl.universal_robots import OnRobot
 
 HOME = [0.0, -1.57, 1.57, 0.0, 0.0, 0.0]
 
@@ -177,3 +178,10 @@ def test_zaber_rejects_out_of_range(zaber):
 def test_ur_telemetry_requires_connection():
     with pytest.raises(ConnectionError, match="not connected"):
         UniversalRobots("10.0.0.1").get_joint_positions()
+
+
+@pytest.mark.parametrize("reply, closed", [("1\n", True), ("0\n", False)])
+def test_onrobot_status_parses_text_reply(reply, closed):
+    gripper = OnRobot.__new__(OnRobot)
+    gripper.send_command = MagicMock(return_value=reply)
+    assert gripper.get_status() is closed

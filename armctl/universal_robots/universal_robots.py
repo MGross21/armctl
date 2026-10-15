@@ -88,7 +88,7 @@ class UniversalRobots(SCT, Commands, Properties):
             f" a={acceleration}, v={speed}, t={t}, r={radius})\n"
             f"write_output_integer_register(0,1)\n"
         )
-        self.send_command(command, timeout=t + 10, suppress_output=True, raw_response=False)
+        self.send_command(command, timeout=t + 10, suppress_output=True)
         if radius == 0.0:
             timeout = (t + 15.0) if t > 0 else 120.0
             self._rtde.wait_until_stopped(timeout=timeout)
