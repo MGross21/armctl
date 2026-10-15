@@ -203,11 +203,20 @@ The "home" position refers to a predefined, manufacturer-specific pose that is s
 
 All inputs and outputs use these standard units:
 
-| Type                   | Unit                     |
-| ---------------------- | ------------------------ |
-| **Joint Angle**        | radians                  |
-| **Cartesian Position** | meters (`[x, y, z]`)     |
-| **Cartesian Rotation** | radians (`[rx, ry, rz]`) |
+| Type                              | Unit                         |
+| --------------------------------- | ---------------------------- |
+| **Joint Angle** (revolute)        | radians                      |
+| **Joint Velocity** (revolute)     | radians/second               |
+| **Joint Acceleration** (revolute) | radians/second²              |
+| **Joint Position** (linear)       | meters                       |
+| **Joint Velocity** (linear)       | meters/second                |
+| **Joint Acceleration** (linear)   | meters/second²               |
+| **Cartesian Position**            | meters (`[x, y, z]`)         |
+| **Cartesian Rotation**            | radians (`[rx, ry, rz]`)     |
+| **Cartesian Linear Velocity**     | meters/second                |
+| **Cartesian Linear Acceleration** | meters/second²               |
+| **Cartesian Angular Velocity**    | radians/second               |
+| **Time / Duration**               | seconds                      |
 
 ### Connection Template
 
