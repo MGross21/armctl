@@ -49,6 +49,20 @@ The `armctl` library currently supports the following manufacturers and robot mo
       <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
     </td>
   </tr>
+  <tr>
+    <td align="center">
+      <a href="https://www.zaber.com"><b>Zaber</b></a>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <sub>Linear Stages</sub>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
 </table>
 
 > **Want to see your robot supported?**  
@@ -311,7 +325,9 @@ armctl --help
 - [JAKA](https://www.jaka.com/en)
   - **Models:** Zu 5
 - [Dobot](https://www.dobot-robots.com)
-  - **Models:** Magician Lite
+  - **Models:** Magician Lite, M1 Pro
+- [ABB](https://new.abb.com/products/robotics)
+  - **Controllers:** IRC5, OmniCore (via Robot Web Services)
 
 ## Future Development
 
