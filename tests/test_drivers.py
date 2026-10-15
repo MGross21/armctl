@@ -172,3 +172,8 @@ def test_zaber_rejects_out_of_range(zaber):
     with pytest.raises(ValueError):
         zaber.move_joints([0.1, 0.5])
     zaber.axes[0].move_absolute.assert_not_called()
+
+
+def test_ur_telemetry_requires_connection():
+    with pytest.raises(ConnectionError, match="not connected"):
+        UniversalRobots("10.0.0.1").get_joint_positions()
