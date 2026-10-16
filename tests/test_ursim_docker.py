@@ -165,7 +165,7 @@ def retry_on_failure(max_retries: int = MAX_RETRIES, delay: float = RETRY_DELAY)
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            last_exception = None
+            last_exception: Exception = RuntimeError("no attempts made")
             for attempt in range(max_retries):
                 try:
                     return func(*args, **kwargs)

@@ -7,6 +7,9 @@ commands, and handling responses with enhanced debugging features.
 from __future__ import annotations
 
 import socket
+from typing import Literal, overload
+
+from typing_extensions import override
 
 from .communication import Communication
 from .logger import logger
@@ -44,6 +47,7 @@ class SocketController(Communication):
         """Ensure disconnection when leaving the context."""
         self.disconnect()
 
+    @override
     def connect(self):
         """Connect to the robot using sockets for sending and receiving"""
         try:
@@ -85,6 +89,7 @@ class SocketController(Communication):
                 f"Failed to connect to {self.ip}:{self.send_port}|{self.recv_port}"
             ) from e
 
+    @override
     def disconnect(self):
         """Disconnect from the robot by closing sockets."""
         for sock in {self.send_socket, self.recv_socket}:
@@ -96,6 +101,26 @@ class SocketController(Communication):
         self.send_socket = self.recv_socket = None
         logger.info(f"Disconnected from {self.__class__.__name__}")
 
+    @overload
+    def send_command(
+        self,
+        command: str,
+        timeout: float = ...,
+        suppress_input: bool = ...,
+        suppress_output: bool = ...,
+        raw_response: Literal[False] = ...,
+    ) -> str: ...
+    @overload
+    def send_command(
+        self,
+        command: str,
+        timeout: float = ...,
+        suppress_input: bool = ...,
+        suppress_output: bool = ...,
+        *,
+        raw_response: Literal[True],
+    ) -> bytes: ...
+    @override
     def send_command(
         self,
         command: str,

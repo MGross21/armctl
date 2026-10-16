@@ -7,6 +7,8 @@ try:
 except ImportError:
     ascii = Units = None
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates.logger import logger
 from armctl.utils import CommandCheck as cc
@@ -52,7 +54,7 @@ class Zaber(Commands, Properties):
 
         self.connection = None
         self.device = None
-        self.axes = []
+        self.axes: list = []
 
         # Define Properties - for linear systems, ranges are in meters
         # Default: single axis with typical range
@@ -107,11 +109,13 @@ class Zaber(Commands, Properties):
         self.disconnect()
         return False
 
+    @override
     def sleep(self, seconds: float) -> None:
         """Sleep for the specified number of seconds."""
         cc.sleep(seconds)
         time.sleep(seconds)
 
+    @override
     def move_joints(self, pos: list[float]) -> None:
         """
         Move axes to specified positions in meters.
@@ -139,6 +143,7 @@ class Zaber(Commands, Properties):
             logger.error(f"Failed to move joints: {e}")
             raise
 
+    @override
     def get_joint_positions(self) -> list[float]:
         """Get current position of all axes in meters."""
         cc.get_joint_positions()
@@ -155,6 +160,7 @@ class Zaber(Commands, Properties):
             logger.error(f"Failed to get joint positions: {e}")
             raise
 
+    @override
     def move_cartesian(self, pose: list[float]) -> None:
         """
         Move to cartesian position.
@@ -168,6 +174,7 @@ class Zaber(Commands, Properties):
         # For linear systems, cartesian movement is same as joint movement
         self.move_joints(pose[: len(self.axes)])
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         """
         Get current cartesian position.
@@ -177,6 +184,7 @@ class Zaber(Commands, Properties):
         cc.get_cartesian_position()
         return self.get_joint_positions()
 
+    @override
     def stop_motion(self) -> None:
         """Stop all axes immediately."""
         cc.stop_motion()
@@ -190,6 +198,7 @@ class Zaber(Commands, Properties):
             logger.error(f"Failed to stop motion: {e}")
             raise
 
+    @override
     def get_robot_state(self) -> dict:
         """Get current device and axis states."""
         cc.get_robot_state()

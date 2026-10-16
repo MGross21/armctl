@@ -3,6 +3,8 @@ from __future__ import annotations
 import math
 import time as _time
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
@@ -33,10 +35,12 @@ class UniversalRobots(SCT, Commands, Properties):
         self.MAX_JOINT_ACCELERATION = 10.0  # rad/s^2
         self.rtde: RTDE | None = None
 
+    @override
     def connect(self):
         super().connect()
         self.rtde = RTDE(self.ip)
 
+    @override
     def disconnect(self):
         try:
             self.stop_motion()
@@ -53,11 +57,13 @@ class UniversalRobots(SCT, Commands, Properties):
             raise ConnectionError("Robot is not connected.")
         return self.rtde
 
+    @override
     def sleep(self, seconds: float) -> None:
         cc.sleep(seconds)
         self.send_command(f"sleep({seconds})\n")
         _time.sleep(seconds)  # block Python side while controller sleeps
 
+    @override
     def move_joints(
         self,
         pos: list[float],
@@ -93,6 +99,7 @@ class UniversalRobots(SCT, Commands, Properties):
             timeout = (t + 15.0) if t > 0 else 120.0
             self._rtde.wait_until_stopped(timeout=timeout)
 
+    @override
     def move_cartesian(
         self,
         pose: list[float],
@@ -143,10 +150,12 @@ class UniversalRobots(SCT, Commands, Properties):
             timeout = (time + 15.0) if time > 0 else 120.0
             self._rtde.wait_until_stopped(timeout=timeout)
 
+    @override
     def stop_motion(self) -> None:
         deceleration = 2.0  # rad/s^2
         self.send_command(f"stopj({deceleration})\n", suppress_output=True)
 
+    @override
     def get_joint_positions(self) -> list[float]:
         """Return actual joint positions in radians."""
         angles = self._rtde.joint_angles()
@@ -171,6 +180,7 @@ class UniversalRobots(SCT, Commands, Properties):
         logger.receive(f"Received response: {torques}")
         return torques
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         """Return actual TCP pose [x, y, z, rx, ry, rz] in metres and radians."""
         pose = self._rtde.tcp_pose()
@@ -213,6 +223,7 @@ class UniversalRobots(SCT, Commands, Properties):
         logger.receive(f"Received response: {target}")
         return target
 
+    @override
     def get_robot_state(self) -> dict[str, bool]:
         """Return robot and safety status bit fields."""
         status = self._rtde.robot_status()

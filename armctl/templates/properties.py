@@ -1,19 +1,20 @@
 from __future__ import annotations
 
 from abc import ABC
-from typing import ClassVar
+
+from typing_extensions import override
 
 
 class Properties(ABC):
     """Base class for robot properties."""
 
-    JOINT_RANGES: ClassVar[list[tuple[float, float]]]
+    JOINT_RANGES: list[tuple[float, float]]
     """Joint position limits for each joint in radians."""
 
-    MAX_JOINT_VELOCITY: ClassVar[float]
+    MAX_JOINT_VELOCITY: float
     """Max joint velocity in rad/s."""
 
-    MAX_JOINT_ACCELERATION: ClassVar[float]
+    MAX_JOINT_ACCELERATION: float
     """Max joint acceleration in rad/s^2."""
 
     @property
@@ -22,6 +23,7 @@ class Properties(ABC):
         return len(self.JOINT_RANGES)
 
     @property
+    @override
     def __name__(self) -> str:
         """Name of the robot.
 

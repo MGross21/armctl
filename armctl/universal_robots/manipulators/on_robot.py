@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import warnings
 
+from typing_extensions import override
+
 from armctl.templates import SocketController as SCT
 
 
@@ -10,11 +12,13 @@ class OnRobot(SCT):
         super().__init__(ip, port)
         raise NotImplementedError("OnRobot gripper is not yet supported.")
 
+    @override
     def connect(self):
         super().connect()
         self.send_command("rg2_activate()\n", suppress_output=True)  # activate Gripper
         # self.send_command("write_register(1000, 0x0100, unit=9)\n") # activate Gripper
 
+    @override
     def disconnect(self):
         super().disconnect()
 

@@ -4,6 +4,8 @@ import socket
 import threading
 import time
 
+from typing_extensions import override
+
 from armctl.templates import Commands
 from armctl.templates import SocketController as Socket
 
@@ -42,6 +44,7 @@ class MockSocketRobot(Socket, Commands):
         self._echo_stop_event, port = _start_echo_server(ip)
         super().__init__(ip, port)
 
+    @override
     def __exit__(self, exc_type, exc_val, exc_tb):
         super().__exit__(exc_type, exc_val, exc_tb)
         self._echo_stop_event.set()
@@ -50,23 +53,30 @@ class MockSocketRobot(Socket, Commands):
         cmd = f"{TEST_STRING_PREFIX} {name.upper()}" + (f": {arg}" if arg is not None else "")
         return self.send_command(cmd)
 
+    @override
     def move_joints(self, pos) -> str:
         return self._mock_command("move_joints", pos)
 
+    @override
     def move_cartesian(self, pose) -> str:
         return self._mock_command("move_cartesian", pose)
 
+    @override
     def get_joint_positions(self) -> str:
         return self._mock_command("get_joint_positions")
 
+    @override
     def get_cartesian_position(self) -> str:
         return self._mock_command("get_cartesian_position")
 
+    @override
     def stop_motion(self) -> str:
         return self._mock_command("stop_motion")
 
+    @override
     def get_robot_state(self) -> str:
         return self._mock_command("get_robot_state")
 
+    @override
     def sleep(self, seconds: float):
         time.sleep(seconds)

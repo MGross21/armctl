@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import time
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.utils import CommandCheck as cc
@@ -28,12 +30,14 @@ class ElephantRobotics(SCT, Commands, Properties):
         self.MAX_JOINT_VELOCITY = uu.deg2rad(2000)
         self.MAX_JOINT_ACCELERATION = None
 
+    @override
     def connect(self):
         super().connect()  # Socket Connection
 
         assert self.send_command("power_on()") == "power_on:[ok]"  # Power on the robot
         assert self.send_command("state_on()") == "state_on:[ok]"  # Enable the system
 
+    @override
     def disconnect(self):
         self.stop_motion()  # Stop any ongoing motion
         # Shuts down the system, robot stays powered on:
@@ -47,11 +51,13 @@ class ElephantRobotics(SCT, Commands, Properties):
                 break
             time.sleep(0.25)
 
+    @override
     def sleep(self, seconds):
         cc.sleep(seconds)
         self.send_command(f"wait({seconds})")
         time.sleep(seconds)
 
+    @override
     def move_joints(self, pos: list[float], speed: float = uu.deg2rad(500)) -> None:
         """
         Move the robot to the specified joint positions.
@@ -77,6 +83,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         while any(abs(a - b) > uu.deg2rad(3) for a, b in zip(self.get_joint_positions(), pos)):
             time.sleep(1)
 
+    @override
     def move_cartesian(
         self,
         pose: list[float],
@@ -108,6 +115,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         ):
             time.sleep(1)
 
+    @override
     def get_joint_positions(self) -> list[float]:
         response = self.send_command("get_angles()")
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
@@ -120,6 +128,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         )  # From string list to float list
         return uu.joints2rad([round(x, 2) for x in joint_positions])
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         response = self.send_command("get_coords()")  # [x, y, z, rx, ry, rz]
         if response == "[-1.0, -2.0, -3.0, -4.0, -1.0, -1.0]":
@@ -133,6 +142,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         x, y, z, *rotation = (round(v, 2) for v in cartesian_position)
         return [uu.mm2m(x), uu.mm2m(y), uu.mm2m(z)] + uu.joints2rad(rotation)
 
+    @override
     def stop_motion(self) -> None:
         command = "task_stop"
         response = self.send_command(f"{command}()")
@@ -145,6 +155,7 @@ class ElephantRobotics(SCT, Commands, Properties):
         if result != "[ok]":
             raise SystemError(result)
 
+    @override
     def get_robot_state(self) -> bool:
         command = "check_running"
         response = self.send_command(f"{command}()")
