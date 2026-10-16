@@ -16,7 +16,6 @@ Communication Methods:
 # Universal Imports
 from __future__ import annotations
 
-import atexit
 import math
 
 from armctl.templates import Commands, Properties
@@ -47,7 +46,6 @@ class BlankRobot(Communication, Commands, Properties):
         super().connect()  # Call first to ensure base connection logic is executed
         # Additional connection logic can be added here if needed
 
-    @atexit.register
     def disconnect(self):
         # Additional disconnection logic can be added here if needed
         super().disconnect()  # Call last to ensure base disconnection logic is executed
@@ -61,7 +59,7 @@ class BlankRobot(Communication, Commands, Properties):
 
     def move_joints(self, pos: list[float]) -> None:
         """Move robot joints to specified positions (in radians or degrees)."""
-        cc.move_joints(pos)
+        cc.move_joints(self, pos)
         # Additional move logic can be added here if needed
         # Send move command to robot
         pass
@@ -75,7 +73,7 @@ class BlankRobot(Communication, Commands, Properties):
 
     def move_cartesian(self, pose: list[float]) -> None:
         """Move robot to specified cartesian pose [x, y, z, rx, ry, rz]."""
-        cc.move_cartesian(pose)
+        cc.move_cartesian(self, pose)
         # Additional move logic can be added here if needed
         # Send move command to robot
         pass

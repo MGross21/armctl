@@ -119,7 +119,7 @@ class Zaber(Commands, Properties):
         Args:
             pos: List of positions in meters (one per axis)
         """
-        cc.move_joints(pos)
+        cc.move_joints(self, pos)
 
         try:
             if len(pos) != len(self.axes):
@@ -164,7 +164,7 @@ class Zaber(Commands, Properties):
         Args:
             pose: List of positions in meters [x, y, z, ...] or applicable axes
         """
-        cc.move_cartesian(pose)
+        cc.move_cartesian(self, pose)
         # For linear systems, cartesian movement is same as joint movement
         self.move_joints(pose[: len(self.axes)])
 

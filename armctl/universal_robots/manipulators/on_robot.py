@@ -47,14 +47,12 @@ class OnRobot(SCT):
 
     def get_position(self, name: str = "rg2") -> float:
         """Get the current position of the gripper."""
-        response = self.send_command(
-            f"{name}_get_width()\n", suppress_output=True, raw_response=True
-        )
+        response = self.send_command(f"{name}_get_width()\n", suppress_output=True)
         return float(response.strip())
 
     def get_status(self) -> bool:
         """Get the current status of the gripper."""
-        response = self.send_command("rg2_get_status()\n", suppress_output=True, raw_response=True)
+        response = self.send_command("rg2_get_status()\n", suppress_output=True)
         return response.strip() == "1"  # 1 means gripper is closed, 0 means open
 
     def open(self, force: float = 20) -> None:

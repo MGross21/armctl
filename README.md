@@ -49,6 +49,20 @@ The `armctl` library currently supports the following manufacturers and robot mo
       <img src="https://raw.githubusercontent.com/MGross21/armctl/main/assets/gifs/elephant_pro600.gif" alt="Elephant myCobot Pro600" width="250">
     </td>
   </tr>
+  <tr>
+    <td align="center">
+      <a href="https://www.zaber.com"><b>Zaber</b></a>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td align="center">
+      <sub>Linear Stages</sub>
+    </td>
+    <td></td>
+    <td></td>
+  </tr>
 </table>
 
 > **Want to see your robot supported?**  
@@ -203,11 +217,20 @@ The "home" position refers to a predefined, manufacturer-specific pose that is s
 
 All inputs and outputs use these standard units:
 
-| Type                   | Unit                     |
-| ---------------------- | ------------------------ |
-| **Joint Angle**        | radians                  |
-| **Cartesian Position** | meters (`[x, y, z]`)     |
-| **Cartesian Rotation** | radians (`[rx, ry, rz]`) |
+| Type                              | Unit                         |
+| --------------------------------- | ---------------------------- |
+| **Joint Angle** (revolute)        | radians                      |
+| **Joint Velocity** (revolute)     | radians/second               |
+| **Joint Acceleration** (revolute) | radians/second²              |
+| **Joint Position** (linear)       | meters                       |
+| **Joint Velocity** (linear)       | meters/second                |
+| **Joint Acceleration** (linear)   | meters/second²               |
+| **Cartesian Position**            | meters (`[x, y, z]`)         |
+| **Cartesian Rotation**            | radians (`[rx, ry, rz]`)     |
+| **Cartesian Linear Velocity**     | meters/second                |
+| **Cartesian Linear Acceleration** | meters/second²               |
+| **Cartesian Angular Velocity**    | radians/second               |
+| **Time / Duration**               | seconds                      |
 
 ### Connection Template
 
@@ -302,7 +325,9 @@ armctl --help
 - [JAKA](https://www.jaka.com/en)
   - **Models:** Zu 5
 - [Dobot](https://www.dobot-robots.com)
-  - **Models:** Magician Lite
+  - **Models:** Magician Lite, M1 Pro
+- [ABB](https://new.abb.com/products/robotics)
+  - **Controllers:** IRC5, OmniCore (via Robot Web Services)
 
 ## Future Development
 

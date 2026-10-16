@@ -7,13 +7,20 @@ This document outlines the core conventions and control flow to maintain consist
 
 To avoid confusion and unexpected behavior when interfacing with different robot models and manufacturers, **all user-facing inputs and outputs use the following standard units:**
 
-| Type                   | Unit                     |
-| ---------------------- | ------------------------ |
-| **Joint Angle**        | radians                  |
-| **Joint Velocity**     | radians/second           |
-| **Joint Acceleration** | radians/second²          |
-| **Cartesian Position** | meters (`[x, y, z]`)     |
-| **Cartesian Rotation** | radians (`[rx, ry, rz]`) |
+| Type                              | Unit                         |
+| --------------------------------- | ---------------------------- |
+| **Joint Angle** (revolute)        | radians                      |
+| **Joint Velocity** (revolute)     | radians/second               |
+| **Joint Acceleration** (revolute) | radians/second²              |
+| **Joint Position** (linear)       | meters                       |
+| **Joint Velocity** (linear)       | meters/second                |
+| **Joint Acceleration** (linear)   | meters/second²               |
+| **Cartesian Position**            | meters (`[x, y, z]`)         |
+| **Cartesian Rotation**            | radians (`[rx, ry, rz]`)     |
+| **Cartesian Linear Velocity**     | meters/second                |
+| **Cartesian Linear Acceleration** | meters/second²               |
+| **Cartesian Angular Velocity**    | radians/second               |
+| **Time / Duration**               | seconds                      |
 
 > 💡 Always convert incoming or outgoing data to these units at the API boundaries.
 

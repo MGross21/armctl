@@ -4,7 +4,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from armctl import Jaka, UniversalRobots, Vention
+from armctl import ElephantRobotics, Jaka, Pro600, UniversalRobots, Vention, Zaber
+from armctl.universal_robots import OnRobot
 
 HOME = [0.0, -1.57, 1.57, 0.0, 0.0, 0.0]
 
@@ -151,3 +152,88 @@ def test_vention_rejects_bad_axis_position(vention, reply):
     vention.send_command.return_value = reply
     with pytest.raises(RuntimeError):
         vention.get_joint_positions(axis=1)
+
+
+@pytest.fixture
+def zaber():
+    pytest.importorskip("zaber_motion")
+    robot = Zaber("10.0.0.1", num_axes=2)
+    robot.axes = [MagicMock(), MagicMock()]
+    return robot
+
+
+def test_zaber_move_joints_moves_each_axis(zaber):
+    zaber.move_joints([0.1, 0.2])
+    for axis, target in zip(zaber.axes, [0.1, 0.2]):
+        axis.move_absolute.assert_called_once_with(target, unit=zaber.units)
+        axis.wait_until_idle.assert_called_once()
+
+
+def test_zaber_rejects_out_of_range(zaber):
+    with pytest.raises(ValueError):
+        zaber.move_joints([0.1, 0.5])
+    zaber.axes[0].move_absolute.assert_not_called()
+
+
+def test_ur_telemetry_requires_connection():
+    with pytest.raises(ConnectionError, match="not connected"):
+        UniversalRobots("10.0.0.1").get_joint_positions()
+
+
+@pytest.fixture
+def elephant(monkeypatch):
+    monkeypatch.setattr("armctl.elephant_robotics.elephant_robotics.time.sleep", lambda _: None)
+    robot = ElephantRobotics("10.0.0.1", 5001)
+    robot.send_command = MagicMock()
+    return robot
+
+
+def test_elephant_move_joints_sends_integer_degrees_and_waits(elephant):
+    target = [math.pi / 2, 0.0, 0.0, 0.0, 0.0, 0.0]
+    command = "set_angles(90.0,0.0,0.0,0.0,0.0,0.0,500)"
+    elephant.send_command.side_effect = [
+        f"{command}:[ok]",
+        "get_angles:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0]",
+        "get_angles:[90.0, 0.0, 0.0, 0.0, 0.0, 0.0]",
+    ]
+    elephant.move_joints(target)
+    assert elephant.send_command.call_args_list[0].args[0] == command
+    assert elephant.send_command.call_count == 3
+
+
+def test_elephant_get_cartesian_position_returns_meters_and_radians(elephant):
+    elephant.send_command.return_value = "get_coords:[100.0, 200.0, 300.0, 90.0, 0.0, 180.0]"
+    assert elephant.get_cartesian_position() == pytest.approx(
+        [0.1, 0.2, 0.3, math.pi / 2, 0, math.pi]
+    )
+
+
+def test_elephant_move_cartesian_sends_mm_and_degrees(elephant):
+    elephant.send_command.side_effect = [
+        "set_coords:[ok]",
+        "get_coords:[100.0, 200.0, 300.0, 90.0, 0.0, 180.0]",
+    ]
+    elephant.move_cartesian([0.1, 0.2, 0.3, math.pi / 2, 0.0, math.pi])
+    assert elephant.send_command.call_args_list[0].args[0] == (
+        "set_coords(100.0,200.0,300.0,90.0,0.0,180.0,500)"
+    )
+
+
+def test_pro600_home_speed_within_limits(monkeypatch):
+    monkeypatch.setattr("armctl.elephant_robotics.elephant_robotics.time.sleep", lambda _: None)
+    robot = Pro600()
+    robot.send_command = MagicMock(
+        side_effect=[
+            "set_angles(0.0,-90.0,90.0,-90.0,-90.0,0.0,750):[ok]",
+            "get_angles:[0.0, -90.0, 90.0, -90.0, -90.0, 0.0]",
+        ]
+    )
+    robot.home()
+    assert robot.send_command.call_count == 2
+
+
+@pytest.mark.parametrize("reply, closed", [("1\n", True), ("0\n", False)])
+def test_onrobot_status_parses_text_reply(reply, closed):
+    gripper = OnRobot.__new__(OnRobot)
+    gripper.send_command = MagicMock(return_value=reply)
+    assert gripper.get_status() is closed
