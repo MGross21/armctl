@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import PLCController as PLC
 from armctl.utils import CommandCheck as cc
@@ -12,22 +14,28 @@ class Fanuc(PLC, Commands, Properties):
         self.MAX_JOINT_ACCELERATION = None
         raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
+    @override
     def move_joints(self, pos, speed=1.0):
         cc.move_joints(self, pos, speed)
         return self.send_command({"type": "move_joints", "positions": pos, "speed": speed})
 
+    @override
     def move_cartesian(self, pose, speed=1.0):
         cc.move_cartesian(self, pose)
         return self.send_command({"type": "move_cartesian", "position": pose, "speed": speed})
 
+    @override
     def get_joint_positions(self):
         return self.send_command({"type": "get_joint_positions"})
 
+    @override
     def get_cartesian_position(self):
         return self.send_command({"type": "get_cartesian_position"})
 
+    @override
     def stop_motion(self):
         return self.send_command({"type": "stop"})
 
+    @override
     def get_robot_state(self):
         return self.send_command({"type": "get_state"})

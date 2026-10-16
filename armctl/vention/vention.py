@@ -3,6 +3,8 @@ from __future__ import annotations
 import time
 from typing import overload
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.templates.logger import logger
@@ -25,6 +27,7 @@ class Vention(SCT, Commands, Properties):
         self.MAX_JOINT_VELOCITY = 3000 * 1e-3  # m/s
         self.MAX_JOINT_ACCELERATION = 1000 * 1e-3  # m/s^2
 
+    @override
     def connect(self) -> None:
         """Establishes connection to the Vention controller and checks readiness."""
         super().connect()
@@ -57,10 +60,12 @@ class Vention(SCT, Commands, Properties):
                     f"Failed to release E-Stop. Received response: {release_response}"
                 )
 
+    @override
     def disconnect(self) -> None:
         """Disconnects from the Vention controller."""
         super().disconnect()
 
+    @override
     def sleep(self, seconds: float) -> None:
         """Pauses execution for a specified number of seconds."""
         cc.sleep(seconds)
@@ -73,6 +78,7 @@ class Vention(SCT, Commands, Properties):
             raise RuntimeError(f"Homing failed. {response}")
         self._wait_for_finish(delay=1)
 
+    @override
     def move_joints(
         self,
         pos: list[float] | float | int,
@@ -132,6 +138,7 @@ class Vention(SCT, Commands, Properties):
     def get_joint_positions(self, axis: None = None) -> list[float]: ...
     @overload
     def get_joint_positions(self, axis: int) -> float: ...
+    @override
     def get_joint_positions(self, axis: int | None = None) -> list[float] | float:
         """Gets the current position of an axis or all axes."""
         cc.get_joint_positions()
@@ -164,6 +171,7 @@ class Vention(SCT, Commands, Properties):
         except ValueError as e:
             raise RuntimeError(f"Failed to parse position from response: '{response}'") from e
 
+    @override
     def stop_motion(self) -> None:
         """Stops all robot motion."""
         cc.stop_motion()
@@ -171,16 +179,19 @@ class Vention(SCT, Commands, Properties):
         if "Ack" not in ack:
             raise RuntimeError("Failed to stop motion.")
 
+    @override
     def move_cartesian(self, pose: list[float]) -> None:
         """Moves the robot to a specified Cartesian pose (not implemented)."""
         cc.move_cartesian(self, pose)
         raise NotImplementedError("This method is not implemented yet.")
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         """Gets the current Cartesian position of the robot (not implemented)."""
         cc.get_cartesian_position()
         raise NotImplementedError("This method is not implemented yet.")
 
+    @override
     def get_robot_state(self) -> None:
         """Gets the current state of the robot."""
         cc.get_robot_state()

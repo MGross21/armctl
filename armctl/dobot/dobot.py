@@ -1,5 +1,7 @@
 import math
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import SerialController as SCT
 from armctl.utils import CommandCheck as cc
@@ -26,10 +28,12 @@ class Dobot(SCT, Commands, Properties):
 
         raise NotImplementedError(f"{self.__class__.__name__.upper()} is not yet supported.")
 
+    @override
     def sleep(self, seconds):
         cc.sleep(seconds)
         self.send_command(f"sleep({seconds})")
 
+    @override
     def move_joints(self, pos) -> str:
         "MovJ"
 
@@ -38,6 +42,7 @@ class Dobot(SCT, Commands, Properties):
         command = "MOVJ({})".format(",".join(map(str, pos)))
         return self.send_command(command)
 
+    @override
     def move_cartesian(self, pose) -> str:
         """
         Moves the robot arm to a specified Cartesian position.
@@ -71,14 +76,18 @@ class Dobot(SCT, Commands, Properties):
         )
         return self.send_command(command)
 
+    @override
     def get_joint_positions(self):
         pass
 
+    @override
     def get_cartesian_position(self):
         pass
 
+    @override
     def stop_motion(self):
         pass
 
+    @override
     def get_robot_state(self):
         pass

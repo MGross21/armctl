@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from abc import ABC
 
+from typing_extensions import override
+
 
 class Properties(ABC):
     """Base class for robot properties."""
@@ -21,6 +23,7 @@ class Properties(ABC):
         return len(self.JOINT_RANGES)
 
     @property
+    @override
     def __name__(self) -> str:
         """Name of the robot.
 

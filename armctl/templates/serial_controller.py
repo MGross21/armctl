@@ -8,6 +8,8 @@ THIS CLASS IS NOT IMPLEMENTED YET.
 
 from __future__ import annotations
 
+from typing_extensions import override
+
 from .communication import Communication
 
 
@@ -35,12 +37,15 @@ class SerialController(Communication):
         """Ensure disconnection when leaving the context."""
         self.disconnect()
 
+    @override
     def connect(self):
         raise NotImplementedError("Serial connection not implemented yet.")
 
+    @override
     def disconnect(self):
         raise NotImplementedError("Serial disconnection not implemented yet.")
 
+    @override
     def send_command(self, command, timeout=5, **kwargs):
         """
         Send a command to the robot with an optional timeout.

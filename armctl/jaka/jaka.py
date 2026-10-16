@@ -5,6 +5,8 @@ import math
 import time
 from typing import Any
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 from armctl.templates import SocketController as SCT
 from armctl.utils import CommandCheck as cc
@@ -52,6 +54,7 @@ class Jaka(SCT, Commands, Properties):
             )
         return resp
 
+    @override
     def connect(self) -> None:
         super().connect()
         self._send_and_check({"cmdName": "power_on"})
@@ -65,16 +68,19 @@ class Jaka(SCT, Commands, Properties):
             }
         )
 
+    @override
     def disconnect(self) -> None:
         self._send_and_check({"cmdName": "disable_robot"})
         # NOT RECOMMENDED: shuts down the robot TCP server
         # self._send_and_check({"cmdName": "shutdown"})
         super().disconnect()
 
+    @override
     def sleep(self, seconds: float) -> None:
         cc.sleep(seconds)
         time.sleep(seconds)
 
+    @override
     def move_joints(self, pos: list[float], speed: float = 0.25, acceleration: float = 0.1) -> None:
         """
         Move the robot to the specified joint positions.
@@ -98,6 +104,7 @@ class Jaka(SCT, Commands, Properties):
         }
         self._send_and_check(cmd)
 
+    @override
     def move_cartesian(
         self, pose: list[float], speed: float = 0.25, acceleration: float = 0.0
     ) -> None:
@@ -122,6 +129,7 @@ class Jaka(SCT, Commands, Properties):
         }
         self._send_and_check(cmd)
 
+    @override
     def get_joint_positions(self) -> list[float]:
         """
         Get the current joint positions of the robot.
@@ -135,6 +143,7 @@ class Jaka(SCT, Commands, Properties):
         response = self._send_and_check(cmd)
         return [math.radians(angle) for angle in response["joint_pos"]]
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         """
         Retrieves the current Cartesian position of the robot's tool center point (TCP).
@@ -148,10 +157,12 @@ class Jaka(SCT, Commands, Properties):
         response = self._send_and_check(cmd)
         return uu.pose2rad(response["tcp_pos"])
 
+    @override
     def stop_motion(self) -> None:
         cc.stop_motion()
         self._send_and_check({"cmdName": "stop_program"})
 
+    @override
     def get_robot_state(self) -> dict[str, Any]:
         """
         Get the current state of the robot.

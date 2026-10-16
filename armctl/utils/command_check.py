@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 
 
 class CommandCheck(Commands):
     """Validates command parameters for robot operations."""
 
+    @override
     @staticmethod
     def sleep(seconds: int | float) -> None:
         """Validate sleep duration parameter."""
@@ -14,6 +17,7 @@ class CommandCheck(Commands):
         if seconds < 0:
             raise ValueError(f"Sleep duration must be non-negative, got {seconds}")
 
+    @override
     @staticmethod
     def move_joints(
         robot_instance: Properties,
@@ -59,11 +63,13 @@ class CommandCheck(Commands):
         if acceleration is not None and acceleration > a:
             raise ValueError(f"Acceleration {acceleration} exceeds max {a}")
 
+    @override
     @staticmethod
     def get_joint_positions() -> None:
         """No validation required for joint position getter."""
         pass
 
+    @override
     @staticmethod
     def move_cartesian(robot_instance: Properties, pose: list[float]) -> None:
         """Validate 6DOF cartesian pose (x, y, z, rx, ry, rz)."""
@@ -80,16 +86,19 @@ class CommandCheck(Commands):
             invalid_types = [type(p).__name__ for p in pose if not isinstance(p, (int, float))]
             raise TypeError(f"All pose values must be numbers, found: {set(invalid_types)}")
 
+    @override
     @staticmethod
     def get_cartesian_position() -> None:
         """No validation required for cartesian position getter."""
         pass
 
+    @override
     @staticmethod
     def stop_motion() -> None:
         """No validation required for stop motion command."""
         pass
 
+    @override
     @staticmethod
     def get_robot_state() -> None:
         """No validation required for robot state getter."""

@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import math
 
+from typing_extensions import override
+
 from armctl.templates import Commands, Properties
 
 # Choose one of the following Communication Methods
@@ -42,14 +44,17 @@ class BlankRobot(Communication, Commands, Properties):
         self.MAX_JOINT_VELOCITY: float | None = None
         self.MAX_JOINT_ACCELERATION: float | None = None
 
+    @override
     def connect(self):
         super().connect()  # Call first to ensure base connection logic is executed
         # Additional connection logic can be added here if needed
 
+    @override
     def disconnect(self):
         # Additional disconnection logic can be added here if needed
         super().disconnect()  # Call last to ensure base disconnection logic is executed
 
+    @override
     def sleep(self, seconds: float) -> None:
         """Sleep for the specified number of seconds."""
         cc.sleep(seconds)
@@ -57,6 +62,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Send sleep command to robot
         pass
 
+    @override
     def move_joints(self, pos: list[float]) -> None:
         """Move robot joints to specified positions (in radians or degrees)."""
         cc.move_joints(self, pos)
@@ -64,6 +70,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Send move command to robot
         pass
 
+    @override
     def get_joint_positions(self) -> list[float]:
         """Get current joint positions."""
         cc.get_joint_positions()
@@ -71,6 +78,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Return the joint positions
         pass
 
+    @override
     def move_cartesian(self, pose: list[float]) -> None:
         """Move robot to specified cartesian pose [x, y, z, rx, ry, rz]."""
         cc.move_cartesian(self, pose)
@@ -78,6 +86,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Send move command to robot
         pass
 
+    @override
     def get_cartesian_position(self) -> list[float]:
         """Get current cartesian position."""
         cc.get_cartesian_position()
@@ -85,6 +94,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Return the cartesian position
         pass
 
+    @override
     def stop_motion(self) -> None:
         """Stop all robot motion immediately."""
         cc.stop_motion()
@@ -92,6 +102,7 @@ class BlankRobot(Communication, Commands, Properties):
         # Send stop command to robot
         pass
 
+    @override
     def get_robot_state(self) -> dict | str:
         """Get current robot state information."""
         cc.get_robot_state()
