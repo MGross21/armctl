@@ -84,4 +84,7 @@ markers = ["integration: requires Docker and the ur extra (URSim)"]
 
 [tool.pyright]
 pythonVersion = "3.9"
+venvPath = "."
+venv = ".venv"
 reportImplicitOverride = "error"
+ignore = ["armctl/universal_robots/protocols/rtde.py"]
