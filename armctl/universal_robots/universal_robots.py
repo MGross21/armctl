@@ -88,16 +88,10 @@ class UniversalRobots(SCT, Commands, Properties):
             Blend radius in metres. Non-zero disables blocking at this waypoint.
         """
         cc.move_joints(self, pos, speed, acceleration)
-        command = (
-            f"write_output_integer_register(0,0)\n"
-            f"movej([{','.join(map(str, pos))}],"
-            f" a={acceleration}, v={speed}, t={t}, r={radius})\n"
-            f"write_output_integer_register(0,1)\n"
+        joints = ",".join(map(str, pos))
+        self._run_move(
+            f"movej([{joints}], a={acceleration}, v={speed}, t={t}, r={radius})", t, radius
         )
-        self.send_command(command, timeout=t + 10, suppress_output=True)
-        if radius == 0.0:
-            timeout = (t + 15.0) if t > 0 else 120.0
-            self._rtde.wait_until_stopped(timeout=timeout)
 
     @override
     def move_cartesian(
@@ -131,24 +125,26 @@ class UniversalRobots(SCT, Commands, Properties):
 
         cc.move_cartesian(self, pose)
 
-        base = f"{move_type}(p[{','.join(map(str, pose))}], a={acceleration}, v={speed}"
-        if move_type in {"movel", "movej"}:
-            command = (
-                "write_output_integer_register(0,0)\n"
-                f"{base}, t={time}, r={radius})\n"
-                "write_output_integer_register(0,1)\n"
-            )
-        else:  # movep
-            command = (
-                "write_output_integer_register(0,0)\n"
-                f"{base}, r={radius})\n"
-                "write_output_integer_register(0,1)\n"
-            )
+        duration = "" if move_type == "movep" else f", t={time}"
+        target = ",".join(map(str, pose))
+        self._run_move(
+            f"{move_type}(p[{target}], a={acceleration}, v={speed}{duration}, r={radius})",
+            time,
+            radius,
+        )
 
-        self.send_command(command, suppress_output=True)
+    def _run_move(self, motion: str, duration: float, radius: float) -> None:
+        """Run ``motion`` as one program; block until done unless blending."""
+        program = (
+            "def armctl_move():\n"
+            "write_output_integer_register(0,0)\n"
+            f"{motion}\n"
+            "write_output_integer_register(0,1)\n"
+            "end\n"
+        )
+        self.send_command(program, timeout=duration + 10, suppress_output=True)
         if radius == 0.0:
-            timeout = (time + 15.0) if time > 0 else 120.0
-            self._rtde.wait_until_stopped(timeout=timeout)
+            self._rtde.wait_until_stopped(timeout=duration + 15.0 if duration > 0 else 120.0)
 
     @override
     def stop_motion(self) -> None:

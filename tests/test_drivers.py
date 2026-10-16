@@ -41,9 +41,11 @@ def test_ur_move_joints_script(ur):
     ur.move_joints(HOME, speed=0.5, acceleration=0.2)
     ur.send_command.assert_called_once()
     assert ur.send_command.call_args.args[0] == (
+        "def armctl_move():\n"
         "write_output_integer_register(0,0)\n"
         "movej([0.0,-1.57,1.57,0.0,0.0,0.0], a=0.2, v=0.5, t=0.0, r=0.0)\n"
         "write_output_integer_register(0,1)\n"
+        "end\n"
     )
     ur.rtde.wait_until_stopped.assert_called_once_with(timeout=120.0)
 
