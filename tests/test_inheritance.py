@@ -1,3 +1,5 @@
+import pytest
+
 from armctl.dobot import Dobot
 from armctl.elephant_robotics import ElephantRobotics, Pro600
 from armctl.fanuc import Fanuc
@@ -11,8 +13,8 @@ from armctl.templates import (
 )
 from armctl.universal_robots import UR3, UR5, UR10, UR16, UniversalRobots, UR5e
 from armctl.vention import Vention
+from armctl.zaber import Zaber
 
-# All robot classes that should inherit from Commands and a controller
 ROBOTS = [
     Dobot,
     ElephantRobotics,
@@ -27,22 +29,23 @@ ROBOTS = [
     Vention,
     Fanuc,
 ]
-
-# Required base classes
-REQUIRED_BASES = (Commands, Properties)
-CONTROLLER_BASES = (SerialController, SocketController, PLCController)
+CONTROLLERS = (SerialController, SocketController, PLCController)
 
 
-def test_robot_subclass_inheritance():
-    """Test that all robot classes inherit from Commands and at least one controller."""
-    for robot in ROBOTS:
-        # Check required base class inheritance
-        for base in REQUIRED_BASES:
-            assert issubclass(robot, base), f"{robot.__name__} must inherit from {base.__name__}"
+INCOMPLETE = pytest.mark.xfail(reason="Fanuc driver does not implement sleep", strict=True)
 
-        # Check controller inheritance
-        has_controller = any(issubclass(robot, c) for c in CONTROLLER_BASES)
-        assert has_controller, (
-            f"{robot.__name__} must inherit from at least one controller: "
-            f"{', '.join(c.__name__ for c in CONTROLLER_BASES)}"
-        )
+
+@pytest.mark.parametrize(
+    "robot",
+    [pytest.param(r, marks=INCOMPLETE) if r is Fanuc else r for r in [*ROBOTS, Zaber]],
+    ids=lambda r: r.__name__,
+)
+def test_implements_commands_and_properties(robot):
+    assert issubclass(robot, Commands)
+    assert issubclass(robot, Properties)
+    assert not getattr(robot, "__abstractmethods__", None)
+
+
+@pytest.mark.parametrize("robot", ROBOTS, ids=lambda r: r.__name__)
+def test_uses_a_controller(robot):
+    assert issubclass(robot, CONTROLLERS)

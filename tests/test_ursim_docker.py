@@ -29,6 +29,9 @@ from typing import TYPE_CHECKING
 
 import pytest
 
+pytestmark = pytest.mark.integration
+pytest.importorskip("rtde", reason="requires the ur extra")
+
 if TYPE_CHECKING:
     from armctl import UR5
 
@@ -247,14 +250,7 @@ def get_ursim_port_mappings() -> dict[str, str]:
 
 @pytest.fixture(scope="session")
 def ursim_container():
-    """Start URSim Docker container using the official image.
-
-    Yields:
-        str: Container ID.
-
-    Raises:
-        pytest.skip: If Docker is not available or container fails to start.
-    """
+    """Yield the ID of a running URSim container; skips if Docker or the image is unavailable."""
     if not check_docker_available():
         pytest.skip("Docker is not available or not running")
 
@@ -279,22 +275,12 @@ def ursim_container():
         error_msg = e.stderr.decode() if e.stderr else str(e)
         pytest.skip(f"Failed to start URSim container: {error_msg}")
     except TimeoutError as e:
-        pytest.skip(f"URSim container startup timeout: {e}")
+        pytest.fail(f"URSim container startup timeout: {e}")
 
 
 @pytest.fixture(scope="session")
 def ur5_robot(ursim_container):
-    """Create UR5 robot connection with enhanced retry logic.
-
-    Args:
-        ursim_container: URSim container fixture.
-
-    Yields:
-        UR5: Connected robot instance.
-
-    Raises:
-        pytest.skip: If robot connection fails.
-    """
+    """Yield a UR5 connected to URSim; fails if the connection cannot be verified."""
     from armctl import UR5
 
     @retry_on_failure(max_retries=5, delay=1)
@@ -322,8 +308,7 @@ def ur5_robot(ursim_container):
         robot = connect_robot()
         yield robot
     except Exception as e:
-        logger.error(f"Failed to connect to URSim robot: {e}")
-        pytest.skip(f"Failed to connect to URSim robot: {str(e)}")
+        pytest.fail(f"Failed to connect to URSim robot: {e}")
     finally:
         if robot:
             try:
