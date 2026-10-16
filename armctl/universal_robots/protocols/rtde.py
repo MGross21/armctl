@@ -218,30 +218,35 @@ class RTDE:
         """Return True if any joint velocity exceeds threshold (rad/s)."""
         return any(abs(v) > threshold for v in self._get_data().actual_qd)
 
-    def wait_until_stopped(self, timeout: float = 120.0, poll_interval: float = 0.05) -> None:
-        """Block until all joints are stopped or timeout expires.
+    def get_last_move_seqno(self) -> int:
+        """Return the sequence number of the last completed move program."""
+        return self._get_data().output_int_register_0
 
-        Waits for motion to begin, then polls joint velocities via RTDE
-        until all fall below _MOVING_VELOCITY_THRESHOLD.
+    def wait_for_move(
+        self, seqno: int, timeout: float = 120.0, poll_interval: float = 0.05
+    ) -> None:
+        """Block until the move program writes seqno to output int register 0.
 
         Parameters
         ----------
+        seqno : int
+            Sequence number written by the move program on completion.
         timeout : float
-            Maximum seconds to wait after motion starts.
+            Maximum seconds to wait.
         poll_interval : float
             RTDE poll interval in seconds.
 
         Raises
         ------
         TimeoutError
-            If the robot does not stop within timeout.
+            If the move does not finish within timeout.
         """
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            if self._get_data().output_int_register_0 == 1:
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if self.get_last_move_seqno() == seqno:
                 return
             time.sleep(poll_interval)
-        raise TimeoutError(f"Robot did not stop within {timeout}s")
+        raise TimeoutError(f"Move {seqno} did not finish within {timeout}s")
 
     def set_speed_slider(self, fraction: float) -> None:
         """Set speed override slider fraction in [0.0, 1.0]."""

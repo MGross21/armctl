@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ctypes
 import math
 import time as _time
 
@@ -34,11 +35,13 @@ class UniversalRobots(SCT, Commands, Properties):
         # Source: https://forum.universal-robots.com/t/maximum-axis-speed-acceleration/13338/4
         self.MAX_JOINT_ACCELERATION = 10.0  # rad/s^2
         self.rtde: RTDE | None = None
+        self._seqno = ctypes.c_int32()
 
     @override
     def connect(self):
         super().connect()
         self.rtde = RTDE(self.ip)
+        self._seqno.value = self.rtde.get_last_move_seqno()
 
     @override
     def disconnect(self):
@@ -135,16 +138,13 @@ class UniversalRobots(SCT, Commands, Properties):
 
     def _run_move(self, motion: str, duration: float, radius: float) -> None:
         """Run ``motion`` as one program; block until done unless blending."""
-        program = (
-            "def armctl_move():\n"
-            "write_output_integer_register(0,0)\n"
-            f"{motion}\n"
-            "write_output_integer_register(0,1)\n"
-            "end\n"
-        )
+        self._seqno.value += 1
+        seqno = self._seqno.value
+        program = f"def armctl_move():\n{motion}\nwrite_output_integer_register(0,{seqno})\nend\n"
         self.send_command(program, timeout=duration + 10, suppress_output=True)
         if radius == 0.0:
-            self._rtde.wait_until_stopped(timeout=duration + 15.0 if duration > 0 else 120.0)
+            timeout = (duration + 15.0) if duration > 0 else 120.0
+            self._rtde.wait_for_move(seqno, timeout=timeout)
 
     @override
     def stop_motion(self) -> None:
