@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 import pytest
 
 pytestmark = pytest.mark.integration
-pytest.importorskip("rtde", reason="requires the ur extra")
 
 if TYPE_CHECKING:
     from armctl import UR5

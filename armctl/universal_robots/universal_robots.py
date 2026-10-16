@@ -47,7 +47,7 @@ class UniversalRobots(SCT, Commands, Properties):
         except Exception:
             pass
         if self.rtde is not None:
-            self.rtde.c.disconnect()
+            self.rtde.disconnect()
             self.rtde = None
         super().disconnect()
 
