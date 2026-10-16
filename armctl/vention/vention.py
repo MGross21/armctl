@@ -103,20 +103,14 @@ class Vention(SCT, Commands, Properties):
 
         for axis, p in enumerate(pos, start=1):
             if axis > self.DOF:
-                raise ValueError(
-                    f"Invalid axis: {axis}. Robot has {self.DOF} axes."
-                )
+                raise ValueError(f"Invalid axis: {axis}. Robot has {self.DOF} axes.")
             p_mm = uu.m2mm(p)  # Convert m to mm
-            ack = self.send_command(
-                f"SET im_move_{move_type}_{axis}/{p_mm}/;", timeout=30
-            )
+            ack = self.send_command(f"SET im_move_{move_type}_{axis}/{p_mm}/;", timeout=30)
             if ack != "Ack":
                 raise RuntimeError(f"Failed to set position for axis {axis}.")
         self._wait_for_finish()
 
-    def _wait_for_finish(
-        self, delay: float = 1.0, timeout: float = 120.0
-    ) -> None:
+    def _wait_for_finish(self, delay: float = 1.0, timeout: float = 120.0) -> None:
         """Waits for the robot to finish its current task, with a timeout."""
         logger.info("Waiting for motion to complete...")
         start_time = time.time()
@@ -129,28 +123,20 @@ class Vention(SCT, Commands, Properties):
             ):
                 break
             if (time.time() - start_time) > timeout:
-                raise TimeoutError(
-                    "Motion did not complete within the expected time."
-                )
+                raise TimeoutError("Motion did not complete within the expected time.")
             time.sleep(delay)
         logger.info("Motion completed.")
 
-    def get_joint_positions(
-        self, axis: int | None = None
-    ) -> list[float] | float:
+    def get_joint_positions(self, axis: int | None = None) -> list[float] | float:
         """Gets the current position of an axis or all axes."""
         cc.get_joint_positions()
 
         if axis is not None:
             if axis < 1 or axis > self.DOF:
-                raise ValueError(
-                    f"Invalid axis: {axis}. Must be between 1 and {self.DOF}."
-                )
+                raise ValueError(f"Invalid axis: {axis}. Must be between 1 and {self.DOF}.")
             return uu.mm2m(self._get_axis_position(axis))
 
-        axis_positions = [
-            self._get_axis_position(ax) for ax in range(1, self.DOF + 1)
-        ]
+        axis_positions = [self._get_axis_position(ax) for ax in range(1, self.DOF + 1)]
         logger.receive(f"Received Response: {axis_positions}")
         return [uu.mm2m(pos) for pos in axis_positions]
 
@@ -170,10 +156,8 @@ class Vention(SCT, Commands, Properties):
                     "Invalid axis position response from robot. Have you homed the robot?"
                 )
             return float(stripped_response)
-        except ValueError:
-            raise RuntimeError(
-                f"Failed to parse position from response: '{response}'"
-            )
+        except ValueError as e:
+            raise RuntimeError(f"Failed to parse position from response: '{response}'") from e
 
     def stop_motion(self) -> None:
         """Stops all robot motion."""

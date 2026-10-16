@@ -38,9 +38,7 @@ def test_robot_subclass_inheritance():
     for robot in ROBOTS:
         # Check required base class inheritance
         for base in REQUIRED_BASES:
-            assert issubclass(robot, base), (
-                f"{robot.__name__} must inherit from {base.__name__}"
-            )
+            assert issubclass(robot, base), f"{robot.__name__} must inherit from {base.__name__}"
 
         # Check controller inheritance
         has_controller = any(issubclass(robot, c) for c in CONTROLLER_BASES)

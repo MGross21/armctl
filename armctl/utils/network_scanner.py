@@ -42,9 +42,7 @@ class NetworkScanner:
             else ["ping", "-c", "1", "-W", str(timeout), ip]
         )
         try:
-            result = subprocess.run(
-                cmd, capture_output=True, timeout=timeout + 1, check=False
-            )
+            result = subprocess.run(cmd, capture_output=True, timeout=timeout + 1, check=False)
             return result.returncode == 0
         except (subprocess.TimeoutExpired, FileNotFoundError, OSError):
             return False
@@ -59,8 +57,7 @@ class NetworkScanner:
         active_devices = []
         with ThreadPoolExecutor(max_workers=num_threads) as executor:
             future_to_ip = {
-                executor.submit(NetworkScanner.ping, ip, timeout): ip
-                for ip in ip_range
+                executor.submit(NetworkScanner.ping, ip, timeout): ip for ip in ip_range
             }
             for future in as_completed(future_to_ip):
                 ip = future_to_ip[future]

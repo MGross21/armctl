@@ -23,8 +23,9 @@ import socket
 import subprocess
 import sys
 import time
+from collections.abc import Iterator
 from functools import wraps
-from typing import Iterator, Optional, Union, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 import pytest
 
@@ -62,9 +63,7 @@ def check_docker_available() -> bool:
         bool: True if Docker is available and running, False otherwise.
     """
     try:
-        result = subprocess.run(
-            ["docker", "version"], capture_output=True, check=False, timeout=10
-        )
+        result = subprocess.run(["docker", "version"], capture_output=True, check=False, timeout=10)
         if result.returncode == 0:
             logger.info("Docker is available and running")
             return True
@@ -108,22 +107,16 @@ def wait_for_port(host: str, port: int, timeout: float = 60) -> bool:
         bool: True if port became available, False if timeout.
     """
     start = time.time()
-    logger.info(
-        f"Waiting for {host}:{port} to become available (timeout: {timeout}s)"
-    )
+    logger.info(f"Waiting for {host}:{port} to become available (timeout: {timeout}s)")
 
     while time.time() - start < timeout:
         if is_port_open(host, port):
             elapsed = time.time() - start
-            logger.info(
-                f"Port {host}:{port} is now available after {elapsed:.1f}s"
-            )
+            logger.info(f"Port {host}:{port} is now available after {elapsed:.1f}s")
             return True
         time.sleep(2)
 
-    logger.error(
-        f"Port {host}:{port} did not become available within {timeout}s"
-    )
+    logger.error(f"Port {host}:{port} did not become available within {timeout}s")
     return False
 
 
@@ -155,9 +148,7 @@ def cleanup_container(container_name: str) -> None:
         logger.warning(f"Error during container cleanup: {e}")
 
 
-def retry_on_failure(
-    max_retries: int = MAX_RETRIES, delay: float = RETRY_DELAY
-):
+def retry_on_failure(max_retries: int = MAX_RETRIES, delay: float = RETRY_DELAY):
     """Decorator to retry a function on failure with exponential backoff.
 
     Args:
@@ -178,17 +169,13 @@ def retry_on_failure(
                 except Exception as e:
                     last_exception = e
                     if attempt < max_retries - 1:
-                        backoff_delay = delay * (
-                            2**attempt
-                        )  # Exponential backoff
+                        backoff_delay = delay * (2**attempt)  # Exponential backoff
                         logger.warning(
                             f"Attempt {attempt + 1} failed: {e}. Retrying in {backoff_delay}s..."
                         )
                         time.sleep(backoff_delay)
                     else:
-                        logger.error(
-                            f"All {max_retries} attempts failed. Last error: {e}"
-                        )
+                        logger.error(f"All {max_retries} attempts failed. Last error: {e}")
             raise last_exception
 
         return wrapper
@@ -220,9 +207,7 @@ def docker_container_manager(
 
         # Pull the latest image
         logger.info(f"Pulling Docker image: {image}")
-        subprocess.run(
-            ["docker", "pull", image], check=True, capture_output=True
-        )
+        subprocess.run(["docker", "pull", image], check=True, capture_output=True)
 
         # Build run command
         run_cmd = ["docker", "run", "--rm", "-d", "--name", container_name]
@@ -232,11 +217,7 @@ def docker_container_manager(
 
         # Start container
         logger.info(f"Starting container: {container_name}")
-        container_id = (
-            subprocess.check_output(run_cmd, stderr=subprocess.PIPE)
-            .decode()
-            .strip()
-        )
+        container_id = subprocess.check_output(run_cmd, stderr=subprocess.PIPE).decode().strip()
         logger.info(f"Container started with ID: {container_id[:12]}")
 
         yield container_id
@@ -280,9 +261,7 @@ def ursim_container():
     ports = get_ursim_port_mappings()
 
     try:
-        with docker_container_manager(
-            URSIM_IMAGE, URSIM_CONTAINER_NAME, ports
-        ) as container_id:
+        with docker_container_manager(URSIM_IMAGE, URSIM_CONTAINER_NAME, ports) as container_id:
             # Wait for URSim to be ready (check both primary ports)
             ports_ready = wait_for_port(
                 "localhost", URSIM_PORT, timeout=CONTAINER_STARTUP_TIMEOUT
@@ -328,21 +307,15 @@ def ur5_robot(ursim_container):
         try:
             positions = robot.get_joint_positions()
             if positions is None:
-                raise ConnectionError(
-                    "Robot connected but failed to get joint positions"
-                )
+                raise ConnectionError("Robot connected but failed to get joint positions")
             state = robot.get_robot_state()
             if state is None:
-                raise ConnectionError(
-                    "Robot connected but failed to get robot state"
-                )
+                raise ConnectionError("Robot connected but failed to get robot state")
             logger.info("Successfully connected to UR5 robot")
             return robot
         except Exception as e:
             robot.disconnect()
-            raise ConnectionError(
-                f"Robot connection verification failed: {e}"
-            ) from e
+            raise ConnectionError(f"Robot connection verification failed: {e}") from e
 
     robot = None
     try:
@@ -361,7 +334,7 @@ def ur5_robot(ursim_container):
 
 
 def validate_position_data(
-    positions: Union[list, tuple], expected_length: int, position_type: str
+    positions: list | tuple, expected_length: int, position_type: str
 ) -> None:
     """Validate robot position data structure and values.
 
@@ -374,9 +347,7 @@ def validate_position_data(
         AssertionError: If validation fails.
     """
     assert positions is not None, f"Should retrieve {position_type}"
-    assert isinstance(positions, (list, tuple)), (
-        f"{position_type} should be list/tuple"
-    )
+    assert isinstance(positions, (list, tuple)), f"{position_type} should be list/tuple"
     assert len(positions) == expected_length, (
         f"Should have {expected_length} {position_type} values"
     )
@@ -387,14 +358,14 @@ def validate_position_data(
     # Additional validation for reasonable ranges
     if position_type == "joint positions":
         # Joint positions should be within reasonable limits (±2π radians)
-        assert all(
-            -MAX_JOINT_ANGLE <= x <= MAX_JOINT_ANGLE for x in positions
-        ), f"Joint positions should be within ±{MAX_JOINT_ANGLE} radians"
+        assert all(-MAX_JOINT_ANGLE <= x <= MAX_JOINT_ANGLE for x in positions), (
+            f"Joint positions should be within ±{MAX_JOINT_ANGLE} radians"
+        )
     elif position_type == "cartesian position":
         # Cartesian positions should have reasonable XYZ values (not NaN or infinite)
-        assert all(
-            not (x != x or abs(x) == float("inf")) for x in positions[:3]
-        ), "XYZ values should be finite"
+        assert all(not (x != x or abs(x) == float("inf")) for x in positions[:3]), (
+            "XYZ values should be finite"
+        )
 
 
 def test_ursim_functionality(ursim_container, ur5_robot):
@@ -407,12 +378,8 @@ def test_ursim_functionality(ursim_container, ur5_robot):
     logger.info("Testing URSim basic functionality")
 
     # Test 1: Basic connectivity
-    assert is_port_open("localhost", URSIM_PORT), (
-        "RTDE port should be accessible"
-    )
-    assert is_port_open("localhost", URSIM_PRIMARY_PORT), (
-        "Primary socket port should be accessible"
-    )
+    assert is_port_open("localhost", URSIM_PORT), "RTDE port should be accessible"
+    assert is_port_open("localhost", URSIM_PRIMARY_PORT), "Primary socket port should be accessible"
 
     # Test 2: Get robot state with validation
     joint_pos = ur5_robot.get_joint_positions()
@@ -461,9 +428,7 @@ def test_ursim_multiple_queries(ursim_container, ur5_robot):
     avg_query_time = sum(query_times) / len(query_times)
     max_query_time = max(query_times)
 
-    assert len(results) == num_queries, (
-        f"Should have {num_queries} successful query results"
-    )
+    assert len(results) == num_queries, f"Should have {num_queries} successful query results"
     assert avg_query_time < MAX_AVERAGE_QUERY_TIME, (
         f"Average query time should be < {MAX_AVERAGE_QUERY_TIME}s, got {avg_query_time:.3f}s"
     )
@@ -502,14 +467,12 @@ def test_ursim_error_handling(ursim_container, ur5_robot):
             )
     except Exception as e:
         # Should not be a critical system error
-        assert not isinstance(e, (SystemExit, KeyboardInterrupt)), (
-            f"Critical error occurred: {e}"
-        )
+        assert not isinstance(e, (SystemExit, KeyboardInterrupt)), f"Critical error occurred: {e}"
 
     logger.info("Error handling test passed")
 
 
-def _create_robot_connection() -> "UR5":
+def _create_robot_connection() -> UR5:
     """Helper function to create and verify robot connection for manual testing.
 
     Returns:
@@ -527,15 +490,13 @@ def _create_robot_connection() -> "UR5":
         # Verify connection
         positions = robot.get_joint_positions()
         if positions is None:
-            raise ConnectionError(
-                "Robot connected but failed to get joint positions"
-            )
+            raise ConnectionError("Robot connected but failed to get joint positions")
         return robot
 
     return connect_robot()
 
 
-def _run_manual_tests(robot: "UR5") -> None:
+def _run_manual_tests(robot: UR5) -> None:
     """Run basic manual tests on the robot.
 
     Args:
@@ -551,7 +512,7 @@ def _run_manual_tests(robot: "UR5") -> None:
 
     # Run multiple queries test
     logger.info("Testing multiple queries...")
-    for i in range(3):
+    for _ in range(3):
         joint_pos = robot.get_joint_positions()
         cart_pos = robot.get_cartesian_position()
         validate_position_data(joint_pos, 6, "joint positions")
@@ -563,14 +524,10 @@ def _run_manual_tests(robot: "UR5") -> None:
 if __name__ == "__main__":
     """Run tests manually for development and debugging."""
     # Set up logging for manual execution
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
-    )
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
     if not check_docker_available():
-        logger.error(
-            "Docker is not available or not running. Please start Docker and try again."
-        )
+        logger.error("Docker is not available or not running. Please start Docker and try again.")
         sys.exit(1)
 
     logger.info("Running URSim Docker tests manually...")
@@ -579,9 +536,7 @@ if __name__ == "__main__":
         ports = get_ursim_port_mappings()
 
         # Start container and run tests
-        with docker_container_manager(
-            URSIM_IMAGE, URSIM_CONTAINER_NAME, ports
-        ) as container_id:
+        with docker_container_manager(URSIM_IMAGE, URSIM_CONTAINER_NAME, ports) as container_id:
             # Wait for URSim to be ready
             ports_ready = wait_for_port(
                 "localhost", URSIM_PORT, timeout=CONTAINER_STARTUP_TIMEOUT

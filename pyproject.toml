@@ -24,14 +24,16 @@ classifiers = [
     "Development Status :: 4 - Beta"
 
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "typer>=0.9.0",
     "pyserial>=3.5",
-    "zaber-motion>=2.13.1",
 ]
 
 [project.optional-dependencies]
+zaber = [
+    "zaber-motion>=2.13.1",
+]
 ur = [
     "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
 ]
@@ -59,9 +61,17 @@ dev = [
 ]
 
 [tool.ruff]
-line-length = 80
+line-length = 100
+extend-exclude = ["*.md"]
 target-version = "py39"
 lint.select = ["E", "F", "W", "I", "B", "UP", "N", "C90"]
-lint.ignore = []
+lint.ignore = [
+    "N802",  # DOF property name
+    "N813",  # cc alias for CommandCheck
+    "N814",  # SCT/PLC aliases for controllers
+    "N817",  # UR alias
+    "B008",  # typer.Option/Argument defaults
+]
+lint.per-file-ignores = { "__init__.py" = ["F401", "F403", "E402"], "armctl/__main__.py" = ["UP006", "UP035", "UP045"] }
 format.quote-style = "double"
 format.indent-style = "space"

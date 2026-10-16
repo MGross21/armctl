@@ -1,5 +1,5 @@
 """
-This module defines abstract base classes and custom logging levels for robot communication and control.
+Abstract base classes and custom logging levels for robot communication and control.
 
 Classes
 -------

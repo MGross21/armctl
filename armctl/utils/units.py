@@ -49,10 +49,7 @@ def joints2deg(
         return []
 
     if isinstance(joint_positions[0], (tuple, list)):
-        return [
-            (math.degrees(jmin), math.degrees(jmax))
-            for jmin, jmax in joint_positions
-        ]
+        return [(math.degrees(jmin), math.degrees(jmax)) for jmin, jmax in joint_positions]
     return [math.degrees(j) for j in joint_positions]
 
 
@@ -67,26 +64,19 @@ def joints2rad(
         return []
 
     if isinstance(joint_positions[0], (tuple, list)):
-        return [
-            (math.radians(jmin), math.radians(jmax))
-            for jmin, jmax in joint_positions
-        ]
+        return [(math.radians(jmin), math.radians(jmax)) for jmin, jmax in joint_positions]
     return [math.radians(j) for j in joint_positions]
 
 
 def pose2deg(pose: list[float]) -> list[float]:
     """Convert pose orientation (last 3 elements) from radians to degrees."""
     if len(pose) < 6:
-        raise ValueError(
-            "Pose must have at least 6 elements (x, y, z, rx, ry, rz)"
-        )
+        raise ValueError("Pose must have at least 6 elements (x, y, z, rx, ry, rz)")
     return pose[:3] + [math.degrees(a) for a in pose[3:]]
 
 
 def pose2rad(pose: list[float]) -> list[float]:
     """Convert pose orientation (last 3 elements) from degrees to radians."""
     if len(pose) < 6:
-        raise ValueError(
-            "Pose must have at least 6 elements (x, y, z, rx, ry, rz)"
-        )
+        raise ValueError("Pose must have at least 6 elements (x, y, z, rx, ry, rz)")
     return pose[:3] + [math.radians(a) for a in pose[3:]]

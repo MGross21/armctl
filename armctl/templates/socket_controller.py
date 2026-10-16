@@ -48,23 +48,15 @@ class SocketController(Communication):
         """Connect to the robot using sockets for sending and receiving"""
         try:
             # Create and connect send socket
-            self.send_socket = socket.create_connection(
-                (self.ip, self.send_port)
-            )
+            self.send_socket = socket.create_connection((self.ip, self.send_port))
             logger.info(
                 f"Connected to {self.__class__.__name__}({self.ip}:{self.send_port})"
-                + (
-                    "(SEND/RECV)"
-                    if self.send_port == self.recv_port
-                    else "(SEND)"
-                )
+                + ("(SEND/RECV)" if self.send_port == self.recv_port else "(SEND)")
             )
 
             # Create and connect separate receive socket only if needed
             if self.recv_port != self.send_port:
-                self.recv_socket = socket.create_connection(
-                    (self.ip, self.recv_port)
-                )
+                self.recv_socket = socket.create_connection((self.ip, self.recv_port))
                 logger.info(
                     f"Connected to {self.__class__.__name__}({self.ip}:{self.recv_port}) (RECV)"
                 )
@@ -150,13 +142,11 @@ class SocketController(Communication):
 
         try:
             self.send_socket.sendall(command.encode())  # Send Command
-            self.recv_socket.settimeout(
-                timeout
-            )  # Set timeout for receiving response
+            self.recv_socket.settimeout(timeout)  # Set timeout for receiving response
             response = self.recv_socket.recv(4096)  # Receive response
 
-        except socket.timeout:
-            raise TimeoutError("Command timed out")
+        except socket.timeout as e:
+            raise TimeoutError("Command timed out") from e
 
         except Exception as e:
             raise ConnectionError(f"Failed to send command: {command}") from e

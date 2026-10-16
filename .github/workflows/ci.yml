@@ -17,13 +17,13 @@ jobs:
     strategy:
       matrix:
         python-version:
-          - '3.8'
           - '3.9'
           - '3.10'
           - '3.11'
           - '3.12'
           - '3.13'
           - '3.14'
+          - '3.15'
       fail-fast: false
     
     steps:
@@ -39,7 +39,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          uv sync --locked --all-groups
+          uv sync --locked --all-groups --extra zaber
 
       - name: Clear all caches and compiled files
         run: |
@@ -79,3 +79,20 @@ jobs:
       - name: Check if uv.lock is up to date
         run: |
           uv sync --locked --all-groups --dry-run
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: '3.13'
+          enable-cache: true
+
+      - name: Ruff
+        run: |
+          uv run --locked --only-group format ruff check .
+          uv run --locked --only-group format ruff format --check .

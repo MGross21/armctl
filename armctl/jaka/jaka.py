@@ -67,16 +67,15 @@ class Jaka(SCT, Commands, Properties):
 
     def disconnect(self) -> None:
         self._send_and_check({"cmdName": "disable_robot"})
-        # self._send_and_check({"cmdName": "shutdown"})  # NOT RECOMMENDED: Shuts down the Robot TCP Server
+        # NOT RECOMMENDED: shuts down the robot TCP server
+        # self._send_and_check({"cmdName": "shutdown"})
         super().disconnect()
 
     def sleep(self, seconds: float) -> None:
         cc.sleep(seconds)
         time.sleep(seconds)
 
-    def move_joints(
-        self, pos: list[float], speed: float = 0.25, acceleration: float = 0.1
-    ) -> None:
+    def move_joints(self, pos: list[float], speed: float = 0.25, acceleration: float = 0.1) -> None:
         """
         Move the robot to the specified joint positions.
         Parameters
@@ -142,7 +141,7 @@ class Jaka(SCT, Commands, Properties):
         Returns
         -------
         list of float
-            Cartesian position [X, Y, Z, Rx, Ry, Rz], where X, Y, Z are in meters and Rx, Ry, Rz are in radians.
+            Cartesian position [X, Y, Z, Rx, Ry, Rz]; X, Y, Z in meters, Rx, Ry, Rz in radians.
         """
         cc.get_cartesian_position()
         cmd = {"cmdName": "get_tcp_pos"}
