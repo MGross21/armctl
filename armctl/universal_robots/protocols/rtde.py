@@ -1,48 +1,26 @@
 from __future__ import annotations
 
 import time
-from ctypes import c_uint32
-from pathlib import Path
-from typing import NewType
 
 from .codes import RobotMode, RuntimeState, SafetyMode
-
-try:
-    from rtde import RTDE as _RTDE
-    from rtde.rtde_config import ConfigFile
-except ImportError:
-    _RTDE = None
-    ConfigFile = None
-
-u32 = NewType("u32", c_uint32)
-
-_MOVING_VELOCITY_THRESHOLD = 1e-3  # rad/s — below this on all joints = stopped
+from .rtde_core import RTDEClient
 
 
 class RTDE:
     def __init__(self, ip: str):
-        if _RTDE is None or ConfigFile is None:
-            raise ImportError(
-                "Universal Robots RTDE support requires additional dependencies. "
-                "Install it with: pip install armctl[ur]"
-            )
+        self._client = RTDEClient(ip)
+        self._client.connect()
+        self._client.send_output_setup()
+        self._input = self._client.send_input_setup()
+        # (MAJOR, MINOR, BUGFIX, BUILD)
+        self.controller_version = self._client.get_controller_version()
+        self._client.send_start()
 
-        config_file = Path(__file__).parent / "config.xml"
-        config = ConfigFile(str(config_file))
-        out_names, out_types = config.get_recipe("out")
-        in_names, in_types = config.get_recipe("in")
-
-        self.c = _RTDE(ip)
-        self.c.connect()
-        self.c.send_output_setup(out_names, out_types)
-        self._input = self.c.send_input_setup(in_names, in_types)
-        self.controller_version = self.c.get_controller_version()  # (MAJOR, MINOR, BUGFIX, BUILD)
-        self.c.send_start()
+    def disconnect(self) -> None:
+        self._client.disconnect()
 
     def _get_data(self):
-        if not self.c.is_connected():
-            raise ConnectionError("RTDE connection has been lost.")
-        return self.c.receive()
+        return self._client.receive()
 
     def joint_angles(self) -> list[float]:
         """Return actual joint angles in radians."""
@@ -131,8 +109,8 @@ class RTDE:
         - **`Bit 10`**: Is stopped due to safety
         """
         data = self._get_data()
-        rsb: u32 = data.robot_status_bits
-        ssb: u32 = data.safety_status_bits
+        rsb = data.robot_status_bits
+        ssb = data.safety_status_bits
 
         def bit(data, n):
             return bool(data & (1 << n))
@@ -194,7 +172,7 @@ class RTDE:
         Bits 8-15:  Configurable DI 0-7
         Bits 16-17: Tool DI 0-1
         """
-        bits = self._get_data().standard_digital_input_bits
+        bits = self._get_data().actual_digital_input_bits
 
         def bit(n):
             return bool(bits & (1 << n))
@@ -213,7 +191,7 @@ class RTDE:
         Bits 8-15:  Configurable DO 0-7
         Bits 16-17: Tool DO 0-1
         """
-        bits = self._get_data().standard_digital_output_bits
+        bits = self._get_data().actual_digital_output_bits
 
         def bit(n):
             return bool(bits & (1 << n))
@@ -236,34 +214,39 @@ class RTDE:
             "temperature": float(data.tool_temperature),
         }
 
-    def is_moving(self, threshold: float = _MOVING_VELOCITY_THRESHOLD) -> bool:
+    def is_moving(self, threshold: float = 1e-3) -> bool:
         """Return True if any joint velocity exceeds threshold (rad/s)."""
         return any(abs(v) > threshold for v in self._get_data().actual_qd)
 
-    def wait_until_stopped(self, timeout: float = 120.0, poll_interval: float = 0.05) -> None:
-        """Block until all joints are stopped or timeout expires.
+    def get_last_move_seqno(self) -> int:
+        """Return the sequence number of the last completed move program."""
+        return self._get_data().output_int_register_0
 
-        Waits for motion to begin, then polls joint velocities via RTDE
-        until all fall below _MOVING_VELOCITY_THRESHOLD.
+    def wait_for_move(
+        self, seqno: int, timeout: float = 120.0, poll_interval: float = 0.05
+    ) -> None:
+        """Block until the move program writes seqno to output int register 0.
 
         Parameters
         ----------
+        seqno : int
+            Sequence number written by the move program on completion.
         timeout : float
-            Maximum seconds to wait after motion starts.
+            Maximum seconds to wait.
         poll_interval : float
             RTDE poll interval in seconds.
 
         Raises
         ------
         TimeoutError
-            If the robot does not stop within timeout.
+            If the move does not finish within timeout.
         """
-        deadline = time.time() + timeout
-        while time.time() < deadline:
-            if self._get_data().output_int_registers_0 == 1:
+        deadline = time.monotonic() + timeout
+        while time.monotonic() < deadline:
+            if self.get_last_move_seqno() == seqno:
                 return
             time.sleep(poll_interval)
-        raise TimeoutError(f"Robot did not stop within {timeout}s")
+        raise TimeoutError(f"Move {seqno} did not finish within {timeout}s")
 
     def set_speed_slider(self, fraction: float) -> None:
         """Set speed override slider fraction in [0.0, 1.0]."""
@@ -271,7 +254,7 @@ class RTDE:
             raise ValueError(f"Speed fraction must be in [0, 1], got {fraction}")
         self._input.speed_slider_mask = 1
         self._input.speed_slider_fraction = fraction
-        self.c.send(self._input)
+        self._client.send(self._input)
 
     def set_digital_output(self, pin: int, value: bool) -> None:
         """Set a standard digital output pin (0-7) high or low."""
@@ -280,7 +263,7 @@ class RTDE:
         mask = 1 << pin
         self._input.standard_digital_output_mask = mask
         self._input.standard_digital_output = mask if value else 0
-        self.c.send(self._input)
+        self._client.send(self._input)
 
     def set_analog_output(self, channel: int, value: float) -> None:
         """Set standard analog output voltage (channel 0 or 1).
@@ -294,10 +277,12 @@ class RTDE:
         """
         if channel not in (0, 1):
             raise ValueError(f"Analog output channel must be 0 or 1, got {channel}")
+        if not 0.0 <= value <= 10.0:
+            raise ValueError(f"Analog output voltage must be in [0, 10], got {value}")
         self._input.standard_analog_output_mask = 1 << channel
-        self._input.standard_analog_output_type = 0  # 0 = voltage mode
+        self._input.standard_analog_output_type = 1 << channel  # set bit = voltage mode
         if channel == 0:
-            self._input.standard_analog_output_0 = value
+            self._input.standard_analog_output_0 = value / 10.0  # 0..1 ratio
         else:
-            self._input.standard_analog_output_1 = value
-        self.c.send(self._input)
+            self._input.standard_analog_output_1 = value / 10.0
+        self._client.send(self._input)

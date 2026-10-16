@@ -6,12 +6,9 @@ build-backend = "uv_build"
 module-name = "armctl"
 module-root = ""
 
-[tool.uv.sources]
-urrtde = { git = "https://github.com/UniversalRobots/RTDE_Python_Client_Library.git", rev = "main" }
-
 [project]
 name = "armctl"
-version = "0.4.0"
+version = "0.5.0"
 description = "Agnostic Robotic Manipulation Controller (armctl)"
 authors = [{ name = "Michael Gross", email = "MGross21@users.noreply.github.com" }]
 readme = {file = "README.md", content-type = "text/markdown"}
@@ -34,9 +31,6 @@ dependencies = [
 [project.optional-dependencies]
 zaber = [
     "zaber-motion>=2.13.1",
-]
-ur = [
-    "urrtde @ git+https://github.com/UniversalRobots/RTDE_Python_Client_Library.git@main"
 ]
 
 [project.urls]
@@ -80,11 +74,10 @@ format.indent-style = "space"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = ["-ra", "--strict-markers"]
-markers = ["integration: requires Docker and the ur extra (URSim)"]
+markers = ["integration: requires Docker (URSim)"]
 
 [tool.pyright]
 pythonVersion = "3.9"
 venvPath = "."
 venv = ".venv"
 reportImplicitOverride = "error"
-ignore = ["armctl/universal_robots/protocols/rtde.py"]
