@@ -42,7 +42,7 @@ armctl = "armctl.__main__:main"
 
 [dependency-groups]
 format = [
-    "ruff>=0.4.0;python_version>='3.11'",
+    "ruff>=0.17.1;python_version>='3.11'",
 ]
 
 test = [
