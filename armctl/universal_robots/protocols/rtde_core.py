@@ -5,7 +5,7 @@ import socket
 import struct
 from enum import IntEnum
 
-from .config import InputData, OutputData, Recipe
+from .config import OutputData, Recipe
 
 
 class Command(IntEnum):
@@ -26,6 +26,7 @@ class RTDEClient:
         self.timeout = timeout
         self._sock: socket.socket | None = None
         self._buffer = bytearray()
+        self._output: type[OutputData] = OutputData
 
     def connect(self) -> None:
         if self._sock is not None:
@@ -44,20 +45,24 @@ class RTDEClient:
     def get_controller_version(self) -> tuple[int, int, int, int]:
         return struct.unpack(">IIII", self._request(Command.GET_URCONTROL_VERSION))
 
-    def send_output_setup(self, frequency: float = 125) -> None:
-        request = struct.pack(">d", frequency) + ",".join(OutputData.names()).encode()
-        self._check_recipe_types(self._request(Command.SETUP_OUTPUTS, request), OutputData)
+    def send_output_setup(
+        self, recipe: type[OutputData] = OutputData, frequency: float = 125
+    ) -> None:
+        request = struct.pack(">d", frequency) + ",".join(recipe.names).encode()
+        recipe.parse_setup(self._request(Command.SETUP_OUTPUTS, request))
+        self._output = recipe
 
-    def send_input_setup(self) -> InputData:
-        payload = self._request(Command.SETUP_INPUTS, ",".join(InputData.names()).encode())
-        self._check_recipe_types(payload, InputData)
-        return InputData(recipe_id=payload[0])
+    def send_input_setup(self, recipe: type[Recipe]) -> int | None:
+        """Register an input recipe; return its id, or None if another client owns a field."""
+        return recipe.parse_setup(
+            self._request(Command.SETUP_INPUTS, ",".join(recipe.names).encode())
+        )
 
     def send_start(self) -> None:
         if self._request(Command.START) != b"\x01":
             raise RuntimeError("RTDE controller refused to start synchronization")
 
-    def send(self, data: InputData) -> None:
+    def send(self, data: Recipe) -> None:
         self._send(Command.DATA_PACKAGE, bytes(data))
 
     def receive(self) -> OutputData:
@@ -67,15 +72,7 @@ class RTDEClient:
         payload = self._read_packet(Command.DATA_PACKAGE)
         while self._packet_ready():
             payload = self._read_packet(Command.DATA_PACKAGE)
-        return OutputData.from_buffer_copy(payload)
-
-    @staticmethod
-    def _check_recipe_types(payload: bytes, recipe: type[Recipe]) -> None:
-        actual = payload[1:].decode().split(",")
-        expected = recipe.rtde_types()
-        if actual != expected:
-            bad = [f"{n}: {a}" for n, e, a in zip(recipe.names(), expected, actual) if a != e]
-            raise RuntimeError(f"RTDE {recipe.__name__} mismatch (name: controller type): {bad}")
+        return self._output.from_buffer_copy(payload)
 
     @property
     def _socket(self) -> socket.socket:

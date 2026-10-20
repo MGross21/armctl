@@ -3,6 +3,14 @@ from __future__ import annotations
 import time
 
 from .codes import RobotMode, RuntimeState, SafetyMode
+from .config import (
+    AnalogOutputInput,
+    DigitalOutputInput,
+    OutputData,
+    Recipe,
+    SpeedSliderInput,
+    TorqueOutputData,
+)
 from .rtde_core import RTDEClient
 
 
@@ -10,10 +18,15 @@ class RTDE:
     def __init__(self, ip: str):
         self._client = RTDEClient(ip)
         self._client.connect()
-        self._client.send_output_setup()
-        self._input = self._client.send_input_setup()
         # (MAJOR, MINOR, BUGFIX, BUILD)
         self.controller_version = self._client.get_controller_version()
+        self._client.send_output_setup(
+            TorqueOutputData if self.controller_version >= (5, 23, 0, 0) else OutputData
+        )
+        self._input_ids = {
+            recipe: self._client.send_input_setup(recipe)
+            for recipe in (SpeedSliderInput, DigitalOutputInput, AnalogOutputInput)
+        }
         self._client.send_start()
 
     def disconnect(self) -> None:
@@ -252,18 +265,18 @@ class RTDE:
         """Set speed override slider fraction in [0.0, 1.0]."""
         if not 0.0 <= fraction <= 1.0:
             raise ValueError(f"Speed fraction must be in [0, 1], got {fraction}")
-        self._input.speed_slider_mask = 1
-        self._input.speed_slider_fraction = fraction
-        self._client.send(self._input)
+        self._send(SpeedSliderInput, speed_slider_mask=1, speed_slider_fraction=fraction)
 
     def set_digital_output(self, pin: int, value: bool) -> None:
         """Set a standard digital output pin (0-7) high or low."""
         if not 0 <= pin <= 7:
             raise ValueError(f"Digital output pin must be 0-7, got {pin}")
         mask = 1 << pin
-        self._input.standard_digital_output_mask = mask
-        self._input.standard_digital_output = mask if value else 0
-        self._client.send(self._input)
+        self._send(
+            DigitalOutputInput,
+            standard_digital_output_mask=mask,
+            standard_digital_output=mask if value else 0,
+        )
 
     def set_analog_output(self, channel: int, value: float) -> None:
         """Set standard analog output voltage (channel 0 or 1).
@@ -279,10 +292,15 @@ class RTDE:
             raise ValueError(f"Analog output channel must be 0 or 1, got {channel}")
         if not 0.0 <= value <= 10.0:
             raise ValueError(f"Analog output voltage must be in [0, 10], got {value}")
-        self._input.standard_analog_output_mask = 1 << channel
-        self._input.standard_analog_output_type = 1 << channel  # set bit = voltage mode
-        if channel == 0:
-            self._input.standard_analog_output_0 = value / 10.0  # 0..1 ratio
-        else:
-            self._input.standard_analog_output_1 = value / 10.0
-        self._client.send(self._input)
+        self._send(
+            AnalogOutputInput,
+            standard_analog_output_mask=1 << channel,
+            standard_analog_output_type=1 << channel,  # set bit = voltage mode
+            **{f"standard_analog_output_{channel}": value / 10.0},  # 0..1 ratio
+        )
+
+    def _send(self, recipe: type[Recipe], **fields: float) -> None:
+        recipe_id = self._input_ids[recipe]
+        if recipe_id is None:
+            raise RuntimeError(f"RTDE {recipe.__name__} fields are in use by another client")
+        self._client.send(recipe(recipe_id=recipe_id, **fields))

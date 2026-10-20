@@ -6,28 +6,39 @@ import struct
 
 import pytest
 
-from armctl.universal_robots.protocols.config import InputData, OutputData
+from armctl.universal_robots.protocols.config import (
+    AnalogOutputInput,
+    DigitalOutputInput,
+    OutputData,
+    SpeedSliderInput,
+    TorqueOutputData,
+)
 from armctl.universal_robots.protocols.rtde_core import Command, RTDEClient
 
 
 class TestStructSizes:
     def test_output_data_size(self):
-        assert ctypes.sizeof(OutputData) == 677
+        assert ctypes.sizeof(OutputData) == 629
 
-    def test_input_data_size(self):
-        assert ctypes.sizeof(InputData) == 33
+    def test_torque_output_data_appends_torque(self):
+        assert ctypes.sizeof(TorqueOutputData) == 677
+        assert TorqueOutputData.names == (*OutputData.names, "actual_current_as_torque")
+
+    def test_input_data_sizes(self):
+        assert ctypes.sizeof(SpeedSliderInput) == 13
+        assert ctypes.sizeof(DigitalOutputInput) == 3
+        assert ctypes.sizeof(AnalogOutputInput) == 19
 
 
 class TestFieldNames:
     def test_output_names_count(self):
-        assert len(OutputData.names()) == 31
+        assert len(OutputData.names) == 30
 
     def test_output_names_order(self):
-        assert OutputData.names()[:11] == [
+        assert list(OutputData.names[:10]) == [
             "actual_q",
             "actual_qd",
             "actual_current",
-            "actual_current_as_torque",
             "actual_TCP_pose",
             "actual_TCP_speed",
             "actual_TCP_force",
@@ -38,11 +49,12 @@ class TestFieldNames:
         ]
 
     def test_input_names_order(self):
-        assert InputData.names() == [
-            "speed_slider_mask",
-            "speed_slider_fraction",
+        assert list(SpeedSliderInput.names) == ["speed_slider_mask", "speed_slider_fraction"]
+        assert list(DigitalOutputInput.names) == [
             "standard_digital_output_mask",
             "standard_digital_output",
+        ]
+        assert list(AnalogOutputInput.names) == [
             "standard_analog_output_mask",
             "standard_analog_output_type",
             "standard_analog_output_0",
@@ -74,39 +86,35 @@ class TestOutputDataRoundtrip:
 
     def test_int32_field_roundtrip(self):
         raw = bytearray(ctypes.sizeof(OutputData))
-        # robot_mode is at offset 1 + 11*6*8 = 529
-        struct.pack_into(">i", raw, 529, -7)
+        # robot_mode is at offset 1 + 10*6*8 = 481
+        struct.pack_into(">i", raw, 481, -7)
         data = OutputData.from_buffer_copy(bytes(raw))
         assert data.robot_mode == -7
 
     def test_uint32_field_roundtrip(self):
         raw = bytearray(ctypes.sizeof(OutputData))
-        # safety_status_bits at offset 529 + 4 + 4 + 4 + 4 = 545
-        struct.pack_into(">I", raw, 545, 0b10110)
+        # safety_status_bits at offset 481 + 4 + 4 + 4 + 4 = 497
+        struct.pack_into(">I", raw, 497, 0b10110)
         data = OutputData.from_buffer_copy(bytes(raw))
         assert data.safety_status_bits == 0b10110
 
 
 class TestInputDataRoundtrip:
-    def test_bytes_output_size(self):
-        inp = InputData()
-        assert len(bytes(inp)) == 33
-
     def test_recipe_id_in_first_byte(self):
-        inp = InputData()
+        inp = SpeedSliderInput()
         inp.recipe_id = 3
         raw = bytes(inp)
         assert raw[0] == 3
 
     def test_speed_slider_mask_big_endian(self):
-        inp = InputData()
+        inp = SpeedSliderInput()
         inp.recipe_id = 1
         inp.speed_slider_mask = 0x12345678
         raw = bytes(inp)
         assert raw[1:5] == b"\x12\x34\x56\x78"
 
     def test_speed_slider_fraction_big_endian(self):
-        inp = InputData()
+        inp = SpeedSliderInput()
         inp.recipe_id = 1
         inp.speed_slider_fraction = 0.5
         raw = bytes(inp)
@@ -114,43 +122,53 @@ class TestInputDataRoundtrip:
         assert raw[5:13] == expected
 
     def test_roundtrip_via_from_buffer_copy(self):
-        inp = InputData()
+        inp = SpeedSliderInput()
         inp.recipe_id = 7
         inp.speed_slider_mask = 1
         inp.speed_slider_fraction = 0.75
-        inp.standard_digital_output_mask = 0xFF
         raw = bytes(inp)
-        out = InputData.from_buffer_copy(raw)
+        out = SpeedSliderInput.from_buffer_copy(raw)
         assert out.recipe_id == 7
         assert out.speed_slider_mask == 1
         assert abs(out.speed_slider_fraction - 0.75) < 1e-12
-        assert out.standard_digital_output_mask == 0xFF
 
 
 class TestRecipeTypes:
     def test_input_types_match_spec(self):
-        assert InputData.rtde_types() == [
-            "UINT32",
-            "DOUBLE",
-            "UINT8",
-            "UINT8",
-            "UINT8",
-            "UINT8",
-            "DOUBLE",
-            "DOUBLE",
-        ]
+        assert list(SpeedSliderInput.rtde_types) == ["UINT32", "DOUBLE"]
+        assert list(DigitalOutputInput.rtde_types) == ["UINT8", "UINT8"]
+        assert list(AnalogOutputInput.rtde_types) == ["UINT8", "UINT8", "DOUBLE", "DOUBLE"]
 
-    def test_accepts_matching_controller_types(self):
-        payload = b"\x01" + ",".join(InputData.rtde_types()).encode()
-        RTDEClient._check_recipe_types(payload, InputData)
+    def test_torque_output_types_include_inherited_fields(self):
+        types = TorqueOutputData.rtde_types
+        assert len(types) == 31
+        assert types[0] == types[-1] == "VECTOR6D"
 
-    @pytest.mark.parametrize("bad", ["NOT_FOUND", "IN_USE", "UINT32"])
-    def test_rejects_mismatched_controller_types(self, bad):
-        types = InputData.rtde_types()
-        types[2] = bad
-        payload = b"\x01" + ",".join(types).encode()
+    def test_parse_setup_returns_recipe_id(self):
+        payload = b"\x04" + ",".join(DigitalOutputInput.rtde_types).encode()
+        assert DigitalOutputInput.parse_setup(payload) == 4
+
+    def test_parse_setup_returns_none_when_in_use(self):
+        assert DigitalOutputInput.parse_setup(b"\x00IN_USE,UINT8") is None
+
+    @pytest.mark.parametrize("bad", ["NOT_FOUND", "UINT32"])
+    def test_parse_setup_rejects_mismatched_types(self, bad):
+        payload = b"\x00" + f"{bad},UINT8".encode()
         with pytest.raises(RuntimeError, match="standard_digital_output_mask"):
-            RTDEClient._check_recipe_types(payload, InputData)
+            DigitalOutputInput.parse_setup(payload)
+
+
+class TestRecipeInit:
+    def test_keyword_fields(self):
+        data = DigitalOutputInput(recipe_id=3, standard_digital_output_mask=2)
+        assert bytes(data) == b"\x03\x02\x00"
+
+    def test_rejects_unknown_field(self):
+        with pytest.raises(TypeError, match="standard_digital_ouput"):
+            DigitalOutputInput(recipe_id=1, standard_digital_ouput=1)
+
+    def test_accepts_inherited_field(self):
+        assert TorqueOutputData(robot_mode=7).robot_mode == 7
 
 
 class TestReceive:
@@ -190,6 +208,26 @@ class TestReceive:
         server.sendall(self.packet(Command.START, b"\x01"))
         with pytest.raises(RuntimeError, match="Unexpected RTDE command"):
             client.receive()
+
+    def test_input_setup_returns_none_when_in_use(self, pair):
+        client, server = pair
+        server.sendall(self.packet(Command.SETUP_INPUTS, b"\x00IN_USE,DOUBLE"))
+        assert client.send_input_setup(SpeedSliderInput) is None
+
+    def test_input_setup_returns_recipe_id(self, pair):
+        client, server = pair
+        server.sendall(self.packet(Command.SETUP_INPUTS, b"\x02UINT8,UINT8"))
+        assert client.send_input_setup(DigitalOutputInput) == 2
+
+    def test_receive_uses_torque_recipe(self, pair):
+        client, server = pair
+        types = ",".join(TorqueOutputData.rtde_types).encode()
+        server.sendall(self.packet(Command.SETUP_OUTPUTS, b"\x01" + types))
+        client.send_output_setup(TorqueOutputData)
+        data = TorqueOutputData(recipe_id=1)
+        data.actual_current_as_torque[5] = 1.5
+        server.sendall(self.packet(Command.DATA_PACKAGE, bytes(data)))
+        assert client.receive().actual_current_as_torque[5] == 1.5
 
     def test_disconnect_raises(self, pair):
         client, server = pair

@@ -73,7 +73,6 @@ class UniversalRobots(SCT, Commands, Properties):
         speed: float = 0.1,
         acceleration: float = 0.05,
         t: float = 0.0,
-        radius: float = 0.0,
     ) -> None:
         """MoveJ — move to joint positions.
 
@@ -87,14 +86,10 @@ class UniversalRobots(SCT, Commands, Properties):
             Acceleration in rad/s^2.
         t : float
             Move duration in seconds (overrides speed/acceleration when > 0).
-        radius : float
-            Blend radius in metres. Non-zero disables blocking at this waypoint.
         """
         cc.move_joints(self, pos, speed, acceleration)
         joints = ",".join(map(str, pos))
-        self._run_move(
-            f"movej([{joints}], a={acceleration}, v={speed}, t={t}, r={radius})", t, radius
-        )
+        self._run_move(f"movej([{joints}], a={acceleration}, v={speed}, t={t})", t)
 
     @override
     def move_cartesian(
@@ -104,7 +99,6 @@ class UniversalRobots(SCT, Commands, Properties):
         speed: float = 0.1,
         acceleration: float = 0.1,
         time: float = 0.0,
-        radius: float = 0.0,
     ) -> None:
         """Move to Cartesian pose.
 
@@ -120,8 +114,6 @@ class UniversalRobots(SCT, Commands, Properties):
             Acceleration in m/s^2.
         time : float
             Move duration in seconds (overrides speed/acceleration when > 0).
-        radius : float
-            Blend radius in metres. Non-zero disables blocking at this waypoint.
         """
         if move_type not in {"movel", "movep", "movej"}:
             raise ValueError("Unsupported move type. Use 'movel', 'movep', or 'movej'.")
@@ -130,21 +122,16 @@ class UniversalRobots(SCT, Commands, Properties):
 
         duration = "" if move_type == "movep" else f", t={time}"
         target = ",".join(map(str, pose))
-        self._run_move(
-            f"{move_type}(p[{target}], a={acceleration}, v={speed}{duration}, r={radius})",
-            time,
-            radius,
-        )
+        self._run_move(f"{move_type}(p[{target}], a={acceleration}, v={speed}{duration})", time)
 
-    def _run_move(self, motion: str, duration: float, radius: float) -> None:
-        """Run ``motion`` as one program; block until done unless blending."""
+    def _run_move(self, motion: str, duration: float) -> None:
+        """Run ``motion`` as one program and block until done."""
         self._seqno.value += 1
         seqno = self._seqno.value
         program = f"def armctl_move():\n{motion}\nwrite_output_integer_register(0,{seqno})\nend\n"
         self.send_command(program, timeout=duration + 10, suppress_output=True)
-        if radius == 0.0:
-            timeout = (duration + 15.0) if duration > 0 else 120.0
-            self._rtde.wait_for_move(seqno, timeout=timeout)
+        timeout = (duration + 15.0) if duration > 0 else 120.0
+        self._rtde.wait_for_move(seqno, timeout=timeout)
 
     @override
     def stop_motion(self) -> None:
