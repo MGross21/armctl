@@ -41,22 +41,31 @@ def test_ur_move_joints_script(ur):
     ur.move_joints(HOME, speed=0.5, acceleration=0.2)
     ur.send_command.assert_called_once()
     assert ur.send_command.call_args.args[0] == (
-        "write_output_integer_register(0,0)\n"
-        "movej([0.0,-1.57,1.57,0.0,0.0,0.0], a=0.2, v=0.5, t=0.0, r=0.0)\n"
+        "def armctl_move():\n"
+        "movej([0.0,-1.57,1.57,0.0,0.0,0.0], a=0.2, v=0.5, t=0.0)\n"
         "write_output_integer_register(0,1)\n"
+        "end\n"
     )
-    ur.rtde.wait_until_stopped.assert_called_once_with(timeout=120.0)
+    ur.rtde.wait_for_move.assert_called_once_with(1, timeout=120.0)
 
 
-def test_ur_blended_move_does_not_block(ur):
-    ur.move_joints(HOME, radius=0.05)
-    ur.rtde.wait_until_stopped.assert_not_called()
+def test_ur_sequential_moves_wait_on_new_seqno(ur):
+    ur.move_joints(HOME)
+    ur.move_cartesian([0.1, 0.2, 0.3, 0.0, 3.14, 0.0])
+    assert "write_output_integer_register(0,2)" in ur.send_command.call_args.args[0]
+    assert [c.args[0] for c in ur.rtde.wait_for_move.call_args_list] == [1, 2]
+
+
+def test_ur_seqno_wraps_within_int32(ur):
+    ur._seqno.value = 2**31 - 1
+    ur.move_joints(HOME)
+    ur.rtde.wait_for_move.assert_called_once_with(-(2**31), timeout=120.0)
 
 
 def test_ur_movep_omits_time(ur):
     ur.move_cartesian([0.1, 0.2, 0.3, 0.0, 3.14, 0.0], move_type="movep")
     script = ur.send_command.call_args.args[0]
-    assert "movep(p[0.1,0.2,0.3,0.0,3.14,0.0], a=0.1, v=0.1, r=0.0)" in script
+    assert "movep(p[0.1,0.2,0.3,0.0,3.14,0.0], a=0.1, v=0.1)" in script
     assert "t=" not in script
 
 

@@ -30,7 +30,6 @@ from typing import TYPE_CHECKING
 import pytest
 
 pytestmark = pytest.mark.integration
-pytest.importorskip("rtde", reason="requires the ur extra")
 
 if TYPE_CHECKING:
     from armctl import UR5
@@ -42,6 +41,7 @@ logger = logging.getLogger(__name__)
 # Configuration constants
 URSIM_PORT = 30004
 URSIM_PRIMARY_PORT = 30002
+URSIM_DASHBOARD_PORT = 29999
 URSIM_CONTAINER_NAME = "ursim_test_container"
 URSIM_IMAGE = "universalrobots/ursim_e-series:latest"
 
@@ -243,6 +243,7 @@ def get_ursim_port_mappings() -> dict[str, str]:
     return {
         str(URSIM_PORT): str(URSIM_PORT),  # RTDE port
         str(URSIM_PRIMARY_PORT): str(URSIM_PRIMARY_PORT),  # Primary socket port
+        str(URSIM_DASHBOARD_PORT): str(URSIM_DASHBOARD_PORT),
         "5900": "5900",  # VNC
         "6080": "6080",  # Web VNC
     }
@@ -455,6 +456,31 @@ def test_ursim_error_handling(ursim_container, ur5_robot):
         assert not isinstance(e, (SystemExit, KeyboardInterrupt)), f"Critical error occurred: {e}"
 
     logger.info("Error handling test passed")
+
+
+def test_ursim_sequential_moves_block_until_arrival(ursim_container, ur5_robot):
+    from armctl.universal_robots.protocols.codes import RobotMode
+
+    with socket.create_connection(("localhost", URSIM_DASHBOARD_PORT), timeout=5) as dash:
+        dash.recv(1024)
+        for cmd in (b"power on\n", b"brake release\n"):
+            dash.sendall(cmd)
+            dash.recv(1024)
+    deadline = time.monotonic() + 30
+    while ur5_robot.rtde.robot_mode() != RobotMode.RUNNING:
+        assert time.monotonic() < deadline, "URSim did not reach RUNNING"
+        time.sleep(0.5)
+
+    targets = [
+        [0.0, -1.57, 1.57, 0.0, 0.0, 0.0],
+        [0.5, -1.2, 1.2, -0.3, 0.4, 0.2],
+        [0.0, -1.57, 1.57, 0.0, 0.0, 0.0],
+    ]
+    for target in targets:
+        ur5_robot.move_joints(target, speed=1.0, acceleration=1.0)
+        actual = ur5_robot.get_joint_positions()
+        assert max(abs(a - t) for a, t in zip(actual, target)) < 1e-3
+        assert not ur5_robot.rtde.is_moving()
 
 
 def _create_robot_connection() -> UR5:
