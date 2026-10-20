@@ -18,7 +18,8 @@ RTDE is a proprietary protocol for real-time data synchronization with Universal
 - [Complete I/O Documentation](https://www.universal-robots.com/articles/ur/interface-communication/real-time-data-exchange-rtde-guide/)
 - [RTDE Python Client Documentation](https://docs.universal-robots.com/tutorials/communication-protocol-tutorials/rtde-python-client-guide.html)
 - [RTDE Python Client Library (GitHub)](https://github.com/UniversalRobots/RTDE_Python_Client_Library)  
-  _This project uses the official RTDE Python Client Library._
+  _Protocol reference only; armctl bundles its own RTDE client in `protocols/`._
+- [RTDE Guide (docs site)](https://docs.universal-robots.com/tutorials/communication-protocol-tutorials/rtde-guide.html): input recipe ownership (`IN_USE`) and recipe limits.
 
 **Note:** The following third-party libraries are not currently used in this project but are provided for reference:
 
