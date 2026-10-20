@@ -1,10 +1,12 @@
-import click
+import re
+
 import pytest
 
 from armctl.__main__ import app, get_robot_types
 from armctl.utils import NetworkScanner
 
 EXPORTED_TYPES = sorted(get_robot_types())
+ANSI = re.compile(r"\x1b\[[0-9;]*m")
 
 
 @pytest.mark.parametrize(
@@ -21,7 +23,7 @@ EXPORTED_TYPES = sorted(get_robot_types())
 def test_help_lists_subcommands(runner, args, expected):
     result = runner.invoke(app, [*args, "--help"])
     assert result.exit_code == 0
-    output = click.unstyle(result.output)
+    output = ANSI.sub("", result.output)
     for word in expected:
         assert word in output
 
@@ -30,7 +32,7 @@ def test_help_lists_subcommands(runner, args, expected):
 def test_group_without_subcommand_shows_usage(runner, group):
     result = runner.invoke(app, [group])
     assert result.exit_code in (0, 2)  # click < 8.2 exits 0
-    assert "Usage" in click.unstyle(result.output)
+    assert "Usage" in ANSI.sub("", result.output)
 
 
 def test_unknown_command(runner):
