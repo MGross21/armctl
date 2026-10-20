@@ -30,7 +30,7 @@ dependencies = [
 
 [project.optional-dependencies]
 zaber = [
-    "zaber-motion>=2.13.1",
+    "zaber-motion>=10.2.0",
 ]
 
 [project.urls]
